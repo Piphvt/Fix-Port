@@ -1,0 +1,1106 @@
+<template>
+
+    <div>
+        <ModalWarning :open="modal.warning.open" :message="modal.warning.message" :warning.sync="modal.warning.open" />
+        <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
+        <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
+            :complete.sync="modal.complete.open" :method="goBack" />
+        <EditStockDetail :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
+
+        <v-card flat>
+            <v-container>
+                <v-row justify="center" align="center">
+                    <v-col cols="auto">
+                        <v-card-title class="d-flex align-center justify-center">
+                            <v-icon class="little-icon" color="#85d7df">mdi-cash</v-icon>&nbsp;
+                            <h3 class="mb-0">ข้อมูลการซื้อขายหุ้นของลูกค้า</h3>
+                        </v-card-title>
+                        <div class="d-flex align-center mt-2 justify-center">
+                            <div class="d-flex align-center mt-2 justify-center">
+                                <v-icon class="small-icon" @click="toggleSavedSearchesDialog">
+                                    mdi-format-list-bulleted-type
+                                </v-icon>
+                                <span>{{ savedSearches.length }}</span>
+                            </div>
+
+                            <v-dialog v-model="showSavedSearchesDialog" max-width="400px">
+                                <v-card>
+                                    <v-card-title class="headline"
+                                        style="justify-content: center; display: flex;">บันทึกการค้นหา</v-card-title>
+                                    <v-card-text>
+                                        <v-list>
+                                            <v-list-item-group v-if="savedSearches.length > 0">
+                                                <v-list-item v-for="(search, index) in savedSearches" :key="index">
+                                                    <v-list-item-content>
+                                                        <v-list-item-title>
+                                                            <strong>ประเภท :</strong>
+                                                            {{ getSearchTypeText(search.type) }}
+                                                        </v-list-item-title>
+                                                        <v-list-item-subtitle v-if="search.query">
+                                                            <strong>รายละเอียด :</strong> {{ search.query }}
+                                                        </v-list-item-subtitle>
+                                                        <v-list-item-subtitle v-if="search.start && search.end">
+                                                            <strong>ระยะเวลา :</strong> {{
+                                                                formatDateTime(search.start)
+                                                            }} - {{ formatDateTime(search.end) }}
+                                                        </v-list-item-subtitle>
+                                                        <v-list-item-subtitle v-if="search.topics">
+                                                            <strong>หัวข้อ :</strong> {{ search.topics.join(', ') }}
+                                                        </v-list-item-subtitle>
+                                                    </v-list-item-content>
+                                                    <v-list-item-action>
+                                                        <v-btn icon @click="deleteSearch(index)">
+                                                            <v-icon color=#e50211>mdi-delete</v-icon>
+                                                        </v-btn>
+                                                    </v-list-item-action>
+                                                </v-list-item>
+                                            </v-list-item-group>
+                                            <v-list-item v-else>
+                                                <v-list-item-content style="justify-content: center; display: flex;">
+                                                    <v-icon color=#e50211>mdi-alert-circle</v-icon>
+                                                    ไม่มีข้อมูลการค้นหา</v-list-item-content>
+                                            </v-list-item>
+                                        </v-list>
+                                    </v-card-text>
+                                    <v-card-actions>
+                                        <v-spacer></v-spacer>
+                                        <v-btn color="#e50211" @click="showSavedSearchesDialog = false">ปิด</v-btn>
+                                        <v-spacer></v-spacer>
+                                    </v-card-actions>
+                                </v-card>
+                            </v-dialog>
+
+                            <v-select v-model="searchType" :items="searchTypes" dense outlined
+                                class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
+
+                            <v-autocomplete v-if="searchType !== 'port' && searchType !== 'updated_date'"
+                                v-model="searchQuery" :items="getSearchItems(searchType)" label="ค้นหา" dense outlined
+                                append-icon="mdi-magnify" class="mx-2 same-size small-font" hide-no-data hide-details
+                                clearable></v-autocomplete>
+
+                            <v-select v-if="searchType === 'port'" v-model="selectedTopics" :items="actionTopics" dense
+                                outlined multiple class="mx-2 search-size small-font"></v-select>
+
+                            <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
+                                :close-on-content-click="false" transition="scale-transition" offset-y>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <div v-bind="attrs" v-on="on" class="date-picker-activator">
+                                        <v-icon class="small-label">mdi-calendar-start-outline</v-icon>
+                                        <date-picker v-model="startDateTime" format="YYYY-MM-DD HH:mm"
+                                            type="datetime" />
+                                    </div>
+                                </template>
+                            </v-menu>
+
+                            <v-menu v-if="searchType === 'updated_date'" v-model="endDatePickerMenu"
+                                :close-on-content-click="false" transition="scale-transition" offset-y>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
+                                        <v-icon class="small-label">mdi-calendar-end-outline</v-icon>
+                                        <date-picker v-model="endDateTime" format="YYYY-MM-DD HH:mm" type="datetime" />
+                                    </div>
+                                </template>
+                            </v-menu>
+
+                            <v-btn icon @click="addSearch">
+                                <v-icon class="small-icon ">mdi-plus</v-icon>
+                            </v-btn>
+
+                            <v-btn color="success" v-if="$auth.user.ranks_id === 1" @click="exportCSV" icon>
+                                <v-icon>mdi-file-excel</v-icon>
+                            </v-btn>
+                        </div>
+                    </v-col>
+                </v-row>
+            </v-container>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
+                    <template v-slot:activator="{ on }">
+                        <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
+                            color="#85d7df">mdi-playlist-check</v-icon>
+                    </template>
+                    <v-list class="header-list">
+                        <v-list-item v-for="header in headers.filter(header => header.value !== 'detail')"
+                            :key="header.value" class="header-item">
+                            <v-list-item-content>
+                                <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
+                            </v-list-item-content>
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
+                <div>
+                    <v-btn @click="goToAddStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-icon left color="#24b224">mdi-cash-plus</v-icon> เพิ่มการซื้อขายหุ้น
+                </v-btn>
+                </div>
+            </div>
+
+            <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
+                item-key="no" :items-per-page="5" style="overflow-x: auto; white-space: nowrap;">
+                <template v-slot:item.emp_id="{ item }">
+                    <div class="text-center">
+                        <span v-if="getEmployeeByNo(item.emp_id)">
+                            {{ getEmployeeByNo(item.emp_id).fname }} {{ getEmployeeByNo(item.emp_id).lname }}
+                        </span>
+                        <span v-else>ไม่ทราบ</span>
+                    </div>
+                </template>
+                <template v-slot:item.customer_id="{ item }">
+                    <div class="text-center">
+                        {{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}
+                    </div>
+                </template>
+
+
+                <template v-slot:item.amount="{ item }">
+                    <div class="text-center">
+                        <span v-if="item.amount !== null && item.amount !== undefined">
+                            {{ item.amount.toLocaleString() }}
+                        </span>
+                        <span v-else>
+                        </span>
+                    </div>
+                </template>
+                <template v-slot:item.price="{ item }">
+                    <div class="text-center">
+                        <span v-if="item.price !== null && item.price !== undefined">
+                            {{ item.price.toLocaleString() }}
+                        </span>
+                        <span v-else>
+                        </span>
+                    </div>
+                </template>
+                <template v-slot:item.result="{ item }">
+                    <div class="text-center">
+                        <span v-if="item.result !== null && item.result !== undefined">
+                            {{ item.result.toLocaleString() }}
+                        </span>
+                        <span v-else>
+                        </span>
+                    </div>
+                </template>
+                <template v-slot:item.comfee="{ item }">
+                    <div class="text-center">
+                        <span v-if="item.comfee !== null && item.comfee !== undefined">
+                            {{ item.comfee.toLocaleString() }}
+                        </span>
+                        <span v-else>
+                        </span>
+                    </div>
+                </template>
+                <template v-slot:item.vat="{ item }">
+                    <div class="text-center">
+                        <span v-if="item.vat !== null && item.vat !== undefined">
+                            {{ item.vat.toLocaleString() }}
+                        </span>
+                        <span v-else>
+                        </span>
+                    </div>
+                </template>
+                <template v-slot:item.total="{ item }">
+                    <div class="text-center">
+                        <span v-if="item.total !== null && item.total !== undefined">
+                            {{ item.total.toLocaleString() }}
+                        </span>
+                        <span v-else>
+                        </span>
+                    </div>
+                </template>
+
+                <template v-slot:item.customer_name="{ item }">
+                    <div class="text-center">
+                        {{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}
+                    </div>
+                </template>
+                <template v-slot:item.detail_amount="{ item }">
+                    <div class="text-center" style="color:#ff66c4">
+                        {{ getDetailByNo(item.stock_detail_id)?.amount || 'N/A' }}
+                    </div>
+                </template>
+                <template v-slot:item.stock_id="{ item }">
+                    <div class="text-center">
+                        {{ getStockByNo(item.stock_id)?.name || 'N/A' }}
+                    </div>
+                </template>
+                <template v-slot:item.commission="{ item }">
+                    <div class="text-center" style="color:#38b6ff">
+                        {{ item.commission || 'N/A' }}
+                    </div>
+                </template>
+                <template v-slot:item.from_id="{ item }">
+                    <div class="text-center">
+                        <span :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
+                            {{ getFromByNo(item.from_id)?.from || 'N/A' }}
+                        </span>
+                    </div>
+                </template>
+                <template v-slot:item.type="{ item }">
+                    <div class="text-center">
+                        <span :style="{ color: getTypeText(item.type).color }">
+                            {{ getTypeText(item.type).text }}
+                        </span>
+                    </div>
+                </template>
+                <template v-slot:item.updated_date="{ item }">
+                    <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
+                </template>
+                <template v-slot:item.detail="{ item }">
+                    <div class="text-center">
+                        <v-menu offset-y>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
+                            </template>
+                            <v-list class="custom-list">
+                                <v-list-item @click="openEditAllDialog(item)" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#ffc800">mdi-pencil</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content style="font-size: 0.8rem;">แก้ไขข้อมูล</v-list-item-content>
+                                </v-list-item>
+
+                                <v-list-item @click="showConfirmDialog('delete', item)" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#e50211">mdi-cancel</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content style="font-size: 0.8rem;">ลบข้อมูล</v-list-item-content>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </div>
+                </template>
+            </v-data-table>
+
+            <div class="text-center">
+                <v-btn class="mb-4" color="#e50211" @click="goToHome">
+                    <v-icon>mdi-home</v-icon>กลับไปหน้าหลัก
+                </v-btn>
+            </div>
+        </v-card>
+    </div>
+
+</template>
+
+<script>
+
+import * as XLSX from 'xlsx';
+import moment from 'moment';
+import 'moment/locale/th'
+import DatePicker from 'vue2-datepicker';
+import 'vue2-datepicker/index.css';
+import Papa from 'papaparse';
+
+export default {
+
+    layout: 'user',
+    middleware: 'auth',
+
+    async mounted() {
+        await this.checkRank();
+        await this.fetchEmployeeData();
+        await this.fetchDetailData();
+        await this.fetchTransactionData();
+        await this.fetchCustomerData();
+        await this.fetchStockData();
+        await this.fetchFromData();
+        await this.fetchCommissionData();
+    },
+
+    components: {
+        DatePicker,
+    },
+
+    data() {
+        return {
+            modal: {
+                warning: {
+                    open: false,
+                    message: 'การป้อนข้อมูลเวลาไม่ถูกต้อง',
+                },
+                confirm: {
+                    open: false,
+                },
+                complete: {
+                    open: false,
+                    message: 'สำเร็จ',
+                },
+            },
+
+            employees: [],
+            transactions: [],
+            details: [],
+            customers: [],
+            stocks: [],
+            froms: [],
+            commissions: [],
+
+            sortBy: 'updated_date',
+            currentAction: '',
+            searchQuery: '',
+            searchType: 'customer_id',
+            selectedItemDetail: '',
+            startDateTime: '',
+            endDateTime: '',
+            editDialogOpen: false,
+            isSearchFieldVisible: false,
+            datePickerMenu: false,
+            endDatePickerMenu: false,
+            showSavedSearchesDialog: false,
+            showColumnSelector: false,
+            modalConfirmOpen: false,
+            editAllDialog: false,
+            dialog: false,
+            sortDesc: true,
+            selectedEmployee: null,
+            currentItem: null,
+            employeeNo: null,
+            actionType: null,
+            selectedTopics: [],
+            savedSearches: [],
+            editAllData: {},
+            visibleColumns: ['updated_date', 'customer_id', 'customer_name', 'stock_id', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_id', 'emp_id', 'detail'],
+
+            searchQueries: {
+                'customer_id': [],
+                'customer_name': [],
+                'stock_id': [],
+                'emp_id': [],
+            },
+
+            searchTypes: [
+                { text: 'รหัสสมาชิก', value: 'customer_id' },
+                { text: 'ชื่อเล่น', value: 'customer_name' },
+                { text: 'ชื่อหุ้นที่ติด', value: 'stock_id' },
+                { text: 'ทำรายการโดย', value: 'emp_id' },
+                { text: 'ประเภทพอร์ต', value: 'port' },
+                { text: 'เวลา', value: 'updated_date' }
+            ],
+
+            actionTopics: [
+                { text: 'ถือ', value: 'ถือ' },
+                { text: 'แก้เกมได้', value: 'แก้เกมได้' },
+                { text: 'ระวัง', value: 'ระวัง' },
+                { text: 'กำไร', value: 'กำไร' },
+            ],
+
+            headers: [
+                {
+                    text: 'เวลา',
+                    value: 'updated_date',
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'รหัสสมาชิก',
+                    value: 'customer_id',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ชื่อเล่น',
+                    value: 'customer_name',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ชื่อหุ้น',
+                    value: 'stock_id',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'จำนวนคงเหลือ',
+                    value: 'detail_amount',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'การกระทำ',
+                    value: 'type',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'จำนวนที่ซื้อ/ขาย',
+                    value: 'amount',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ราคา',
+                    value: 'price',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'มูลค่า',
+                    value: 'result',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ค่าธรรมเนียม',
+                    value: 'comfee',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ภาษี',
+                    value: 'vat',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'รวมมูลค่า',
+                    value: 'total',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ตัวคูณค่าธรรมเนียม',
+                    value: 'commission',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ที่มาที่ไป',
+                    value: 'from_id',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ทำรายการโดย',
+                    value: 'emp_id',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: '',
+                    value: 'detail',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+            ],
+        };
+    },
+
+    computed: {
+        filtered() {
+            let filteredDetails = this.transactions;
+            this.savedSearches.forEach(search => {
+                filteredDetails = filteredDetails.filter(transaction => {
+                    return this.applySearchFilter(transaction, search);
+                });
+            });
+            return filteredDetails;
+        },
+
+        formattedDetailLines() {
+            return this.selectedItemDetail.split('\n');
+        },
+
+        filteredHeaders() {
+            return this.headers.filter(header => this.visibleColumns.includes(header.value));
+        },
+    },
+
+    methods: {
+        async fetchDetailData() {
+            this.details = await this.$store.dispatch('api/detail/getDetails');
+            this.transactions.forEach(transaction => {
+                const detail = this.details.find(detail => detail.no === transaction.stock_detail_id);
+                if (detail) {
+                    transaction.customer_id = detail.customer_id;
+                    transaction.stock_id = detail.stock_id;
+                    transaction.from_id = detail.from_id;
+                }
+            });
+        },
+
+        getDetailByNo(detailNo) {
+            return this.details.find(detail => detail.no === detailNo);
+        },
+
+        goToHome() {
+            this.$router.push('/app/home');
+        },
+
+        openEditAllDialog(employee) {
+            this.editAllData = employee;
+            this.editAllDialog = true;
+        },
+
+        showEditDialog(item) {
+            this.selectedEmployee = item;
+            this.editDialogOpen = true;
+        },
+
+        getSearchItems(type) {
+            if (type === 'stock_id') {
+                return this.stocks.map(stock => stock.name);
+            } else if (type === 'customer_name') {
+                return this.customers.map(customer => customer.nickname);
+            } else if (type === 'customer_id') {
+                return this.customers.map(customer => customer.id);
+            } else if (type === 'emp_id') {
+                return this.employees.map(employee => employee.fname + ' ' + employee.lname);
+            }
+            return [];
+        },
+
+        showConfirmDialog(action, item) {
+            this.currentAction = action;
+            this.currentItem = item;
+            this.modalConfirmOpen = true;
+        },
+
+        async handleConfirm() {
+            if (this.currentAction === 'delete') {
+                try {
+                    await this.$store.dispatch('api/transaction/deleteTransaction', this.currentItem.no);
+                    this.modal.complete.message = 'ลบผู้ใช้งานนี้เรียบร้อยแล้ว';
+                    this.recordLog();
+                    this.modal.complete.open = true;
+                } catch (warning) {
+                    this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
+                    this.modal.complete.open = true;
+                }
+            }
+            this.modalConfirmOpen = false;
+        },
+
+        async checkRank() {
+            if (this.$auth.loggedIn) {
+                const Status = this.$auth.user.status.toString();
+                const RankID = this.$auth.user.ranks_id.toString();
+                if (Status === '2') {
+                    this.$router.push('/');
+                    await this.$auth.logout();
+                }
+                else {
+                    if (RankID === '1') {
+                        this.$router.push('/app/transaction/customer_trade');
+                    } else if (RankID === '2') {
+                        this.$router.push('/app/transaction/customer_trade');
+                    } else if (RankID === '3') {
+                        this.$router.push('/app/transaction/customer_trade');
+                    } else {
+                        this.$router.push('/auth');
+                    }
+                }
+            } else {
+                this.$router.push('/');
+            }
+        },
+
+        async fetchEmployeeData() {
+            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+        },
+
+        getEmployeeByNo(empNo) {
+            return this.employees.find(employee => employee.no === empNo);
+        },
+
+        async fetchTransactionData() {
+            this.transactions = await this.$store.dispatch('api/transaction/getTransactions');
+
+            // ดึงข้อมูล commission
+            const commissionData = await this.fetchCommissionData();
+
+            // ตรวจสอบว่า commissionData มีค่าเป็นอาเรย์
+            if (Array.isArray(commissionData)) {
+                this.transactions.forEach(transaction => {
+                    // หา commission ที่ตรงกับ transaction.commission_id
+                    const matchingCommission = commissionData.find(c => c.no === transaction.commission_id);
+
+                    if (matchingCommission) {
+                        const result = transaction.price * transaction.amount;
+                        const comfee = result * matchingCommission.commission;
+                        const vat = comfee * 0.07;
+
+                        transaction.commission = matchingCommission.commission;
+                        transaction.result = result; // คำนวณ result
+                        transaction.comfee = comfee;
+                        transaction.vat = vat;
+                        transaction.total = result + comfee + vat;
+                        
+                    } else {
+                        transaction.comfee = 0; // หรือกำหนดค่าเริ่มต้นในกรณีที่ไม่มี commission ตรงกัน
+                    }
+                });
+            } else {
+                console.error("commissionData ไม่ได้เป็นอาเรย์", commissionData);
+            }
+
+            await this.fetchDetailData();
+        },
+
+        async fetchCustomerData() {
+            this.customers = await this.$store.dispatch('api/customer/getCustomers');
+        },
+
+        getCustomerByNo(custNo) {
+            return this.customers.find(customer => customer.no === custNo);
+        },
+
+        async fetchStockData() {
+            this.stocks = await this.$store.dispatch('api/stock/getStocks');
+            await this.fetchDetailData();
+        },
+
+        getStockByNo(stockNo) {
+            return this.stocks.find(stock => stock.no === stockNo);
+        },
+
+        async fetchFromData() {
+            this.froms = await this.$store.dispatch('api/from/getFroms');
+        },
+
+        getFromByNo(fromNo) {
+            return this.froms.find(from => from.no === fromNo);
+        },
+
+        async fetchCommissionData() {
+            try {
+                const data = await this.$store.dispatch('api/commission/getCommissions');
+                return data || [];
+            } catch (error) {
+                console.error("Error fetching commission data:", error);
+                return [];
+            }
+        },
+
+        getFromText(from) {
+            if (from === 'หุ้นเก่า') {
+                return { text: 'หุ้นเก่า', color: '#ffc800' };
+            } else if (from === 'หุ้นใหม่') {
+                return { text: 'หุ้นใหม่', color: '#38b6ff' };
+            } else if (from === 'หุ้นแก้เกม') {
+                return { text: 'หุ้นแก้เกม', color: '#ff914d' };
+            } else {
+                return { text: '', color: 'inherit' };
+            }
+        },
+
+        getTypeText(value) {
+            if (value === 1) {
+                return { text: 'ซื้อ', color: '#24b224' };
+            } else if (value === 2) {
+                return { text: 'ขาย', color: '#e50211' };
+            } else {
+                return { text: '', color: 'inherit' };
+            }
+        },
+
+        formatDateTime(date) {
+            if (moment(date).isValid()) {
+                return moment(date).format('YYYY-MM-DD HH:mm');
+            }
+            return 'Invalid Date';
+        },
+
+        openDetail(item) {
+            this.selectedItemDetail = item.transaction;
+            this.dialog = true;
+        },
+
+        onSearchTypeChange() {
+            this.isSearchFieldVisible = this.searchType !== 'updated_date' && this.searchType !== 'port';
+        },
+
+        validateDateRange() {
+            const start = moment(this.startDateTime);
+            const end = moment(this.endDateTime);
+
+            if (start.isValid() && end.isValid() && start.isAfter(end)) {
+                this.modal.warning.open = true;
+                return false;
+            }
+            return true;
+        },
+
+        addSearch() {
+            if (!this.validateDateRange()) {
+                return;
+            }
+
+            if (this.searchType === 'port') {
+                this.addTopicToSearch();
+            } else if (this.searchType === 'stock_id' || this.searchType === 'customer_name' || this.searchType === 'customer_id' || this.searchType === 'emp_id') {
+                this.addTextToSearch();
+            } else {
+                this.savedSearches.push({
+                    query: this.searchQuery,
+                    type: this.searchType,
+                    topic: this.selectedTopic,
+                    start: this.startDateTime,
+                    end: this.endDateTime
+                });
+                this.searchQuery = '';
+                this.selectedTopic = '';
+                this.startDateTime = '';
+                this.endDateTime = '';
+            }
+        },
+
+        addTextToSearch() {
+            const trimmedQuery = this.searchQuery.trim();
+            if (trimmedQuery) {
+                this.searchQueries[this.searchType].push(trimmedQuery);
+                this.savedSearches.push({
+                    query: this.searchQueries[this.searchType],
+                    type: this.searchType,
+                    start: this.startDateTime,
+                    end: this.endDateTime
+                });
+                this.searchQuery = '';
+            }
+        },
+
+        addTopicToSearch() {
+            this.savedSearches.push({
+                query: '',
+                type: 'port',
+                topics: [...this.selectedTopics],
+                start: this.startDateTime,
+                end: this.endDateTime
+            });
+            this.selectedTopics = [];
+            this.startDateTime = '';
+            this.endDateTime = '';
+        },
+
+        applySearchFilter(transaction, search) {
+            const field = transaction[search.type];
+            let queryMatched = true;
+            const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
+            if (search.type === 'customer_name') {
+                queryMatched = this.searchQueries[search.type].some(query => {
+                    const cust = this.getCustomerByNo(transaction.customer_id);
+                    return cust.nickname.toLowerCase().includes(query.toLowerCase());
+                });
+            } else if (search.type === 'customer_id') {
+                queryMatched = this.searchQueries[search.type].some(query => {
+                    const cust = this.getCustomerByNo(transaction.customer_id);
+                    return cust.id.toLowerCase().includes(query.toLowerCase());
+                });
+            } else if (search.type === 'stock_id') {
+                queryMatched = this.searchQueries[search.type].some(query => {
+                    const st = this.getStockByNo(transaction.stock_id);
+                    return st.name.toLowerCase().includes(query.toLowerCase());
+                });
+            } else if (search.type === 'emp_id') {
+                queryMatched = this.searchQueries[search.type].some(query => {
+                    const emp = this.getEmployeeByNo(transaction.emp_id);
+                    return emp.fname.toLowerCase().includes(query.toLowerCase()) + ' ' + emp.lname.toLowerCase().includes(query.toLowerCase());
+                });
+            } else {
+                const searchQuery = search.query.toLowerCase();
+                queryMatched = lowerCaseField.includes(searchQuery);
+            }
+            const timeMatched = search.type === 'updated_date' ? this.checkTimeRange(transaction, search) : true;
+            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getTypeText(transaction.total_percent).text) : true;
+            return queryMatched && timeMatched && topicMatched;
+        },
+
+        checkTimeRange(transaction, search) {
+            const transactionTime = moment(transaction.updated_date);
+            const startTime = moment(search.start);
+            const endTime = moment(search.end);
+            return (!startTime.isValid() || transactionTime.isSameOrAfter(startTime)) &&
+                (!endTime.isValid() || transactionTime.isSameOrBefore(endTime));
+        },
+
+        toggleSavedSearchesDialog() {
+            this.showSavedSearchesDialog = !this.showSavedSearchesDialog;
+        },
+
+        deleteSearch(index) {
+            this.savedSearches.splice(index, 1);
+        },
+
+        getSearchTypeText(type) {
+            const found = this.searchTypes.find(item => item.value === type);
+            return found ? found.text : type;
+        },
+
+        exportCSV() {
+            const filteredData = this.filtered.map(item => {
+                const dataItem = {};
+                dataItem['ราคาที่ติด'] = item.price.toLocaleString();
+                dataItem['จำนวนที่ติด'] = item.amount.toLocaleString();
+                dataItem['จำนวนเงิน'] = item.detail_amount.toLocaleString();
+                dataItem['เปอร์เซ็น กำไร/ขาดทุน ปัจจุบัน'] = item.total_percent.toFixed(2) + '%';
+                dataItem['กำไร/ขาดทุน ปัจจุบัน'] = item.present_profit.toLocaleString();
+                dataItem['มูลค่าปัจจุบันและยอดเงินปันผล'] = item.total.toLocaleString();
+                dataItem['มูลค่าปัจจุบัน'] = item.present_price.toLocaleString();
+                dataItem['ยอดเงินปันผล'] = item.balance_dividend.toLocaleString();
+
+                const portInfo = this.getTypeText(item.total_percent);
+                dataItem['ประเภทพอร์ต'] = portInfo.text;
+
+                const CustId = this.getCustomerByNo(item.customer_id);
+                dataItem['รหัสสมาชิก'] = CustId ? `${CustId.id}` : 'ไม่ทราบ';
+
+                const FromNo = this.getFromByNo(item.from_id);
+                dataItem['ที่มาที่ไป'] = FromNo ? `${FromNo.from}` : 'ไม่ทราบ';
+
+                const StockID = this.getStockByNo(item.stock_id);
+                dataItem['ชื่อหุ้นที่ติด'] = StockID ? `${StockID.name}` : 'ไม่ทราบ';
+
+                const CustName = this.getCustomerByNo(item.customer_id);
+                dataItem['ชื่อเล่น'] = CustName ? `${CustName.nickname}` : 'ไม่ทราบ';
+
+                const empDetail = this.getEmployeeByNo(item.emp_id);
+                dataItem['ทำรายการโดย'] = empDetail ? `${empDetail.fname} ${empDetail.lname}` : 'ไม่ทราบ';
+
+                return dataItem;
+            });
+
+            const csv = Papa.unparse(filteredData);
+            const bom = '\uFEFF';
+            const csvWithBom = bom + csv;
+            const blob = new Blob([csvWithBom], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const currentDate = moment().format('YYYY-MM-DD');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', `ข้อมูลสมาชิก-${currentDate}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        },
+
+        convertToCSV(objArray) {
+            const array = [Object.keys(objArray[0])].concat(objArray);
+            return array.map(row => {
+                return Object.values(row).map(value => `"${value}"`).join(',');
+            }).join('\n');
+        },
+
+        maskNewData(data) {
+            if (!data) return '';
+            const length = data.length;
+            if (length <= 4) return data;
+            const firstPart = data.slice(0, 1);
+            const lastPart = data.slice(-1);
+            const maskedPart = '*'.repeat(length - 4)
+            return `${firstPart}${maskedPart}${lastPart}`;
+        },
+
+        goBack() {
+            window.location.reload();
+        },
+
+        recordLog() {
+            const stock = this.getStockByNo(this.currentItem.stock_id);
+            const from = this.getFromByNo(this.currentItem.from_id);
+            const customer = this.getCustomerByNo(this.currentItem.customer_id)
+            const log = {
+                customer_id: `${customer ? customer.id : 'ไม่พบรหัสลูกค้า'}`,
+                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
+                emp_email: this.$auth.user.email,
+                detail: this.currentAction === 'delete'
+                    ? `ชื่อหุ้น : ${stock ? stock.name : 'ไม่พบชื่อหุ้น'}\nที่มาที่ไป : ${from ? from.from : 'ไม่พบที่มาที่ไป'}\nราคาที่ติด : ${this.currentItem.price}\nจำนวนที่ติด : ${this.currentItem.amount}`
+                    : `ชื่อหุ้น : ${stock ? stock.name : 'ไม่พบชื่อหุ้น'}\nที่มาที่ไป : ${from ? from.from : 'ไม่พบที่มาที่ไป'}\nราคาที่ติด : ${this.currentItem.price}\nจำนวนที่ติด : ${this.currentItem.amount}`,
+                type: 1,
+                picture: this.$auth.user.picture || 'Unknown',
+                action: this.currentAction === 'delete'
+                    ? 'ลบข้อมูลหุ้นของลูกค้า'
+                    : 'ไม่ลบข้อมูลหุ้นของลูกค้า',
+                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+            };
+            this.$store.dispatch('api/log/addLogs', log);
+        },
+
+        goToAddStock() {
+            this.$router.push('/app/transaction/add_transaction');
+        },
+    },
+};
+
+</script>
+
+<style scoped>
+.small-font {
+    font-size: 0.8rem;
+}
+
+::v-deep .v-select-list .v-list-item__title {
+    font-size: 0.8rem;
+}
+
+::v-deep .v-label {
+    font-size: 0.8rem;
+}
+
+.small-label {
+    margin-right: 8px;
+}
+
+.small-icon {
+    font-size: 1.5rem;
+    margin-right: 6px;
+    margin-left: 6px;
+}
+
+.tab-icon {
+    cursor: pointer;
+    margin-right: 6px;
+    margin-left: 24px;
+}
+
+.tab-icon-two {
+    cursor: pointer;
+    margin-right: 24px;
+    margin-left: 0px;
+}
+
+.tab-icon-three {
+    cursor: pointer;
+    margin-right: 8px;
+    margin-left: 0px;
+}
+
+.little-icon {
+    font-size: 3rem;
+    margin-right: 8px;
+    margin-left: 8px;
+}
+
+.date-picker-activator {
+    display: flex;
+    align-items: center;
+}
+
+.ml-2 {
+    margin-left: 8px;
+}
+
+.mx-2 {
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+
+.mt-2 {
+    margin-top: 1px;
+}
+
+.d-flex {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.same-size {
+    max-width: 200px;
+    max-height: 40px;
+}
+
+.search-size {
+    max-width: 200px;
+    max-height: 40px;
+}
+
+.v-data-table th,
+.v-data-table td {
+    padding: 8px;
+    text-align: center;
+}
+
+.v-card-title {
+    display: flex;
+    align-items: center;
+}
+
+::v-deep .v-text-field.small-font .v-input__control .v-input__label {
+    font-size: 0.8rem !important;
+}
+
+.v-menu__content {
+    top: 100%;
+    left: 0;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.custom-list-item {
+    padding: 0 0;
+}
+
+.v-list-item__content {
+    padding: 0;
+}
+
+.header-list {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    gap: 0px;
+}
+
+.header-item {
+    flex: 1 0 12%;
+    box-sizing: border-box;
+}
+
+.v-list-item__content {
+    display: flex;
+    align-items: center;
+}
+
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.image-container img {
+    max-width: 100%;
+    max-height: 60px;
+}
+
+.icon-tab {
+    font-size: 120% !important;
+}
+
+.custom-list-item {
+    padding: 0.1px 8px;
+}
+
+.custom-list {
+    padding: 0.4px 2px;
+}
+</style>
