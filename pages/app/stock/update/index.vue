@@ -380,7 +380,7 @@ export default {
         },
 
         recordLog() {
-            const log = { 
+            const log = {
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
                 detail: 'ชื่อไฟล์.csv',

@@ -130,9 +130,13 @@
                     </v-list>
                 </v-menu>
                 <div>
+                    <v-btn @click="goToCommission" class="tab-icon-three"
+                        style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#85d7df">mdi-credit-card</v-icon> ค่าธรรมเนียม
+                    </v-btn>
                     <v-btn @click="goToAddStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
-                    <v-icon left color="#24b224">mdi-cash-plus</v-icon> เพิ่มการซื้อขายหุ้น
-                </v-btn>
+                        <v-icon left color="#24b224">mdi-cash-plus</v-icon> เพิ่มการซื้อขายหุ้น
+                    </v-btn>
                 </div>
             </div>
 
@@ -256,14 +260,14 @@
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#ffc800">mdi-pencil</v-icon>
                                     </v-list-item-icon>
-                                    <v-list-item-content style="font-size: 0.8rem;">แก้ไขข้อมูล</v-list-item-content>
+                                    <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
                                 <v-list-item @click="showConfirmDialog('delete', item)" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#e50211">mdi-cancel</v-icon>
+                                        <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
                                     </v-list-item-icon>
-                                    <v-list-item-content style="font-size: 0.8rem;">ลบข้อมูล</v-list-item-content>
+                                    <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
@@ -653,7 +657,7 @@ export default {
                         transaction.comfee = comfee;
                         transaction.vat = vat;
                         transaction.total = result + comfee + vat;
-                        
+
                     } else {
                         transaction.comfee = 0; // หรือกำหนดค่าเริ่มต้นในกรณีที่ไม่มี commission ตรงกัน
                     }
@@ -944,6 +948,10 @@ export default {
 
         goToAddStock() {
             this.$router.push('/app/transaction/add_transaction');
+        },
+
+        goToCommission() {
+            this.$router.push('/app/transaction/commission');
         },
     },
 };

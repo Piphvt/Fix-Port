@@ -130,9 +130,11 @@
                         </v-list-item>
                     </v-list>
                 </v-menu>
-                <v-btn @click="goToAddStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
-                    <v-icon left color="#24b224">mdi-bank-plus</v-icon> เพิ่มข้อมูลหุ้น
-                </v-btn>
+                <div>
+                    <v-btn @click="goToAddStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#24b224">mdi-bank-plus</v-icon> เพิ่มข้อมูลหุ้น
+                    </v-btn>
+                </div>
             </div>
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
@@ -147,9 +149,9 @@
                             </v-icon>
                         </td>
                         <td class="text-center">{{ formatDateTime(item.updated_date) }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
-                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
+                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.id || 'ยังไม่ระบุ' }}</td>
+                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.nickname || 'ยังไม่ระบุ' }}</td>
+                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'ยังไม่ระบุ' }}</td>
                         <td class="text-center" :style="{ color: getDateColor(item.created_date) }">{{
                             formatDate(item.created_date) }}</td>
                         <td class="text-center" style="color:#00bf63">{{ item.price.toLocaleString(2) }}</td>
@@ -167,9 +169,13 @@
                         <td class="text-center" :style="{ color: getPortText(item.total_percent).color }">{{
                             getPortText(item.total_percent).text }}</td>
                         <td class="text-center" :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
-                            {{ getFromByNo(item.from_id)?.from || 'N/A' }}</td>
+                            {{ getFromByNo(item.from_id)?.from || 'ยังไม่ระบุ' }}</td>
                         <td class="text-center">{{ getEmployeeByNo(item.emp_id)?.fname + ' ' +
-                            getEmployeeByNo(item.emp_id)?.lname || 'ไม่ทราบ' }}</td>
+                            getEmployeeByNo(item.emp_id)?.lname || 'ยังไม่ระบุ' }}</td>
+                        <td class="text-center">{{ getTypeByNo(getCustomerByNo(item.customer_id)?.type_id)?.type ||
+                            'ยังไม่ระบุ' }}</td>
+                        <td class="text-center">{{ getBaseByNo(getCustomerByNo(item.customer_id)?.base_id)?.base ||
+                            'ยังไม่ระบุ' }}</td>
                         <td class="text-center">{{ item.comment }}</td>
                         <td class="text-center">
                             <v-menu offset-y>
@@ -318,6 +324,8 @@ export default {
         await this.fetchCustomerData();
         await this.fetchStockData();
         await this.fetchFromData();
+        await this.fetchBaseData();
+        await this.fetchTypeData();
     },
 
     components: {
@@ -345,6 +353,8 @@ export default {
             customers: [],
             stocks: [],
             froms: [],
+            bases: [],
+            types: [],
 
             showModalResult: false,
             ResultDetailData: {},
@@ -395,7 +405,7 @@ export default {
                 { text: 'กำไร', value: 'กำไร' },
             ],
 
-            visibleColumns: ['action', 'updated_date', 'customer_id', 'customer_name', 'stock_id', 'created_date', 'price', 'amount', 'money', 'dividend_amount', 'balance_dividend', 'closing_price', 'present_price', 'total', 'present_profit', 'percent', 'total_percent', 'port', 'from_id', 'comment', 'emp_id', 'detail'],
+            visibleColumns: ['action', 'updated_date', 'customer_id', 'customer_name', 'stock_id', 'created_date', 'price', 'amount', 'money', 'dividend_amount', 'balance_dividend', 'closing_price', 'present_price', 'total', 'present_profit', 'percent', 'total_percent', 'port', 'from_id', 'type_id', 'base_id', 'comment', 'emp_id', 'detail'],
 
             headers: [
 
@@ -550,12 +560,28 @@ export default {
                 },
 
                 {
+                    text: 'ประเภทลูกค้า',
+                    value: 'type_id',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ฐานทุน',
+                    value: 'base_id',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
                     text: 'ความเห็นลูกค้า',
                     value: 'comment',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
-                }, 
+                },
 
                 {
                     text: '',
@@ -677,6 +703,22 @@ export default {
 
         getEmployeeByNo(empNo) {
             return this.employees.find(employee => employee.no === empNo);
+        },
+
+        async fetchBaseData() {
+            this.bases = await this.$store.dispatch('api/base/getBases');
+        },
+
+        getBaseByNo(baseNo) {
+            return this.bases.find(base => base.no === baseNo);
+        },
+
+        async fetchTypeData() {
+            this.types = await this.$store.dispatch('api/type/getTypes');
+        },
+
+        getTypeByNo(typeNo) {
+            return this.types.find(type => type.no === typeNo);
         },
 
         async fetchDetailData() {
@@ -1254,6 +1296,12 @@ export default {
 .tab-icon-two {
     cursor: pointer;
     margin-right: 24px;
+    margin-left: 0px;
+}
+
+.tab-icon-three {
+    cursor: pointer;
+    margin-right: 8px;
     margin-left: 0px;
 }
 

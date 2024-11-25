@@ -6,15 +6,15 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <EditSet :open="editSet" :data="editAllData" @update:edit="editSet = false" />
-        <CreateSet :open="createSetOpen" @update:open="createSetOpen = false" />
+        <CreateCommission :open="createSetOpen" @update:open="createSetOpen = false" />
 
         <v-card class="custom-card" flat>
             <v-container>
                 <v-row justify="center" align="center">
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
-                            <v-icon class="little-icon" color="#85d7df">mdi-archive-settings</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลประเภทหุ้น</h3>
+                            <v-icon class="little-icon" color="#85d7df">mdi-credit-card</v-icon>&nbsp;
+                            <h3 class="mb-0">ข้อมูลค่าธรรมเนียม</h3>
                         </v-card-title>
                     </v-col>
                 </v-row>
@@ -36,7 +36,7 @@
                     </v-list>
                 </v-menu>
                 <v-btn @click="createSetOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
-                    <v-icon left color="#24b224">mdi-archive-plus</v-icon> เพิ่มประเภทหุ้น
+                    <v-icon left color="#24b224">mdi-credit-card-plus</v-icon> เพิ่มค่าธรรมเนียม
                 </v-btn>
             </div>
 
@@ -52,8 +52,8 @@
                 <template v-slot:item.updated_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
                 </template>
-                <template v-slot:item.set="{ item }">
-                    <div class="text-center" :style="{ color: getSetText(item.set).color }">{{ item.set }}</div>
+                <template v-slot:item.commission="{ item }">
+                    <div class="text-center">{{ item.commission }}</div>
                 </template>
                 <template v-slot:item.detail="{ item }">
                     <div class="text-center">
@@ -121,7 +121,7 @@ export default {
     async mounted() {
         await this.checkRank();
         await this.fetchEmployeeData();
-        await this.fetchSetData();
+        await this.fetchCommissionData();
     },
 
     components: {
@@ -144,7 +144,7 @@ export default {
                 },
             },
 
-            sets: [],
+            commissions: [],
             employees: [],
 
             sortBy: 'updated_date',
@@ -163,7 +163,7 @@ export default {
             savedSearches: [],
             editAllData: {},
             showColumnSelector: false,
-            visibleColumns: ['updated_date', 'set', 'emp_id', 'detail'],
+            visibleColumns: ['updated_date', 'commission', 'emp_id', 'detail'],
 
             headers: [
                 {
@@ -174,8 +174,8 @@ export default {
                 },
 
                 {
-                    text: 'ชื่อประเภทหุ้น',
-                    value: 'set',
+                    text: 'ค่าธรรมเนียม',
+                    value: 'commission',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -202,8 +202,8 @@ export default {
 
     computed: {
         filtered() {
-            let filteredSets = this.sets;
-            return filteredSets;
+            let filteredCommissions = this.commissions;
+            return filteredCommissions;
         },
 
         formattedDetailLines() {
@@ -220,13 +220,13 @@ export default {
             return this.employees.find(employee => employee.no === empId);
         },
 
-        async fetchSetData() {
-            this.sets = await this.$store.dispatch('api/set/getSets')
+        async fetchCommissionData() {
+            this.commissions = await this.$store.dispatch('api/commission/getCommissions')
         },
 
-        getSetName(setId) {
-            const set = this.sets.find(t => t.no === setId);
-            return set ? set.set : '';
+        getSetName(commissionId) {
+            const commission = this.commissions.find(c => c.no === commissionId);
+            return commission ? commission.commission : '';
         },
 
         async fetchEmployeeData() {
@@ -266,7 +266,7 @@ export default {
         async handleConfirm() {
             if (this.currentAction === 'delete') {
                 try {
-                    await this.$store.dispatch('api/set/deleteSet', this.currentItem.no);
+                    await this.$store.dispatch('api/commission/deleteCommission', this.currentItem.no);
                     this.modal.complete.message = 'ลบประเภทหุ้นนี้เรียบร้อยแล้ว';
                     this.recordLog();
                     this.modal.complete.open = true;
@@ -288,39 +288,17 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/stock/type');
+                        this.$router.push('/app/transaction/commission');
                     } else if (RankID === '2') {
-                        this.$router.push('/app/home');
+                        this.$router.push('/app/transaction/commission');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/stock/type');
+                        this.$router.push('/app/transaction/commission');
                     } else {
                         this.$router.push('/auth');
                     }
                 }
             } else {
                 this.$router.push('/');
-            }
-        },
-
-        getSetText(set) {
-            if (set === 'SET') {
-                return { text: 'SET', color: '#24b224' };
-            } else if (set === 'SET50') {
-                return { text: 'SET50', color: '#ffc800' };
-            } else if (set === 'SET100') {
-                return { text: 'SET100', color: '#38b6ff' };
-            } else if (set === 'ETF') {
-                return { text: 'ETF', color: '#8c52ff' };
-            } else if (set === 'MAI') {
-                return { text: 'MAI', color: '#ff914d' };
-            } else if (set === 'Warrants') {
-                return { text: 'Warrants', color: '#c1ff72' };
-            } else if (set === 'DR') {
-                return { text: 'DR', color: '#ff5757' };
-            } else if (set === 'Preferred Stock') {
-                return { text: 'Preferred Stock', color: '#ff66c4' }; 
-            } else {
-                return { text: '', color: 'inherit' };
             }
         },
 

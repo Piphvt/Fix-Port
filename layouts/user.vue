@@ -20,7 +20,7 @@
 
           <v-list class="custom-list">
             <v-list-item @click="goToManagement" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-account</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -30,7 +30,7 @@
 
             <v-list-item v-if="$auth.user.ranks_id === 1 || $auth.user.ranks_id === 3" @click="goToEmpManagement"
               class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-home-account</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -52,7 +52,7 @@
 
           <v-list class="custom-list">
             <v-list-item @click="goToStocksManagement" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-archive</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -61,7 +61,7 @@
             </v-list-item>
 
             <v-list-item @click="goToStocksFollow" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-archive-search</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -70,7 +70,7 @@
             </v-list-item>
 
             <v-list-item @click="goToStocksUpdate" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-archive-arrow-up</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -89,7 +89,7 @@
 
           <v-list class="custom-list">
             <v-list-item @click="goToStockDetail" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-bank</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -99,7 +99,7 @@
 
             <v-list-item v-if="$auth.user.ranks_id === 1 || $auth.user.ranks_id === 3" @click="goToStockTrade"
               class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-cash</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -108,7 +108,7 @@
             </v-list-item>
 
             <v-list-item @click="goToStockResult" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-cash-register</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -127,7 +127,7 @@
 
           <v-list class="custom-list">
             <v-list-item @click="goToTransHist" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-cash-clock</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -137,7 +137,7 @@
 
             <v-list-item v-if="$auth.user.ranks_id === 1 || $auth.user.ranks_id === 3" @click="goToStocksHist"
               class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-archive-clock</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -146,7 +146,7 @@
             </v-list-item>
 
             <v-list-item @click="goToUsersHist" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-account-clock</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -155,7 +155,7 @@
             </v-list-item>
 
             <v-list-item v-if="$auth.user.ranks_id === 1" @click="goToEmpsHist" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 4px;">
+              <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-home-clock</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
@@ -189,7 +189,7 @@
               </v-card>
 
               <v-list-item @click="gotoProfile" class="custom-list-item">
-                <v-list-item-icon style="margin-right: 4px;">
+                <v-list-item-icon style="margin-right: 5px;">
                   <v-icon class="icon-tab">mdi-card-account-details-outline</v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
@@ -198,7 +198,7 @@
               </v-list-item>
 
               <v-list-item @click="buttonSignOut" class="custom-list-item">
-                <v-list-item-icon style="margin-right: 4px;">
+                <v-list-item-icon style="margin-right: 5px;">
                   <v-icon class="icon-tab">mdi-logout</v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
@@ -244,7 +244,7 @@ export default {
 
   data() {
     return {
-      profileImage: `http://localhost:3001/file/profile/${this.$auth.user.picture}`,
+      profileImage: `http://localhost:3001/file/profile/${this.$auth.user.picture}`, 
       employees: [],
       pendingEmployeesCount: 0,
       clipped: false,
@@ -280,6 +280,7 @@ export default {
     onImageError() {
       this.profileImage = `http://localhost:3001/file/default/${this.$auth.user.picture}`;
     },
+
     gotoProfile() {
       this.$router.push('/app/profile');
     },

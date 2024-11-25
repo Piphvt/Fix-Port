@@ -327,12 +327,12 @@ export default {
             }).join('\n\n');
 
             const log = {
-                customer_id: this.getCustomerID(this.customer_id) || this.getCustomerID(this.customer_name),
+                customer_id: this.getCustomerID(this.customer_id) && this.getCustomerID(this.customer_name),
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
                 detail: details.trim(),
                 type: 1,
-                picture: this.$auth.user.picture || 'Unknown',
+                picture: this.$auth.user.picture || 'ไม่รู้จัก',
                 action: 'เพิ่มหุ้นของลูกค้า',
                 time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
