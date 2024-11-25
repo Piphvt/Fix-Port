@@ -45,6 +45,17 @@ exports.getProfile = (req, res) => {
     });
 }
 
+exports.getDefault = (req, res) => {
+    fs.readdir('./uploads/default', (err, files) => {
+        if (err) {
+            console.error('Error getting directory information:', err);
+            res.status(500).send('Internal server error');
+        } else {
+            res.json(files);
+        }
+    });
+}
+
 exports.readDefault = (req, res) => {
     const { picture } = req.params;
     res.sendFile(path.join(__dirname, `../uploads/default/${picture}`));

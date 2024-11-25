@@ -3,15 +3,20 @@ export const actions = {
         return await this.$axios
         .get('file/profile', data)
         .then((res) => res.data)
-    },    
-    async viewProfile({ getters }, data) {
+    },
+    async getDefault({ getters }, data) {
         return await this.$axios
-        .get('file/profile/:picture', data)
+        .get('file/default', data)
+        .then((res) => res.data)
+    },        
+    async viewProfile({ getters }, picture) {
+        return await this.$axios
+        .get(`file/profile/${picture}`)
         .then((res) => res.data)
     },
-    async viewDefault({ getters }, data) {
+    async viewDefault({ getters }, picture) {
         return await this.$axios
-        .get('file/default/:picture', data)
+        .get(`file/default/${picture}`)
         .then((res) => res.data)
     },
     async downloadProfile({ getters }, data) {
