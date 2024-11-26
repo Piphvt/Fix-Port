@@ -12,8 +12,8 @@
                 <v-row justify="center" align="center">
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
-                            <v-icon class="little-icon" color="#85d7df">mdi-bank</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลหุ้นของลูกค้า</h3>
+                            <v-icon class="little-icon" color="#85d7df">mdi-piggy-bank</v-icon>&nbsp;
+                            <h3 class="mb-0">หุ้นที่ขายหมดแล้ว</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">
@@ -130,15 +130,6 @@
                         </v-list-item>
                     </v-list>
                 </v-menu>
-                <div>
-                    <v-btn @click="goToSoldOutStock" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-piggy-bank</v-icon> หุ้นที่ขายหมดแล้ว
-                    </v-btn>
-
-                    <v-btn @click="goToAddStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-bank-plus</v-icon> เพิ่มข้อมูลหุ้น
-                    </v-btn>
-                </div>
             </div>
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
@@ -625,19 +616,16 @@ export default {
                 };
             });
 
-            // ใช้ savedSearches เพื่อกรองข้อมูลเพิ่มเติม
             this.savedSearches.forEach(search => {
                 filteredDetails = filteredDetails.filter(detail => {
                     return this.applySearchFilter(detail, search);
                 });
             });
 
-            // กรอง detail ที่ amount ไม่เท่ากับ 0
-            filteredDetails = filteredDetails.filter(detail => detail.amount !== 0);
+            filteredDetails = filteredDetails.filter(detail => detail.amount == 0);
 
             return filteredDetails;
-        }
-        ,
+        },
 
         filteredHeaders() {
             return this.headers.filter(header => this.visibleColumns.includes(header.value));
@@ -707,11 +695,11 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/transaction/customer_stock');
+                        this.$router.push('/app/transaction/soldout_stock');
                     } else if (RankID === '2') {
-                        this.$router.push('/app/transaction/customer_stock');
+                        this.$router.push('/app/transaction/soldout_stock');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/transaction/customer_stock');
+                        this.$router.push('/app/transaction/soldout_stock');
                     } else {
                         this.$router.push('/auth');
                     }
@@ -1282,10 +1270,6 @@ export default {
 
         goToAddStock() {
             this.$router.push('/app/transaction/add_stock');
-        },
-
-        goToSoldOutStock() {
-            this.$router.push('/app/transaction/soldout_stock');
         },
     },
 };

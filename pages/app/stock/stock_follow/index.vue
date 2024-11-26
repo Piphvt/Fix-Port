@@ -73,7 +73,7 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType !== 'set_id' && searchType !== 'updated_date'"
+                            <v-autocomplete v-if="searchType !== 'set_id' && searchType !== 'created_date'"
                                 v-model="searchQuery" :items="getSearchItems(searchType)" label="ค้นหา" dense outlined
                                 append-icon="mdi-magnify" class="mx-2 same-size small-font" hide-no-data
                                 hide-details></v-autocomplete>
@@ -81,7 +81,7 @@
                             <v-select v-if="searchType === 'set_id'" v-model="selectedTopics" :items="actionTopics"
                                 dense outlined multiple class="mx-2 search-size small-font"></v-select>
 
-                            <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
+                            <v-menu v-if="searchType === 'created_date'" v-model="datePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-bind="attrs" v-on="on" class="date-picker-activator">
@@ -92,7 +92,7 @@
                                 </template>
                             </v-menu>
 
-                            <v-menu v-if="searchType === 'updated_date'" v-model="endDatePickerMenu"
+                            <v-menu v-if="searchType === 'created_date'" v-model="endDatePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
@@ -130,11 +130,12 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="goToFollowResult" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="goToFollowResult" class="tab-icon-three"
+                        style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-alert</v-icon> ผลการติดตามหุ้น
                     </v-btn>
                     <v-btn @click="goToNewStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-archive-plus</v-icon> เพิ่มการติดตามหุ้น
+                        <v-icon left color="#24b224">mdi-archive-star</v-icon> เพิ่มการติดตามหุ้น
                     </v-btn>
                 </div>
             </div>
@@ -146,14 +147,9 @@
                         <img :src="`http://localhost:3001/file/profile/${item.picture}`" alt="picture" />
                     </v-avatar>
                 </template>
-                <template v-slot:item.set_id="{ item }">
-                    <div class="text-center" :style="{ color: getFromText(getSetName(item.set_id)).color }">
-                        {{ getSetName(item.set_id) }}
-                    </div>
-                </template>
-                <template v-slot:item.remark_type="{ item }">
-                    <div class="text-center" :style="{ color: getTypeText(item.remark_type).color }">
-                        {{ getTypeText(item.remark_type).text }}
+                <template v-slot:item.type="{ item }">
+                    <div class="text-center" :style="{ color: getTypeText(item.type).color }">
+                        {{ getTypeText(item.type).text }}
                     </div>
                 </template>
                 <template v-slot:item.stock_id="{ item }">
@@ -162,8 +158,8 @@
                 <template v-slot:item.emp_id="{ item }">
                     <div class="text-center">{{ getEmployeeName(item.emp_id) }}</div>
                 </template>
-                <template v-slot:item.updated_date="{ item }">
-                    <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
+                <template v-slot:item.created_date="{ item }">
+                    <div class="text-center">{{ formatDateTime(item.created_date) }}</div>
                 </template>
                 <template v-slot:item.detail="{ item }">
                     <div class="text-center">
@@ -261,10 +257,10 @@ export default {
             employees: [],
             follows: [],
 
-            sortBy: 'updated_date',
+            sortBy: 'created_date',
             currentAction: '',
             searchQuery: '',
-            searchType: 'name',
+            searchType: 'stock_id',
             selectedItemDetail: '',
             startDateTime: '',
             endDateTime: '',
@@ -285,18 +281,17 @@ export default {
             selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['updated_date', 'stock_id', 'low_price', 'up_price', 'remark_type', 'comment', 'emp_id', 'detail'],
+            visibleColumns: ['created_date', 'stock_id', 'low_price', 'up_price', 'type', 'remark', 'emp_id', 'detail'],
 
             searchQueries: {
-                'name': [],
+                'stock_id': [],
                 'emp_id': [],
             },
 
             searchTypes: [
-                { text: 'ชื่อหุ้น', value: 'name' },
+                { text: 'ชื่อหุ้น', value: 'stock_id' },
                 { text: 'ทำรายการโดย', value: 'emp_id' },
-                { text: 'ประเภท', value: 'set_id' },
-                { text: 'เวลา', value: 'updated_date' }
+                { text: 'เวลา', value: 'created_date' }
             ],
 
             actionTopics: [
@@ -311,8 +306,8 @@ export default {
 
             headers: [
                 {
-                    text: 'เวลา',
-                    value: 'updated_date',
+                    text: 'เวลาที่เฝ้าหุ้น',
+                    value: 'created_date',
                     align: 'center',
                     cellClass: 'text-center',
                 },
@@ -343,7 +338,7 @@ export default {
 
                 {
                     text: 'ประเภท',
-                    value: 'remark_type',
+                    value: 'type',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -351,7 +346,7 @@ export default {
 
                 {
                     text: 'หมายเหตุ',
-                    value: 'comment',
+                    value: 'remark',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -420,7 +415,7 @@ export default {
         },
 
         async fetchFollowData() {
-            this.follows = await this.$store.dispatch('api/follow/getFollows');
+            this.follows = await this.$store.dispatch('api/follow/getFollowsResult', '1');
         },
 
         async fetchEmployeeData() {
@@ -443,8 +438,8 @@ export default {
         },
 
         getSearchItems(type) {
-            if (type === 'name') {
-                return this.stocks.map(emp => emp.name);
+            if (type === 'stock_id') {
+                return this.follows.map(follow => this.getStockName(follow.stock_id));
             } else if (type === 'emp_id') {
                 return this.follows.map(emp => this.getEmployeeName(emp.emp_id));
             }
@@ -461,7 +456,7 @@ export default {
         async handleConfirm() {
             if (this.currentAction === 'delete') {
                 try {
-                    await this.$store.dispatch('api/stock/deleteStock', this.currentItem.no);
+                    await this.$store.dispatch('api/follow/deleteFollow', this.currentItem.no);
                     this.modal.complete.message = 'ลบหุ้นนี้เรียบร้อยแล้ว';
                     this.recordLog();
                     this.modal.complete.open = true;
@@ -507,26 +502,6 @@ export default {
             }
         },
 
-        getFromText(set) {
-            if (set === 'SET') {
-                return { text: 'SET', color: '#24b224' };
-            } else if (set === 'SET50') {
-                return { text: 'SET50', color: '#ffc800' };
-            } else if (set === 'SET100') {
-                return { text: 'SET100', color: '#38b6ff' };
-            } else if (set === 'ETF') {
-                return { text: 'ETF', color: '#8c52ff' };
-            } else if (set === 'MAI') {
-                return { text: 'MAI', color: '#ff914d' };
-            } else if (set === 'Warrants') {
-                return { text: 'Warrants', color: '#c1ff72' };
-            } else if (set === 'DR') {
-                return { text: 'DR', color: '#ff5757' };
-            } else {
-                return { text: '', color: 'inherit' };
-            }
-        },
-
         formatDateTime(date) {
             if (moment(date).isValid()) {
                 return moment(date).format('YYYY-MM-DD HH:mm');
@@ -540,7 +515,7 @@ export default {
         },
 
         onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchSet !== 'updated_date' && this.searchType !== 'set_id';
+            this.isSearchFieldVisible = this.searchSet !== 'created_date' && this.searchType !== 'set_id';
         },
 
         validateDateRange() {
@@ -560,7 +535,7 @@ export default {
             }
             if (this.searchType === 'set_id') {
                 this.addTopicToSearch();
-            } else if (this.searchType === 'name' || this.searchType === 'emp_id') {
+            } else if (this.searchType === 'stock_id' || this.searchType === 'emp_id') {
                 this.addTextToSearch();
             } else {
                 this.savedSearches.push({
@@ -618,21 +593,22 @@ export default {
                     return empName.toLowerCase().includes(query.toLowerCase());
                 });
             }
-            else if (search.type === 'name') {
-                queryMatched = this.searchQueries[search.type].some(query =>
-                    lowerCaseField.includes(query.toLowerCase())
-                );
+            else if (search.type === 'stock_id') {
+                queryMatched = this.searchQueries[search.type].some(query => {
+                    const stockName = this.getStockName(follow.stock_id);
+                    return stockName.toLowerCase().includes(query.toLowerCase());
+                });
             } else {
                 const searchQuery = search.query.toLowerCase();
                 queryMatched = lowerCaseField.includes(searchQuery);
             }
-            const timeMatched = search.type === 'updated_date' ? this.checkTimeRange(follow, search) : true;
+            const timeMatched = search.type === 'created_date' ? this.checkTimeRange(follow, search) : true;
             const topicMatched = search.topics ? search.topics.some(topic => topic === this.getSetName(follow.set_id)) : true;
             return queryMatched && timeMatched && topicMatched;
         },
 
         checkTimeRange(follow, search) {
-            const followTime = moment(follow.updated_date);
+            const followTime = moment(follow.created_date);
             const startTime = moment(search.start);
             const endTime = moment(search.end);
             return (!startTime.isValid() || followTime.isSameOrAfter(startTime)) &&
@@ -656,8 +632,8 @@ export default {
             const filteredData = this.filtered.map(item => {
                 const dataItem = {};
                 this.filteredHeaders.forEach(header => {
-                    if (header.value === 'updated_date') {
-                        dataItem['เวลา'] = this.formatDateTime(item.updated_date);
+                    if (header.value === 'created_date') {
+                        dataItem['เวลา'] = this.formatDateTime(item.created_date);
                     } else if (header.value === 'set_id') {
                         dataItem['ประเภท'] = this.getSetName(item.set_id);
                     } else if (header.value === 'emp_id') {
@@ -711,11 +687,11 @@ export default {
                     ? `ประเภท : ${this.getSetName(this.currentItem.set_id) || 'ยังไม่ระบุ'}\n` +
                     `จำนวนปันผล : ${this.currentItem.dividend_amount || 'ยังไม่ระบุ'}\n` +
                     `ราคาปิด : ${this.currentItem.closing_price || 'ยังไม่ระบุ'}\n` +
-                    `หมายเหตุ : ${this.currentItem.comment || 'ยังไม่ระบุ'}`
+                    `หมายเหตุ : ${this.currentItem.remark || 'ยังไม่ระบุ'}`
                     : `ประเภท : ${this.getSetName(this.currentItem.set_id) || 'ยังไม่ระบุ'}\n` +
                     `จำนวนปันผล : ${this.currentItem.dividend_amount || 'ยังไม่ระบุ'}\n` +
                     `ราคาปิด : ${this.currentItem.closing_price || 'ยังไม่ระบุ'}\n` +
-                    `หมายเหตุ : ${this.currentItem.comment || 'ยังไม่ระบุ'}`,
+                    `หมายเหตุ : ${this.currentItem.remark || 'ยังไม่ระบุ'}`,
                 type: 2,
                 picture: this.$auth.user.picture || 'Unknown',
                 action: this.currentAction === 'delete' ? 'ลบหุ้น' : 'ไม่ลบหุ้น',

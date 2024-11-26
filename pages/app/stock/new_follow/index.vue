@@ -3,41 +3,45 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <ResultStock :open="showModalResult" :stocks="withdrawalItems" :sets="sets" @confirm="confirmAndAddCustomers"
+        <ResultFollow :open="showModalResult" :stocks="withdrawalItems" @confirm="confirmAndAddCustomers"
             @cancel="showModalResult = false" />
 
         <v-card class="custom-card" flat>
             <v-card-title class="d-flex align-center justify-center">
-                <v-icon class="little-icon" color="#24b224">mdi-archive-plus</v-icon> &nbsp;
+                <v-icon class="little-icon" color="#24b224">mdi-archive-star</v-icon> &nbsp;
                 <h3 class="mb-0">การติดตามหุ้นใหม่</h3>
             </v-card-title>
 
             <v-card-text>
                 <v-form>
                     <v-row class="mb-0 mt-0 pa-0" v-for="(item, index) in withdrawalItems" :key="index" align="center">
-                        <v-col cols="3" class="ml-2">
-                            <v-text-field v-model="item.name" label="ชื่อหุ้น" type="text" dense outlined
-                                :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']">
+                        <v-col cols="2">
+                            <v-autocomplete v-model="item.stock_id" :items="stocks" item-text="name" item-value="no"
+                                label="ชื่อหุ้น" dense outlined :rules="[(v) => !!v || 'กรุณาเลือกชื่อหุ้น']" clearable>
+                            </v-autocomplete>
+                        </v-col>
+
+                        <v-col cols="2">
+                            <v-text-field v-model="item.low_price" label="Low Price" type="text" dense outlined
+                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
                             </v-text-field>
                         </v-col>
 
+                        <v-col cols="2">
+                            <v-text-field v-model="item.up_price" label="Up Price" type="text" dense outlined
+                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
+                            </v-text-field>
+                        </v-col>
 
                         <v-col cols="2">
-                            <v-select v-model="item.set_id" :items="sets" item-text="name" item-value="id"
-                                label="ประเภท" dense outlined>
+                            <v-select v-model="item.type" :items="types" item-text="name" item-value="id" label="ประเภท"
+                                dense outlined>
                             </v-select>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-text-field v-model="item.dividend_amount" label="จำนวนปันผล" type="text" dense outlined
-                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
-                            </v-text-field>
-                        </v-col>
-
-                        <v-col cols="2">
-                            <v-text-field v-model="item.closing_price" label="ราคาปิด" type="text" dense outlined
-                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
-                            </v-text-field>
+                            <v-text-field v-model="item.remark" label="หมายเหตุ" type="text" dense
+                                outlined></v-text-field>
                         </v-col>
 
                         <v-col cols="2" class="d-flex align-center">
@@ -45,7 +49,7 @@
                                 <v-icon>mdi-delete</v-icon>
                             </v-btn>
                             <v-btn color="#24b224" @click="addProduct" text class="mb-6 ml-2">
-                                <v-icon left>mdi-archive-plus</v-icon> เพิ่ม
+                                <v-icon left>mdi-archive-star</v-icon> เพิ่ม
                             </v-btn>
                         </v-col>
                     </v-row>
@@ -74,7 +78,7 @@ export default {
 
     async mounted() {
         await this.checkRank()
-        await this.fetchSetsData()
+        await this.fetchStocksData()
     },
 
     data() {
@@ -92,10 +96,14 @@ export default {
             valid: false,
             showModalResult: false,
             withdrawalItems: [{
-                name: '', set_id: null, dividend_amount: null,
-                closing_price: null
+                stock_id: null, low_price: null, up_price: null,
+                type: null, remark: null
             }],
-            sets: [],
+            types: [
+                { name: "กรอบเล็ก", id: 1 },
+                { name: "กรอบใหญ่", id: 2 },
+            ],
+            stocks: [],
 
         }
     },
@@ -115,10 +123,6 @@ export default {
 
         isNicknameValid(name) {
             return name !== null && name !== '';
-        },
-
-        isFromValid(set_id) {
-            return set_id !== null && set_id !== '';
         },
 
         async checkRank() {
@@ -150,20 +154,15 @@ export default {
         },
 
         async confirmAndAddCustomers() {
-            const duplicateIds = this.findDuplicateIds(this.withdrawalItems);
-            if (duplicateIds.length > 0) {
-                this.modal.error.message = `มีหุ้นซ้ำ : ${duplicateIds.join(', ')}`;
-                this.modal.error.open = true;
-                return;
-            }
-
             for (const stock of this.withdrawalItems) {
                 try {
-                    await this.$store.dispatch('api/stock/addStock', {
-                        name: stock.name,
-                        set_id: stock.set_id,
-                        dividend_amount: stock.dividend_amount,
-                        closing_price: stock.closing_price,
+                    await this.$store.dispatch('api/follow/addFollow', {
+                        stock_id: stock.stock_id,
+                        low_price: stock.low_price,
+                        up_price: stock.up_price,
+                        type: stock.type,
+                        remark: stock.remark,
+                        result: 1,
                         emp_id: this.$auth.user.no,
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                         updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
@@ -183,28 +182,24 @@ export default {
             this.showModalResult = false;
         },
 
-        findDuplicateIds(stocks) {
-            const names = stocks.map(stock => stock.name);
-            return names.filter((name, index) => names.indexOf(name) !== index && name);
-        },
-
-        async fetchSetsData() {
+        async fetchStocksData() {
             try {
-                const response = await this.$store.dispatch('api/set/getSets');
+                const response = await this.$store.dispatch('api/stock/getStocks');
                 if (response) {
-                    this.sets = response.map(item => ({ id: item.no, name: item.set }));
+                    this.stocks = response.map(item => ({ no: item.no, name: item.name }));
                 }
             } catch (error) {
-                console.error('Error fetching sets:', error);
+                console.error('Error fetching stocks:', error);
             }
         },
 
         addProduct() {
             this.withdrawalItems.push({
-                name: '',
-                set_id: null,
-                dividend_amount: null,
-                closing_price: null,
+                stock_id: null,
+                low_price: null,
+                up_price: null,
+                type: null,
+                remark: null
             });
         },
 
@@ -213,12 +208,12 @@ export default {
         },
 
         goBack() {
-            this.$router.push('/app/stock/management');
+            this.$router.push('/app/stock/stock_follow');
         },
 
         recordLog() {
             const details = this.withdrawalItems.map((item, index) => {
-                const setName = this.sets.find(set => set.id === item.set_id)?.name || 'ยังไม่ระบุ';
+                const setName = this.stocks.find(set => set.id === item.set_id)?.name || 'ยังไม่ระบุ';
                 return `หุ้นที่ ${index + 1}\n` +
                     `ชื่อ : ${item.name || 'ยังไม่ระบุ'}\n` +
                     `ประเภท : ${setName}\n` +

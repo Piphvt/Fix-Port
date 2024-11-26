@@ -21,7 +21,6 @@
                             </v-text-field>
                         </v-col>
 
-
                         <v-col cols="2">
                             <v-select v-model="item.set_id" :items="sets" item-text="name" item-value="id"
                                 label="ประเภท" dense outlined>

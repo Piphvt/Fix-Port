@@ -656,7 +656,15 @@ export default {
                         transaction.result = result; // คำนวณ result
                         transaction.comfee = comfee;
                         transaction.vat = vat;
-                        transaction.total = result + comfee + vat;
+
+                        // ตรวจสอบประเภทของ transaction
+                        if (transaction.type === 1) {
+                            transaction.total = result + comfee + vat;
+                        } else if (transaction.type === 2) {
+                            transaction.total = result - comfee - vat;
+                        } else {
+                            transaction.total = result; // หรือกำหนดค่าเริ่มต้นถ้า type ไม่ตรงกัน
+                        }
 
                     } else {
                         transaction.comfee = 0; // หรือกำหนดค่าเริ่มต้นในกรณีที่ไม่มี commission ตรงกัน

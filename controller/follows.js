@@ -17,42 +17,45 @@ exports.getFollow = (req, res) => {
     );
 }
 
+exports.getFollowsByResult = (req, res) => {
+    const result = req.params.no;
+    connection.query('SELECT * FROM `stocks_follow` WHERE `result` = ?',
+        [result], function (err, results) {
+            res.json(results);
+        }
+    );
+}
+
 exports.addFollow = async (req, res) => {
     try {
-        const { name, set_id, dividend_amount, closing_price, comment, emp_id, created_date, updated_date } = req.body;
-        connection.query('SELECT * FROM `stocks_follow` WHERE `name` = ?',
-            [name], function (err, results) {
-                if (results.length > 0) {
-                    return res.status(400).json({ message: "Name already exists" });
-                } else {
-                    const customerData = {
-                        name,
-                        set_id,
-                        dividend_amount,
-                        closing_price,
-                        comment,
-                        emp_id,
-                        created_date,
-                        updated_date,
-                    }
-                    connection.query('INSERT INTO `stocks_follow` SET ?',
-                        [customerData], function (err, results) {
-                            if (err) {
-                                console.error(err);
-                                return res.status(500).json({ message: "Error adding stock" });
-                            }
-                            res.json({ message: "New Follow added", results });
-                        }
-                    );
-                }
+        const { stock_id, low_price, up_price, type, remark, result, reach, emp_id, created_date, updated_date } = req.body;
+        
+        const followData = {
+            stock_id,
+            low_price,
+            up_price,
+            type,
+            remark,
+            result,
+            reach,
+            emp_id,
+            created_date,
+            updated_date,
+        };
+
+        connection.query('INSERT INTO `stocks_follow` SET ?', [followData], function (err, results) {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ message: "Error adding stock" });
             }
-        );
+            res.json({ message: "New Follow added", results });
+        });
 
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
     }
-}
+};
 
 exports.updateFollow = async (req, res) => {
     try {

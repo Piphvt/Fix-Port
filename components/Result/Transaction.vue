@@ -60,7 +60,7 @@ export default {
 
             return {
                 ...detail,
-                stock_name: stockName, // ใช้ stockName แทน
+                stock_name: stockName,
                 customer_id: customer.id,
                 customer_name: customer.name,
                 action: this.getTypeText(detail.type),

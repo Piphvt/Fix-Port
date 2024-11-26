@@ -9,6 +9,11 @@ export const actions = {
             .get(`follow/${no}`)
             .then((res) => res.data)
     },
+    async getFollowsResult({ getters }, no) {
+        return await this.$axios
+            .get(`follow/result/${no}`)
+            .then((res) => res.data)
+    },
     async addFollow({ getters }, data) {
         return await this.$axios
             .post('follow', data)
