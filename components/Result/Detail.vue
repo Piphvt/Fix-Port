@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="localOpen" max-width="600px">
+    <v-dialog v-model="showModalResult" max-width="600px">
         <v-card>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-bank-check</v-icon>
@@ -33,7 +33,7 @@ export default {
     },
     data() {
         return {
-            localOpen: this.open, // Use a local data property
+            showModalResult: this.open,
             headers: [
                 { text: 'รหัสลูกค้า', value: 'customer_name' },
                 { text: 'ชื่อหุ้น', value: 'stock_name' },
@@ -72,10 +72,10 @@ export default {
     },
     watch: {
         open(newValue) {
-            this.localOpen = newValue; // Sync local state with prop changes
+            this.showModalResult = newValue;
         },
-        localOpen(newValue) {
-            this.$emit('update:open', newValue); // Emit an event when localOpen changes
+        showModalResult(newValue) {
+            this.$emit('update:open', newValue);
         }
     },
     methods: {
@@ -84,8 +84,25 @@ export default {
         },
         cancel() {
             this.$emit('cancel');
-            this.localOpen = false; // Close the dialog on cancel
+            this.showModalResult = false;
         },
+        handleKeydown(event) {
+            if (this.showModalResult) {
+                if (event.key === 'Escape') {
+                    this.cancel();
+                } else if (event.key === 'Enter') {
+                    this.confirm();
+                }
+            }
+        },
+
+    },
+    async mounted() {
+        document.addEventListener('keydown', this.handleKeydown);
+    },
+
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.handleKeydown);
     },
 };
 </script>

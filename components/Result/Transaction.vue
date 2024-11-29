@@ -1,9 +1,9 @@
 <template>
-    <v-dialog v-model="localOpen" max-width="500px">
+    <v-dialog v-model="showModalResult" max-width="600px">
         <v-card>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-bank-check</v-icon>
-                <span class="headline">ตรวจสอบข้อมูลหุ้นลูกค้า</span>
+                <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-cash-check</v-icon>
+                <span class="headline">ตรวจสอบข้อมูลการซื้อขายหุ้นลูกค้า</span>
             </v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="formattedStocks" class="elevation-1" hide-default-footer>
@@ -23,7 +23,7 @@
 export default {
     props: {
         open: Boolean,
-        details: Array,
+        detail_amount: Array,
         type: Number,
         stocks: Array,
         customers: Array,
@@ -34,45 +34,53 @@ export default {
         return {
             fetchstocks: [],
             fetchdetails: [],
-            localOpen: this.open,
+            fetchcommissions: [],
+            showModalResult: this.open,
             headers: [
                 { text: 'รหัสลูกค้า', value: 'customer_name' },
                 { text: 'ชื่อหุ้น', value: 'stock_name' },
                 { text: 'จำนวนที่ติด', value: 'price' },
                 { text: 'ราคาที่ติด', value: 'amount' },
+                { text: 'ค่าธรรมเนียม', value: 'commission' },
                 { text: 'การกระทำ', value: 'action' },
             ],
         };
     },
     computed: {
-    formattedStocks() {
-        const stocks = this.stocks || [];
-        const customers = this.customers || [];
+        formattedStocks() {
+            const stocks = this.stocks || [];
+            const customers = this.customers || [];
 
-        return this.details.map(detail => {
-            // ใช้ getStockByDetail เพื่อค้นหา stock_name
-            const detailName = this.getStockByDetail(detail.stock_id);
-            const stockName = this.getStockName(detailName)
+            return this.detail_amount.map(detail => {
+                const detailName = this.getStockByDetail(detail.stock_id);
+                const stockName = this.getStockName(detailName)
+                const commissionAmount = this.getCommissionAmount(detail.commission_id)
 
-            const customer = customers.find(c => c.no === this.customer_id) ||
-                             customers.find(c => c.no === this.customer_name) ||
-                             { name: '', id: '' };
+                const customer = customers.find(c => c.no === this.customer_id) ||
+                    customers.find(c => c.no === this.customer_name) ||
+                    { name: '', id: '' };
 
-            return {
-                ...detail,
-                stock_name: stockName,
-                customer_id: customer.id,
-                customer_name: customer.name,
-                action: this.getTypeText(detail.type),
-            };
-        });
+                return {
+                    ...detail,
+                    stock_name: stockName,
+                    customer_id: customer.id,
+                    customer_name: customer.name,
+                    action: this.getTypeText(detail.type),
+                    commission: commissionAmount
+                };
+            });
+        },
     },
-},
-
 
     async mounted() {
-        await this.fetchStockData()
-        await this.fetchDetailData()
+        await this.fetchStockData();
+        await this.fetchDetailData();
+        await this.fetchCommissionData();
+        document.addEventListener('keydown', this.handleKeydown);
+    },
+
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.handleKeydown);
     },
 
     methods: {
@@ -83,6 +91,15 @@ export default {
         getStockName(stockId) {
             const stock = this.fetchstocks.find(s => s.no === stockId);
             return stock ? stock.name : 'ยังไม่ระบุ';
+        },
+
+        async fetchCommissionData() {
+            this.fetchcommissions = await this.$store.dispatch('api/commission/getCommissions');
+        },
+
+        getCommissionAmount(commissionId) {
+            const commission = this.fetchcommissions.find(c => c.no === commissionId);
+            return commission ? commission.commission : 'ยังไม่ระบุ';
         },
 
         async fetchDetailData() {
@@ -99,20 +116,32 @@ export default {
             if (value === 2) return 'ขาย';
             return '';
         },
+
         confirm() {
             this.$emit('confirm');
         },
+
         cancel() {
             this.$emit('cancel');
-            this.localOpen = false;
+            this.showModalResult = false;
+        },
+
+        handleKeydown(event) {
+            if (this.showModalResult) {
+                if (event.key === 'Escape') {
+                    this.cancel();
+                } else if (event.key === 'Enter') {
+                    this.confirm();
+                }
+            }
         },
     },
     watch: {
         open(newValue) {
-            this.localOpen = newValue; // Sync local state with prop changes
+            this.showModalResult = newValue;
         },
-        localOpen(newValue) {
-            this.$emit('update:open', newValue); // Emit an event when localOpen changes
+        showModalResult(newValue) {
+            this.$emit('update:open', newValue);
         }
     },
 };

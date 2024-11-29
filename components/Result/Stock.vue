@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="open" max-width="500px">
+    <v-dialog v-model="showModalResult" max-width="500px" @keydown="handleKeydown">
         <v-card>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-archive-check</v-icon>
@@ -28,10 +28,10 @@ export default {
     },
     data() {
         return {
+            showModalResult: this.open,
             headers: [
                 { text: 'ชื่อหุ้น', value: 'name' },
                 { text: 'ประเภท', value: 'set_name' },
-                { text: 'จำนวนปันผล', value: 'dividend_amount' },
                 { text: 'ราคาปิด', value: 'closing_price' },
             ],
         };
@@ -39,15 +39,21 @@ export default {
     computed: {
         formattedStocks() {
             const sets = this.sets || [];
-
             return this.stocks.map(stock => {
                 const set = sets.find(s => s.id === stock.set_id);
                 return {
                     ...stock,
-                    set_name: set ? set.name : '',
+                    set_name: set ? set.name : 'ยังไม่ระบุ',
+                    closing_price: stock.closing_price || 'ยังไม่ระบุ',
                 };
             });
         },
+    },
+    async mounted() {
+        document.addEventListener('keydown', this.handleKeydown);
+    },
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.handleKeydown);
     },
     methods: {
         confirm() {
@@ -55,7 +61,25 @@ export default {
         },
         cancel() {
             this.$emit('cancel');
+            this.showModalResult = false;
         },
+        handleKeydown(event) {
+            if (this.showModalResult) {
+                if (event.key === 'Escape') {
+                    this.cancel();
+                } else if (event.key === 'Enter') {
+                    this.confirm();
+                }
+            }
+        },
+    },
+    watch: {
+        open(newValue) {
+            this.showModalResult = newValue;
+        },
+        showModalResult(newValue) {
+            this.$emit('update:open', newValue);
+        }
     },
 };
 </script>

@@ -4,7 +4,7 @@
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
         <ResultStock :open="showModalResult" :stocks="withdrawalItems" :sets="sets" @confirm="confirmAndAddCustomers"
-            @cancel="showModalResult = false" />
+            @cancel="showModalResult = false" @update:open="showModalResult = $event" />
 
         <v-card class="custom-card" flat>
             <v-card-title class="d-flex align-center justify-center">
@@ -21,20 +21,14 @@
                             </v-text-field>
                         </v-col>
 
-                        <v-col cols="2">
+                        <v-col cols="3">
                             <v-select v-model="item.set_id" :items="sets" item-text="name" item-value="id"
-                                label="ประเภท" dense outlined>
+                                label="ประเภท" clearable dense outlined>
                             </v-select>
                         </v-col>
 
-                        <v-col cols="2">
-                            <v-text-field v-model="item.dividend_amount" label="จำนวนปันผล" type="text" dense outlined
-                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
-                            </v-text-field>
-                        </v-col>
-
-                        <v-col cols="2">
-                            <v-text-field v-model="item.closing_price" label="ราคาปิด" type="text" dense outlined
+                        <v-col cols="3">
+                            <v-text-field v-model="item.closing_price" label="ราคาปิด" type="text" clearable dense outlined
                                 :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
                             </v-text-field>
                         </v-col>

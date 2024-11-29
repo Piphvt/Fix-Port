@@ -5,7 +5,8 @@
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
         <ResultDetail :open="showModalResult" :details="withdrawalItems" :froms="froms" :stocks="stocks"
             :customers="customers" :customer_id="customer_id" :customer_name="customer_name"
-            :created_date="created_date" @confirm="confirmAndAddDetails" @cancel="showModalResult = false" />
+            :created_date="created_date" @confirm="confirmAndAddDetails" @cancel="showModalResult = false"
+            @update:open="showModalResult = $event" />
 
         <v-card class="custom-card" flat>
             <v-card-title class="d-flex align-center justify-center">
@@ -57,7 +58,7 @@
                                 transition="scale-transition" offset-y min-width="auto">
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-text-field v-model="item.created_date" label="วันที่ซื้อหุ้น" readonly
-                                        v-bind="attrs" v-on="on" :rules="[(v) => !!v || 'กรุณาเลือกวันที่']" outlined
+                                        v-bind="attrs" v-on="on" outlined
                                         dense>
                                     </v-text-field>
                                 </template>
@@ -263,7 +264,7 @@ export default {
                         amount: item.amount,
                         from_id: item.from_id,
                         emp_id: this.$auth.user.no,
-                        created_date: item.created_date,
+                        created_date: item.created_date || moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                         updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                     });
                 } catch (error) {
@@ -279,6 +280,7 @@ export default {
             this.modal.complete.open = true;
             this.showModalResult = false;
         },
+
 
         findDuplicateIds(stocks) {
             const names = stocks.map(stock => stock.name);
@@ -327,7 +329,7 @@ export default {
             }).join('\n\n');
 
             const log = {
-                customer_id: this.getCustomerID(this.customer_id) && this.getCustomerID(this.customer_name),
+                customer_id: this.getCustomerID(this.customer_id || this.customer_name),
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
                 detail: details.trim(),

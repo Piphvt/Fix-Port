@@ -302,7 +302,7 @@ export default {
 
             headers: [
                 {
-                    text: 'เวลา',
+                    text: 'ข้อมูลวันที่',
                     value: 'updated_date',
                     align: 'center',
                     cellClass: 'text-center',
@@ -390,7 +390,6 @@ export default {
     methods: {
         async fetchDividendData() {
             try {
-                // Fetch dividends from the API
                 this.dividends = await this.$store.dispatch('api/dividend/getDividends');
             } catch (error) {
                 console.error('Failed to fetch dividends:', error);
@@ -410,14 +409,12 @@ export default {
                     return total.add(new Decimal(dividend.dividend));
                 }, new Decimal(0));
 
-            return total.toString(); // แสดงผลลัพธ์ที่ไม่มีการตัดทศนิยม
+            return total.toString();
         },
 
         async fetchSetTopic() {
             try {
-                // Fetch stocks from the API
                 const settopics = await this.$store.dispatch('api/set/getSets');
-                // Map stocks to actionTopics array with text and value fields
                 this.actionTopics = settopics.map(set => ({
                     text: set.set,
                     value: set.set

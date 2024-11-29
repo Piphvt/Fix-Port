@@ -3,10 +3,10 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <ResultTransaction :open="showModalResult" :details="withdrawalItems"
+        <ResultTransaction :open="showModalResult" :detail_amount="withdrawalItems"
             :stocks="withdrawalItems.map(item => ({ stock_id: item.stock_id }))" :customers="customers"
             :customer_id="customer_id" :customer_name="customer_name" :type="type" @confirm="confirmAndAddDetails"
-            @cancel="showModalResult = false" />
+            @cancel="showModalResult = false" @update:open="showModalResult = $event" />
 
         <v-card class="custom-card" flat>
             <v-card-title class="d-flex align-center justify-center">
@@ -29,34 +29,36 @@
                         :rules="[(v) => !!v || 'กรุณากรอกรหัสลูกค้า']">
                     </v-autocomplete>
                 </v-col>
-                <v-col cols="3">
-                    <v-autocomplete v-model="commission_id" :items="commissions" item-text="name" item-value="no"
-                        label="ค่าธรรมเนียม" dense outlined clearable :rules="[(v) => !!v || 'กรุณากรอกค่าธรรมเนียม']">
-                    </v-autocomplete>
-                </v-col>
             </v-row>
 
 
             <v-card-text class="mb-0 mt-0 pa-0">
                 <v-form>
                     <v-row class="mb-0 mt-0 pa-0" v-for="(item, index) in withdrawalItems" :key="index" align="center">
-                        <v-col cols="3" class="ml-6">
-                            <v-autocomplete v-model="item.stock_id" :items="details" item-text="name" item-value="no"
-                                label="ชื่อหุ้นที่ติด" dense outlined :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']"
-                                clearable @change="updateStockData(item)">
+                        <v-col cols="2" class="ml-6">
+                            <v-autocomplete v-model="item.stock_id" :items="detail_amount" item-text="name"
+                                item-value="no" label="ชื่อหุ้น" dense outlined
+                                :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable @change="updateStockData(item)">
                             </v-autocomplete>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-text-field v-model="item.price" label="ราคาที่ติด" type="text" dense outlined
+                            <v-text-field v-model="item.price" label="ราคา" type="text" dense outlined
                                 :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
                             </v-text-field>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-text-field v-model="item.amount" label="จำนวนที่ติด" type="text" dense outlined
+                            <v-text-field v-model="item.amount" label="จำนวน" type="text" dense outlined
                                 :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
                             </v-text-field>
+                        </v-col>
+
+                        <v-col cols="2">
+                            <v-autocomplete v-model="item.commission_id" :items="commissions" item-text="name"
+                                item-value="no" label="ค่าธรรมเนียม" dense outlined clearable
+                                :rules="[(v) => !!v || 'กรุณากรอกค่าธรรมเนียม']">
+                            </v-autocomplete>
                         </v-col>
 
                         <v-col cols="2">
@@ -68,7 +70,7 @@
                         </v-col>
 
 
-                        <v-col cols="2" class="d-flex align-center">
+                        <v-col cols="1" class="d-flex align-center">
                             <v-btn icon color="#e50211" @click="removeProduct(index)" class="mb-6">
                                 <v-icon>mdi-delete</v-icon>
                             </v-btn>
@@ -106,16 +108,18 @@ export default {
         await this.fetchCustomerData()
         await this.fetchStockData()
         await this.fetchCommissionData()
-        await this.fetchDetailData()
+        await this.fetchDetailAmountData()
+        await this.fetchTransactionData();
+        await this.fetchDetailData();
     },
 
     watch: {
         customer_id: {
-            handler: 'fetchDetailData',
+            handler: 'fetchDetailAmountData',
             immediate: true
         },
         customer_name: {
-            handler: 'fetchDetailData',
+            handler: 'fetchDetailAmountData',
             immediate: true
         }
     },
@@ -139,18 +143,19 @@ export default {
             ],
             customer_id: null,
             customer_name: null,
-            commission_id: 1,
 
             valid: false,
             showModalResult: false,
             withdrawalItems: [{
                 stock_id: null, dividend_amount: null, price: null, amount: null,
-                closing_price: null, type: 1,
+                closing_price: null, type: 2, commission_id: 2,
             }],
-            type: null,
+
             customers: [],
             commissions: [],
             stocks: [],
+            detail_amount: [],
+            transactions: [],
             details: []
 
         }
@@ -167,13 +172,22 @@ export default {
                 this.withdrawalItems.every(item =>
                     this.isStockValid(item.stock_id) &&
                     this.isPriceValid(item.price) &&
-                    this.isAmountValid(item.amount)
+                    this.isAmountValid(item.amount) &&
+                    this.isAmountValid(item.type)
                 )
             );
         },
     },
 
     methods: {
+        async fetchTransactionData() {
+            this.transactions = await this.$store.dispatch('api/transaction/getTransactions');
+        },
+
+        async fetchDetailData() {
+            this.details = await this.$store.dispatch('api/detail/getDetails');
+        },
+
         async fetchStockData() {
             const stockData = await this.$store.dispatch('api/stock/getStocks');
             this.stocks = stockData;
@@ -192,33 +206,55 @@ export default {
             });
         },
 
-        async fetchDetailData() {
-            this.details = [];
+        async fetchDetailAmountData() {
+            this.detail_amount = [];
             const customerIdentifier = this.customer_id || this.customer_name;
             if (!customerIdentifier) return;
 
             try {
                 const response = await this.$store.dispatch('api/detail/getDetails', { customer_id: customerIdentifier });
-                this.details = response.filter(detail =>
+                this.detail_amount = response.filter(detail =>
                     detail.customer_id === customerIdentifier || detail.customer_name === customerIdentifier
                 );
-                await this.fetchStockData();
 
-                this.details = this.details.map(detail => {
+                await this.fetchStockData();
+                await this.fetchTransactionData();
+
+                this.detail_amount = this.detail_amount.map(detail => {
                     const stock = this.stocks.find(stock => stock.no === detail.stock_id);
+
+                    const relatedTransactions = this.transactions.filter(
+                        transaction => transaction.stock_detail_id === detail.no
+                    );
+
+                    const remainingAmount = relatedTransactions.reduce((total, transaction) => {
+                        if (transaction.type === 1) {
+                            return total + parseFloat(transaction.amount || 0);
+                        } else if (transaction.type === 2) {
+                            return total - parseFloat(transaction.amount || 0);
+                        }
+                        return total;
+                    }, parseFloat(detail.amount || 0));
+
+                    if (remainingAmount === 0) {
+                        return null;
+                    }
+
                     return {
                         ...detail,
-                        name: stock ? `${stock.name} (${detail.amount})` : 'ไม่พบหุ้น',
+                        name: stock ? `${stock.name} (${remainingAmount.toLocaleString(2)})` : 'ไม่พบหุ้น',
+                        remainingAmount,
                     };
-                });
+                }).filter(detail => detail !== null);
 
             } catch (error) {
-                this.details = [];
+                this.detail_amount = [];
             }
         },
 
+
         updateStockData(item) {
-            const stockDetail = this.details.find(d => d.no === item.stock_id);
+            const stockDetail = this.detail_amount.find(d => d.no === item.stock_id);
             if (stockDetail) {
                 item.stock_detail_id = stockDetail.no;
             } else {
@@ -267,12 +303,38 @@ export default {
         },
 
         async confirmAndAddDetails() {
-            
-            const commissions = await this.$store.dispatch('api/commission/getCommissions');
+            await this.fetchDetailData();
+            await this.fetchTransactionData();
+
+            let isTransactionAdded = false;
 
             for (const transaction of this.withdrawalItems) {
                 const stock = this.stocks.find(stock => stock.no === transaction.stock_id);
                 const stockDetailId = transaction.stock_detail_id;
+
+                let from_id = 3;
+                if (transaction.type === 2) {
+                    const matchingDetail = this.details.find(d => d.no === stockDetailId);
+                    const matchingTransactions = this.transactions.filter(t => t.stock_detail_id === stockDetailId);
+
+                    const totalBuyAmount = matchingTransactions
+                        .filter(t => t.type === 1)
+                        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+                    const totalSellAmount = matchingTransactions
+                        .filter(t => t.type === 2)
+                        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+                    const remainingAmount = totalBuyAmount + parseFloat(matchingDetail?.amount || 0) - totalSellAmount;
+
+                    if (transaction.amount > remainingAmount) {
+                        continue;
+                    }
+
+                    if (matchingDetail) {
+                        from_id = matchingDetail.from_id;
+                    }
+                }
 
                 try {
                     await this.$store.dispatch('api/transaction/addTransaction', {
@@ -280,57 +342,31 @@ export default {
                         type: transaction.type,
                         price: parseFloat(transaction.price),
                         amount: parseFloat(transaction.amount),
-                        commission_id: this.commission_id,
-                        from_id: 3,
+                        commission_id: transaction.commission_id,
+                        from_id: from_id,
                         emp_id: this.$auth.user.no,
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                         updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                     });
 
-                    // await this.fetchDetailData();
-                    // if (transaction.type === 2){
-                    //     const commissionData = commissions.find(c => c.no === this.commission_id);
-                    //     const detail = this.details.find(d => d.no === stockDetailId);
-                    //     const commission = commissionData ? commissionData.commission : 0;
-                    //     const result = parseFloat(transaction.price) * parseFloat(transaction.amount);
-                    //     const comfee = result * commission;
-                    //     const vat = comfee * 0.07;
-                    //     const total = result + comfee + vat;
-                    //     const detailresult = detail ? detail.price * detail.amount : 0;
-                    //     const summed = total + detailresult;
-                    //     const amount = detail ? detail.amount - parseFloat(transaction.amount) : parseFloat(transaction.amount);
-                    //     const newprice = summed / amount
-
-                    //     console.log("Commission:", commission + '\n' + 
-                    //                 "Result:", result + '\n' +
-                    //                 "Comfee:", comfee + '\n' +
-                    //                 "vat:", vat + '\n' + 
-                    //                 "total:", total + '\n' +
-                    //                 "detailresult:", detailresult + '\n' +
-                    //                 "summed:", summed  + '\n' + 
-                    //                 "amount:", amount  + '\n' + 
-                    //                 "newprice:", newprice);
-
-                    //     await this.$store.dispatch('api/detail/updateDetailbyTransaction', {
-                    //         no: stockDetailId,
-                    //         price: detail ? detail.price : 0,
-                    //         amount: amount,
-                    //     });
-                    // }
-
+                    isTransactionAdded = true;
                 } catch (error) {
-                    if (error.response && error.response.status === 400) {
-                        this.modal.error.message = `มีชื่อหุ้นนี้ในระบบแล้ว : ${detail ? detail.stock_id : ''}`;
-                        this.modal.error.open = true;
-                        return;
-                    }
+                    this.modal.error.message = `เกิดข้อผิดพลาด`;
+                    this.modal.error.open = true;
                 }
             }
 
-            this.modal.complete.message = 'เพิ่มหุ้นเรียบร้อยแล้ว!';
-            this.modal.complete.open = true;
+            if (isTransactionAdded) {
+                this.modal.complete.message = 'เพิ่มการซื้อขายหุ้นเรียบร้อยแล้ว!';
+                this.modal.complete.open = true;
+            } else {
+                this.modal.error.message = `จำนวนหุ้นที่ขายมากกว่าจำนวนหุ้นที่มี`;
+                this.modal.error.open = true;
+            }
+
             this.showModalResult = false;
         },
+
 
         findDuplicateIds(stocks) {
             const names = stocks.map(stock => stock.name);
@@ -361,10 +397,10 @@ export default {
             this.withdrawalItems.push({
                 stock_id: null,
                 name: '',
-                commission_id: null,
+                commission_id: 2,
                 dividend_amount: null,
                 closing_price: null,
-                type: null,
+                type: 2,
             });
         },
 
@@ -377,14 +413,14 @@ export default {
         },
 
         recordLog() {
-            const details = this.withdrawalItems.map((item, index) => {
+            const detail_amount = this.withdrawalItems.map((item, index) => {
                 return `TRANSACTION ${index + 1}\nNAME ${item.name}\nTYPE ${setName}\nDIVIDEND ${item.dividend_amount}\nCLOSE ${item.closing_price}}`;
             }).join('\n\n');
 
             const log = {
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
-                detail: details.trim(),
+                detail: detail_amount.trim(),
                 type: 1,
                 picture: this.$auth.user.picture || 'Unknown',
                 action: 'เพิ่มหุ้นของลูกค้า',
@@ -409,7 +445,7 @@ export default {
 }
 
 .custom-card {
-    max-width: 800px;
+    max-width: 1200px;
     width: 100%;
     margin: auto;
 }

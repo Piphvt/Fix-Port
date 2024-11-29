@@ -4,7 +4,7 @@
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
         <ResultCustomer :open="showModalResult" :customers="withdrawalItems" :types="types" :bases="bases"
-            @confirm="confirmAndAddCustomers" @cancel="showModalResult = false" />
+            @confirm="confirmAndAddCustomers" @cancel="showModalResult = false" @update:open="showModalResult = $event" />
 
         <v-card class="custom-card" flat>
             <v-card-title class="d-flex align-center justify-center">
@@ -90,7 +90,7 @@ export default {
             },
             valid: false,
             showModalResult: false,
-            withdrawalItems: [{ id: 'AQT', nickname: '', type_id: null, base_id: null }],
+            withdrawalItems: [{ id: 'AQT', nickname: '', type_id: null, base_id: 3 }],
             types: [],
             bases: [],
 

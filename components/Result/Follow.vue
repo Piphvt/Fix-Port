@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="open" max-width="500px">
+    <v-dialog v-model="showModalResult" max-width="500px">
         <v-card>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-archive-check</v-icon>
@@ -28,6 +28,7 @@ export default {
     },
     data() {
         return {
+            showModalResult: this.open,
             fetchstocks: [],
             headers: [
                 { text: 'ชื่อหุ้น', value: 'stockName' },
@@ -40,6 +41,10 @@ export default {
     },
     async mounted() {
         await this.fetchStockData()
+        document.addEventListener('keydown', this.handleKeydown);
+    },
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.handleKeydown);
     },
     computed: {
         formattedStocks() {
@@ -54,11 +59,18 @@ export default {
             });
         },
     },
+    watch: {
+        open(newValue) {
+            this.showModalResult = newValue;
+        },
+        showModalResult(newValue) {
+            this.$emit('update:open', newValue);
+        }
+    },
     methods: {
         async fetchStockData() {
             this.fetchstocks = await this.$store.dispatch('api/stock/getStocks');
         },
-
         getStockName(stockId) {
             const stock = this.fetchstocks.find(s => s.no === stockId);
             return stock ? stock.name : 'ยังไม่ระบุ';
@@ -68,6 +80,16 @@ export default {
         },
         cancel() {
             this.$emit('cancel');
+            this.showModalResult = false;
+        },
+        handleKeydown(event) {
+            if (this.showModalResult) {
+                if (event.key === 'Escape') {
+                    this.cancel();
+                } else if (event.key === 'Enter') {
+                    this.confirm();
+                }
+            }
         },
     },
 };

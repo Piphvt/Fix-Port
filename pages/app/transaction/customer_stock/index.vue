@@ -240,7 +240,7 @@
 
                     <tr v-if="item.transactions && item.isOpen" v-for="transaction in item.transactions"
                         :key="transaction.id">
-                        <td></td>
+                        <td>-</td>
                         <td class="text-center">{{ formatDateTime(transaction.updated_date) }}</td>
                         <td class="text-center">{{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
                         <td class="text-center">{{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
@@ -665,13 +665,21 @@ export default {
 
         getSearchItems(type) {
             if (type === 'stock_id') {
-                return this.details.map(detail => this.getStockByNo(detail.stock_id)?.name);
+                return this.details
+                    .filter(detail => detail.amount > 0 && this.getStockByNo(detail.stock_id)?.name)
+                    .map(detail => this.getStockByNo(detail.stock_id).name);
             } else if (type === 'customer_name') {
-                return this.details.map(detail => this.getCustomerByNo(detail.customer_id)?.nickname);
+                return this.details
+                    .filter(detail => detail.amount > 0 && this.getCustomerByNo(detail.customer_id)?.nickname)
+                    .map(detail => this.getCustomerByNo(detail.customer_id).nickname);
             } else if (type === 'customer_id') {
-                return this.details.map(detail => this.getCustomerByNo(detail.customer_id)?.id);
+                return this.details
+                    .filter(detail => detail.amount > 0 && this.getCustomerByNo(detail.customer_id)?.id)
+                    .map(detail => this.getCustomerByNo(detail.customer_id).id);
             } else if (type === 'emp_id') {
-                return this.details.map(detail => this.getEmployeeByNo(detail.emp_id)?.fname + ' ' + this.getEmployeeByNo(detail.emp_id)?.lname);
+                return this.details
+                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.emp_id)?.fname + ' ' + this.getEmployeeByNo(detail.emp_id)?.lname)
+                    .map(detail => this.getEmployeeByNo(detail.emp_id)?.fname + ' ' + this.getEmployeeByNo(detail.emp_id)?.lname);
             }
             return [];
         },

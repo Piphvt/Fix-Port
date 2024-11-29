@@ -4,7 +4,7 @@
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
         <ResultFollow :open="showModalResult" :stocks="withdrawalItems" @confirm="confirmAndAddCustomers"
-            @cancel="showModalResult = false" />
+            @cancel="showModalResult = false" @update:open="showModalResult = $event" />
 
         <v-card class="custom-card" flat>
             <v-card-title class="d-flex align-center justify-center">
@@ -35,16 +35,16 @@
 
                         <v-col cols="2">
                             <v-select v-model="item.type" :items="types" item-text="name" item-value="id" label="ประเภท"
-                                dense outlined>
+                                clearable dense outlined>
                             </v-select>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-text-field v-model="item.remark" label="หมายเหตุ" type="text" dense
+                            <v-text-field v-model="item.remark" label="หมายเหตุ" type="text" clearable dense
                                 outlined></v-text-field>
                         </v-col>
 
-                        <v-col cols="2" class="d-flex align-center">
+                        <v-col cols="1" class="d-flex align-center">
                             <v-btn icon color="#e50211" @click="removeProduct(index)" class="mb-6">
                                 <v-icon>mdi-delete</v-icon>
                             </v-btn>
@@ -111,7 +111,9 @@ export default {
     computed: {
         isFormValid() {
             return this.withdrawalItems.every(item =>
-                this.isNicknameValid(item.name)
+                this.isStockValid(item.stock_id) &&
+                this.isFloatValid(item.low_price) &&
+                this.isFloatValid(item.up_price)
             );
         },
     },
@@ -121,8 +123,8 @@ export default {
             return !!value && /^[0-9]*\.?[0-9]+$/.test(value);
         },
 
-        isNicknameValid(name) {
-            return name !== null && name !== '';
+        isStockValid(stock_id) {
+            return stock_id !== null && stock_id !== '';
         },
 
         async checkRank() {
@@ -249,7 +251,7 @@ export default {
 }
 
 .custom-card {
-    max-width: 800px;
+    max-width: 1000px;
     width: 100%;
     margin: auto;
 }

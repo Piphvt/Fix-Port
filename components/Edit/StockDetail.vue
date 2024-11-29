@@ -53,14 +53,14 @@
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-text-field v-model="formData.price" :rules="[
+                <v-text-field v-model="formData.detailprice" :rules="[
                   (v) => !!v || 'โปรดกรอกราคาที่ติด',
                   (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
                 ]" label="ราคาที่ติด" outlined required />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
-                <v-text-field v-model="formData.amount" :rules="[
+                <v-text-field v-model="formData.detailamount" :rules="[
                   (v) => !!v || 'โปรดกรอกจำนวนที่ติด',
                   (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
                 ]" label="จำนวนที่ติด" outlined required />
@@ -71,7 +71,7 @@
 
         <v-card-actions class="card-title-center pa-0">
           <v-btn @click="confirm"
-            :disabled="!valid || !hasChanges || !formData.customer_id || !formData.stock_id || !formData.price || !formData.amount || !formData.from_id"
+            :disabled="!valid || !hasChanges || !formData.customer_id || !formData.stock_id || !formData.detailprice || !formData.detailamount || !formData.from_id"
             depressed color="#24b224" class="font-weight-medium mr-2 mb-5">
             บันทึก
           </v-btn>

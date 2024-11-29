@@ -205,46 +205,46 @@ export default {
 
     async confirm() {
       const currentRank = this.getRankName(this.$auth.user.ranks_id);
-      const targetRank = this.getRankName(this.formData.ranks_id);
+      const targetRank = this.getRankName(this.originalData.ranks_id);
       const isSelfEdit = this.$auth.user.email === this.formData.email;
+
+      const openWarning = (message) => {
+        this.modal.warning.open = true;
+        this.modal.warning.message = message;
+      };
 
       if (currentRank === 'ผู้พัฒนา') {
         if (targetRank === 'ผู้พัฒนา' && !isSelfEdit) {
-          this.modal.warning.open = true;
-          this.modal.warning.message = 'ไม่สามารถแก้ไขข้อมูลของผู้พัฒนาคนอื่นได้';
+          openWarning('ไม่สามารถแก้ไขข้อมูลของผู้พัฒนาคนอื่นได้');
           return;
         }
       }
 
+      if (isSelfEdit && this.originalData.ranks_id !== this.formData.ranks_id) {
+        openWarning('ไม่สามารถเปลี่ยนตำแหน่งของตัวเองได้');
+        return;
+      }
+
       if (currentRank === 'แอดมิน') {
         if (targetRank === 'ผู้พัฒนา') {
-          this.modal.warning.open = true;
-          this.modal.warning.message = 'ไม่สามารถแก้ไขข้อมูลของผู้พัฒนาได้';
+          openWarning('ไม่สามารถแก้ไขข้อมูลของผู้พัฒนาได้');
           return;
         }
 
         if (isSelfEdit) {
         } else {
           if (targetRank === 'แอดมิน') {
-            this.modal.warning.open = true;
-            this.modal.warning.message = 'ไม่สามารถแก้ไขข้อมูลของแอดมินคนอื่นได้';
+            openWarning('ไม่สามารถแก้ไขข้อมูลของแอดมินคนอื่นได้');
             return;
           }
 
           if (targetRank === 'พนักงานทั่วไป') {
-            if (this.data.ranks_id !== this.formData.ranks_id) {
-              this.modal.warning.open = true;
-              this.modal.warning.message = 'ไม่สามารถเปลี่ยนตำแหน่งของพนักงานทั่วไปได้';
+            if (this.originalData.ranks_id !== this.formData.ranks_id) {
+              openWarning('ไม่สามารถเปลี่ยนตำแหน่งของพนักงานทั่วไปได้');
               return;
             }
           }
         }
-      }
-
-      if (isSelfEdit && this.data.ranks_id !== this.formData.ranks_id) {
-        this.modal.warning.open = true;
-        this.modal.warning.message = 'ไม่สามารถเปลี่ยนตำแหน่งของตัวเองได้';
-        return;
       }
 
       this.modal.confirm.open = true;

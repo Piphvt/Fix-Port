@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="open" max-width="600px">
+    <v-dialog v-model="showModalResult" max-width="600px">
         <v-card>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-text-box-check</v-icon>
@@ -29,6 +29,7 @@ export default {
     },
     data() {
         return {
+            showModalResult: this.open,
             headers: [
                 { text: 'ไอดีลูกค้า', value: 'id' },
                 { text: 'ชื่อเล่น', value: 'nickname' },
@@ -47,20 +48,43 @@ export default {
                 const base = bases.find(b => b.id === customer.base_id);
                 return {
                     ...customer,
-                    type_name: type ? type.name : '',
-                    base_name: base ? base.name : '',
+                    type_name: type ? type.name : 'ยังไม่ระบุ',
+                    base_name: base ? base.name : 'ยังไม่ระบุ',
                 };
             });
         },
     },
-
+    async mounted() {
+        document.addEventListener('keydown', this.handleKeydown);
+    },
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.handleKeydown);
+    },
     methods: {
         confirm() {
             this.$emit('confirm');
         },
         cancel() {
             this.$emit('cancel');
+            this.showModalResult = false;
         },
+        handleKeydown(event) {
+            if (this.showModalResult) {
+                if (event.key === 'Escape') {
+                    this.cancel();
+                } else if (event.key === 'Enter') {
+                    this.confirm();
+                }
+            }
+        },
+    },
+    watch: {
+        open(newValue) {
+            this.showModalResult = newValue;
+        },
+        showModalResult(newValue) {
+            this.$emit('update:open', newValue);
+        }
     },
 };
 </script>

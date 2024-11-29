@@ -106,7 +106,7 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.ranks_id === 1" @click="exportCSV" icon>
+                            <v-btn color="success" v-if="$auth.user.ranks_id === 1" @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -287,12 +287,12 @@
 
 <script>
 
-import * as XLSX from 'xlsx';
-import moment from 'moment';
+import ExcelJS from 'exceljs';
+import moment from 'moment-timezone';
 import 'moment/locale/th'
 import DatePicker from 'vue2-datepicker';
 import 'vue2-datepicker/index.css';
-import Papa from 'papaparse';
+import Decimal from 'decimal.js';
 
 export default {
 
@@ -389,7 +389,7 @@ export default {
 
             headers: [
                 {
-                    text: 'เวลา',
+                    text: 'ข้อมูลวันที่',
                     value: 'updated_date',
                     align: 'center',
                     cellClass: 'text-center',
@@ -546,7 +546,6 @@ export default {
                 if (detail) {
                     transaction.customer_id = detail.customer_id;
                     transaction.stock_id = detail.stock_id;
-                    transaction.from_id = detail.from_id;
                 }
             });
         },
@@ -866,67 +865,78 @@ export default {
             return found ? found.text : type;
         },
 
-        exportCSV() {
-            const filteredData = this.filtered.map(item => {
-                const dataItem = {};
-                dataItem['ราคาที่ติด'] = item.price.toLocaleString();
-                dataItem['จำนวนที่ติด'] = item.amount.toLocaleString();
-                dataItem['จำนวนเงิน'] = item.detail_amount.toLocaleString();
-                dataItem['เปอร์เซ็น กำไร/ขาดทุน ปัจจุบัน'] = item.total_percent.toFixed(2) + '%';
-                dataItem['กำไร/ขาดทุน ปัจจุบัน'] = item.present_profit.toLocaleString();
-                dataItem['มูลค่าปัจจุบันและยอดเงินปันผล'] = item.total.toLocaleString();
-                dataItem['มูลค่าปัจจุบัน'] = item.present_price.toLocaleString();
-                dataItem['ยอดเงินปันผล'] = item.balance_dividend.toLocaleString();
+        exportExcel() {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Sheet1');
 
-                const portInfo = this.getTypeText(item.total_percent);
-                dataItem['ประเภทพอร์ต'] = portInfo.text;
+            const headers = this.filteredHeaders
+                .filter(header => header.value !== 'detail' && header.value !== 'action')
+                .map(header => ({
+                    header: header.text,
+                    key: header.value,
+                    style: { font: { name: 'Angsana New', size: 16 } }
+                }));
 
-                const CustId = this.getCustomerByNo(item.customer_id);
-                dataItem['รหัสสมาชิก'] = CustId ? `${CustId.id}` : 'ไม่ทราบ';
+            worksheet.columns = headers;
 
-                const FromNo = this.getFromByNo(item.from_id);
-                dataItem['ที่มาที่ไป'] = FromNo ? `${FromNo.from}` : 'ไม่ทราบ';
-
-                const StockID = this.getStockByNo(item.stock_id);
-                dataItem['ชื่อหุ้นที่ติด'] = StockID ? `${StockID.name}` : 'ไม่ทราบ';
-
-                const CustName = this.getCustomerByNo(item.customer_id);
-                dataItem['ชื่อเล่น'] = CustName ? `${CustName.nickname}` : 'ไม่ทราบ';
-
-                const empDetail = this.getEmployeeByNo(item.emp_id);
-                dataItem['ทำรายการโดย'] = empDetail ? `${empDetail.fname} ${empDetail.lname}` : 'ไม่ทราบ';
-
-                return dataItem;
+            this.filtered.forEach((item, index) => {
+                const rowData = {};
+                this.filteredHeaders.forEach(header => {
+                    if (header.value === 'updated_date') {
+                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
+                    } else if (header.value === 'created_date') {
+                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD');
+                    } else if (header.value === 'price') {
+                        rowData[header.value] = item.price.toLocaleString(2);
+                    } else if (header.value === 'amount') {
+                        rowData[header.value] = item.amount.toLocaleString(2);
+                    } else if (header.value === 'money') {
+                        rowData[header.value] = item.money;
+                    } else if (header.value === 'type') {
+                        rowData[header.value] = this.getTypeText(item.type).text;
+                    } else if (header.value === 'from_id') {
+                        rowData[header.value] = this.getFromByNo(item.from_id).from;
+                    } else if (header.value === 'stock_id') {
+                        rowData[header.value] = this.getStockByNo(item.stock_id).name;
+                    } else if (header.value === 'customer_id') {
+                        rowData[header.value] = this.getCustomerByNo(item.customer_id).id;
+                    } else if (header.value === 'customer_name') {
+                        rowData[header.value] = this.getCustomerByNo(item.customer_id).nickname;
+                    } else if (header.value === 'emp_id') {
+                        rowData[header.value] = this.getEmployeeByNo(item.emp_id).fname + ' ' + this.getEmployeeByNo(item.emp_id).lname;
+                    } else if (header.value !== 'detail' && header.value !== 'action') {
+                        rowData[header.value] = item[header.value];
+                    }
+                });
+                worksheet.addRow(rowData);
             });
 
-            const csv = Papa.unparse(filteredData);
-            const bom = '\uFEFF';
-            const csvWithBom = bom + csv;
-            const blob = new Blob([csvWithBom], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const currentDate = moment().format('YYYY-MM-DD');
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', `ข้อมูลสมาชิก-${currentDate}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        },
+            worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell) => {
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.font = { bold: true, name: 'Angsana New', size: 18 };
+            });
 
-        convertToCSV(objArray) {
-            const array = [Object.keys(objArray[0])].concat(objArray);
-            return array.map(row => {
-                return Object.values(row).map(value => `"${value}"`).join(',');
-            }).join('\n');
-        },
+            worksheet.eachRow((row) => {
+                row.eachCell({ includeEmpty: true }, (cell) => {
+                    cell.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' },
+                    };
+                });
+            });
 
-        maskNewData(data) {
-            if (!data) return '';
-            const length = data.length;
-            if (length <= 4) return data;
-            const firstPart = data.slice(0, 1);
-            const lastPart = data.slice(-1);
-            const maskedPart = '*'.repeat(length - 4)
-            return `${firstPart}${maskedPart}${lastPart}`;
+            const currentDate = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
+            workbook.xlsx.writeBuffer().then(buffer => {
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute('download', `ข้อมูลการซื้อขายหุ้นของลูกค้า-${currentDate}.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
         },
 
         goBack() {

@@ -146,56 +146,43 @@
                         <td class="text-center">{{ formatDateTime(item.updated_date) }}</td>
                         <td class="text-center">{{ getCustomerByNo(item.customer_id)?.id || 'ยังไม่ระบุ' }}</td>
                         <td class="text-center">{{ getCustomerByNo(item.customer_id)?.nickname || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ item.price.toLocaleString(2) }}</td>
-                        <td class="text-center" style="color:#00bf63">{{ item.price.toLocaleString(2) }}</td>
-                        <td class="text-center" style="color:#ff66c4">{{ item.amount.toLocaleString(2) }}</td>
-                        <td class="text-center">{{ item.money }}</td>
+                        <td class="text-center" style="color:#00bf63">{{ item.buy }}</td>
+                        <td class="text-center" style="color:#ff66c4">{{ 0 }}</td>
+                        <td class="text-center">{{ 0 }}</td>
+                        <td class="text-center">{{ item.total }}</td>
                         <td class="text-center">{{ getEmployeeByNo(item.emp_id)?.fname + ' ' +
                             getEmployeeByNo(item.emp_id)?.lname || 'ยังไม่ระบุ' }}</td>
                     </tr>
 
                     <tr v-if="item.isOpen">
-                        <td></td>
+                        <td class="text-center"></td>
                         <td class="text-center">
                             <v-icon style="color:#85d7df" @click="toggleOpen(item)">
                                 {{ item.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
                             </v-icon>
                         </td>
-                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
-                        <td class="text-center" style="color:#00bf63">{{ item.detailprice.toLocaleString(2) }}</td>
-                        <td class="text-center" style="color:#ff66c4">{{ item.detailamount.toLocaleString(2) }}</td>
-                        <td class="text-center">{{ item.detailmoney }}</td>
+                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'ยังไม่ระบุ' }}</td>
+                        <td class="text-center" style="color:#00bf63">{{ item.detailbuy }}</td>
+                        <td class="text-center" style="color:#ff66c4">{{ item.detailsale }}</td>
+                        <td class="text-center">{{ 0 }}</td>
                         <td class="text-center" :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
-                            {{ getFromByNo(item.from_id)?.from || 'N/A' }}</td>
+                            {{ getFromByNo(item.from_id)?.from || 'ยังไม่ระบุ' }}</td>
+                        <td class="text-center"></td>
                         <td class="text-center"></td>
                     </tr>
 
                     <tr v-if="item.transactions && item.isOpen" v-for="transaction in item.transactions"
                         :key="transaction.id">
-                        <td></td>
-                        <td class="text-center">{{ formatDateTime(transaction.updated_date) }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
-                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
-                        <td class="text-center" style="color:#00bf63">{{ transaction.price.toLocaleString(2) }}</td>
-                        <td class="text-center" style="color:#ff66c4">{{ transaction.amount.toLocaleString(2) }}</td>
-                        <td class="text-center">{{ transaction.money }}</td>
-                        <td class="text-center" style="color:#8c52ff">{{ transaction.dividend_amount }}</td>
-                        <td class="text-center">{{ transaction.balance_dividend }}</td>
-                        <td class="text-center" style="color:#ff914d">{{ item.closing_price }}</td>
-                        <td class="text-center">{{ transaction.present_price }}</td>
+                        <td class="text-center"></td>
+                        <td class="text-center"></td>
+                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'ยังไม่ระบุ' }}</td>
+                        <td class="text-center" style="color:#00bf63">{{ transaction.buy }}</td>
+                        <td class="text-center" style="color:#ff66c4">{{ transaction.sale }}</td>
                         <td class="text-center">{{ transaction.total }}</td>
-                        <td class="text-center" :style="{ color: getColorForNumber(transaction.present_profit) }">{{
-                            transaction.present_profit }}</td>
-                        <td class="text-center" :style="{ color: getColorForPercent(transaction.total_percent) }">{{
-                            transaction.total_percent }}%</td>
-                        <td class="text-center" :style="{ color: getPortText(transaction.total_percent).color }">{{
-                            getPortText(transaction.total_percent).text }}</td>
                         <td class="text-center"
                             :style="{ color: getFromText(getFromByNo(transaction.from_id)?.from).color }">
-                            {{ getFromByNo(transaction.from_id)?.from || 'N/A' }}</td>
-                        <td class="text-center">{{ getEmployeeByNo(transaction.emp_id)?.fname + ' ' +
-                            getEmployeeByNo(transaction.emp_id)?.lname || 'ไม่ทราบ' }}</td>
+                            {{ getFromByNo(transaction.from_id)?.from || 'ยังไม่ระบุ' }}</td>
+                        <td class="text-center"></td>
                         <td class="text-center"></td>
                     </tr>
                 </template>
@@ -404,7 +391,7 @@ export default {
         filtered() {
             let filteredDetails = this.details.map(detail => {
                 const transactions = detail.transactions || [];
-                const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_id === detail.no);
+                const type1Transactions = transactions.filter(t => t.stock_detail_id === detail.no);
 
                 return {
                     ...detail,
@@ -533,20 +520,20 @@ export default {
                 this.details = await this.$store.dispatch('api/detail/getDetails');
 
                 if (Array.isArray(this.details) && this.details.length > 0) {
+                    const detailsWithTransactions = [];
+
                     for (const detail of this.details) {
                         detail.isOpen = false;
+
                         if (detail.stock_id) {
                             const stock = this.stocks.find(s => s.no === detail.stock_id);
                             const closingPriceData = stock ? stock.closing_price : null;
+
                             let detail_total_Dividend = new Decimal(0);
                             let balance_dividend = 0;
-                            let transaction_total_Dividend = 0;
-                            let present_price = 0;
-                            let total = 0;
-                            let transactionTotalSum = 0;
-                            let transactionDividendTotalSum = 0;
-                            let transactionAmountSum = 0;
-                            let transactionnumberOfDividends = 0;
+                            let Type1TotalSum = 0;
+                            let Type2TransactionTotalSum = 0;
+                            let Type2DetailTotalSum = 0;
 
                             if (detail.created_date) {
                                 const dividendData = await this.$store.dispatch('api/dividend/getDividends', {
@@ -565,160 +552,102 @@ export default {
                                 balance_dividend = detail.amount * detail_total_Dividend.toNumber();
                             }
 
-                            const transactions = await this.$store.dispatch('api/transaction/getTransactions', { stock_detail_id: detail.no });
+                            const transactions = await this.$store.dispatch('api/transaction/getTransactions');
+                            const FilterTransactions = transactions.filter(t => t.stock_detail_id === detail.no);
 
-                            const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_id === detail.no);
-                            const type2Transactions = transactions.filter(t => t.type === 2 && t.stock_detail_id === detail.no);
+                            if (FilterTransactions.length > 0) {
+                                detail.transactions = FilterTransactions;
+                                for (const transaction of FilterTransactions) {
+                                    if (transaction.type === 1 || transaction.type === 2) {
+                                        const commissionData = await this.$store.dispatch('api/commission/getCommissions');
+                                        const FilterCommissions = commissionData.filter(c => c.no === transaction.commission_id);
+                                        const commission = FilterCommissions.length > 0 ? FilterCommissions[0] : null;
 
-                            detail.transactions = type1Transactions;
-                            let remainingAmount = 0;
+                                        if (commission && transaction.created_date) {
+                                            const dividendData = await this.$store.dispatch('api/dividend/getDividends', {
+                                                stock_id: detail.stock_id,
+                                                created_date: transaction.created_date
+                                            });
 
-                            const sortedType1Transactions = type1Transactions.sort((a, b) => moment(b.created_date).diff(moment(a.created_date)));
+                                            const filteredDividendData = dividendData.filter(dividend => {
+                                                const dividendDate = moment(dividend.created_date);
+                                                return dividend.stock_id === detail.stock_id && dividendDate.isSameOrAfter(moment(transaction.created_date));
+                                            });
 
-                            for (const type1 of sortedType1Transactions) {
-                                let remainingAmount = type1.amount;
+                                            const transactiontotalDividend = filteredDividendData.reduce((sum, dividend) =>
+                                                sum.plus(new Decimal(dividend.dividend || 0)), new Decimal(0)
+                                            );
 
-                                for (const type2 of type2Transactions) {
-                                    if (moment(type2.created_date).isAfter(moment(type1.created_date)) && type2.amount > 0) {
-                                        if (type2.amount >= remainingAmount) {
-                                            type2.amount -= remainingAmount;
-                                            remainingAmount = 0;
-                                            break;
+                                            const money = transaction.price * transaction.amount;
+                                            const comfee = money * commission.commission;
+                                            const vat = comfee * 0.07;
+                                            const transactiontype1total = transaction.type === 1
+                                                ? money + comfee + vat
+                                                : 0;
+                                            const transactiontype2total = transaction.type === 2
+                                                ? money - (comfee + vat)
+                                                : 0;
+
+                                            transaction.buy = transactiontype1total.toLocaleString(2);
+                                            transaction.sale = transactiontype2total.toLocaleString(2);
+                                            transaction.total = (transactiontype2total - transactiontype1total).toLocaleString(2);
+                                            transaction.dividend_amount = transactiontotalDividend.toNumber();
+                                            console.log(`Detail No.${transaction.stock_detail_id} \nMoney = ${money} \nComfee = ${comfee} \nVat = ${vat} \nBuy = ${transaction.buy} \nSale = ${transaction.sale}`);
+
+                                            if (transaction.type === 1) {
+                                                Type1TotalSum += transactiontype1total;
+                                            } else if (transaction.type === 2) {
+                                                Type2TransactionTotalSum += transactiontype2total;
+                                            }
                                         } else {
-                                            remainingAmount -= type2.amount;
-                                            type2.amount = 0;
+                                            console.warn(`No commission found for commission_id: ${transaction.commission_id}`);
                                         }
                                     }
                                 }
 
-                                type1.amount = remainingAmount;
-                            }
-
-                            detail.transactions = type1Transactions.filter(type1 => type1.amount > 0);
-                            const remainingType2Amount = type2Transactions.reduce((sum, type2) => sum + type2.amount, 0);
-
-                            if (remainingType2Amount > 0) {
-                                detail.amount -= remainingType2Amount;
-                            }
-
-                            for (const transaction of [...sortedType1Transactions]) {
-                                if (transaction.amount > 0) {
-                                    const commissionData = await this.$store.dispatch('api/commission/getCommissions', { no: transaction.commission_id });
-                                    const commission = commissionData.length > 0 ? commissionData[0] : null;
-                                    let transactiontotalDividend = new Decimal(0);
-
-                                    if (commission && transaction.created_date) {
-                                        const dividendData = await this.$store.dispatch('api/dividend/getDividends', {
-                                            stock_id: detail.stock_id,
-                                            created_date: transaction.created_date
-                                        });
-
-                                        const filteredDividendData = dividendData.filter(dividend => {
-                                            const dividendDate = moment(dividend.created_date);
-                                            return dividend.stock_id === detail.stock_id && dividendDate.isSameOrAfter(moment(transaction.created_date));
-                                        });
-
-                                        transactiontotalDividend = filteredDividendData.reduce((sum, dividend) =>
-                                            sum.plus(new Decimal(dividend.dividend || 0)), new Decimal(0)
-                                        );
-                                        transactionnumberOfDividends = filteredDividendData.length;
-                                        transaction.dividend_amount = transactiontotalDividend.toNumber();
-
-                                        const transactionmoney = transaction.price * transaction.amount;
-                                        const transactioncomfee = transactionmoney * commission.commission;
-                                        const transactionvat = transactioncomfee * 0.07;
-                                        const transactiontotal = transactionmoney + transactioncomfee + transactionvat;
-                                        const transactionamount = transaction.amount;
-
-                                        const transactionbalancedividend = transaction.amount * transactiontotalDividend.toNumber();
-                                        const transactionpresentprice = transaction.amount * closingPriceData;
-                                        const transactionresult = transactionbalancedividend + transactionpresentprice;
-
-                                        transaction.money = transactiontotal.toLocaleString(2);
-                                        transaction.balance_dividend = transactionbalancedividend.toLocaleString(2);
-                                        transaction.present_price = transactionpresentprice.toLocaleString(2);
-                                        transaction.total = transactionresult.toLocaleString(2);
-                                        transaction.present_profit = (transactionresult - transactiontotal).toLocaleString(2);
-                                        transaction.total_percent = (((transactionresult - transactiontotal) / transactiontotal) * 100).toLocaleString(2);
-
-                                        transactionTotalSum += transactiontotal;
-                                        transactionAmountSum += transactionamount;
-                                        transactionDividendTotalSum += transactionbalancedividend;
-                                        transaction_total_Dividend += transactiontotalDividend.toNumber();
-                                    } else {
-                                        console.warn(`No commission found for commission_id: ${transaction.commission_id}`);
-                                    }
-                                }
-                            }
-
-                            const detailamount = detail.amount;
-                            const detailprice = detail.price;
-                            const detailmoney = detailamount * detailprice;
-                            const detailpresent_price = detailamount * closingPriceData;
-                            const detailtotal = detailpresent_price + balance_dividend;
-
-                            detail.detailupdated_date = detail.updated_date;
-                            detail.detailamount = detailamount;
-                            detail.detailprice = detailprice;
-                            detail.detaildividend_amount = detail_total_Dividend.toNumber();
-                            detail.detailmoney = detailmoney.toLocaleString(2);
-                            detail.detailpresent_price = detailpresent_price.toLocaleString(2);
-                            detail.detailtotal = detailtotal.toLocaleString(2);
-                            detail.detailbalance_dividend = balance_dividend.toLocaleString(2);
-                            detail.detailpresent_profit = (detailtotal - detailmoney).toLocaleString(2);
-                            detail.detailtotal_percent = (((detailtotal - detailmoney) / detailmoney) * 100).toLocaleString(2);
-                            detail.detailemp_id = detail.emp_id;
-
-                            const lasted_updated_date = transactions
-                                .filter(transaction => transaction.stock_detail_id === detail.no)
-                                .map(transaction => transaction.updated_date);
-
-                            const latest_updated_date = lasted_updated_date.length > 0
-                                ? moment.max(lasted_updated_date.map(date => moment(date)))
-                                : moment(detail.updated_date);
-
-                            const lasted_emp_id = lasted_updated_date.length > 0
-                                ? transactions
+                                const lasted_updated_date = transactions
                                     .filter(transaction => transaction.stock_detail_id === detail.no)
-                                    .map(transaction => transaction.emp_id)
-                                    .pop()
-                                : detail.emp_id;
+                                    .map(transaction => transaction.updated_date);
 
+                                const latest_updated_date = lasted_updated_date.length > 0
+                                    ? moment.max(lasted_updated_date.map(date => moment(date)))
+                                    : moment(detail.updated_date);
 
-                            const money = (detail.price * detail.amount) + transactionTotalSum;
-                            const amount = detail.amount + transactionAmountSum;
-                            const price = money / amount;
-                            const balance = balance_dividend + transactionDividendTotalSum;
-                            present_price = amount * closingPriceData;
-                            total = present_price + balance;
+                                const lasted_emp_id = lasted_updated_date.length > 0
+                                    ? transactions
+                                        .filter(transaction => transaction.stock_detail_id === detail.no)
+                                        .map(transaction => transaction.emp_id)
+                                        .pop()
+                                    : detail.emp_id;
 
-                            detail.updated_date = latest_updated_date;
-                            detail.price = price;
-                            detail.amount = amount;
-                            detail.money = money.toLocaleString(2);
-                            detail.totalprice = price;
-                            detail.dividend_amount = ((detail_total_Dividend.toNumber() + transaction_total_Dividend) / (1 + transactionnumberOfDividends)).toLocaleString(2);
-                            detail.balance_dividend = balance.toLocaleString(2);
-                            detail.closing_price = closingPriceData;
-                            detail.present_price = present_price.toLocaleString(2);
-                            detail.total = total.toLocaleString(2);
-                            detail.present_profit = (total - money).toLocaleString(2);
-                            detail.total_percent = (((total - money) / money) * 100).toLocaleString(2);
-                            detail.emp_id = lasted_emp_id;
-                            detail.type1Transactions = type1Transactions;
+                                const detailbuy = detail.price * detail.amount;
+                                const buy = detailbuy + Type1TotalSum;
+                                const sale = Type2TransactionTotalSum;
+                                
+                                detail.detailbuy = detailbuy.toLocaleString(2);
+                                detail.detailsale = Type2DetailTotalSum.toLocaleString(2);
+                                detail.transactionbuy = Type1TotalSum.toLocaleString(2);
+                                detail.updated_date = latest_updated_date;
+                                detail.buy = buy.toLocaleString(2);
+                                detail.sale = sale.toLocaleString(2);
+                                detail.total = (sale - buy).toLocaleString(2);
+                                detail.emp_id = lasted_emp_id;
+                                detail.type1Transactions = FilterTransactions;
 
-                            const dividendmoney = money - (transactionDividendTotalSum + balance_dividend);
-                            const dividendprice = dividendmoney / amount;
-
-                            detail.dividendprice = dividendprice;
-                            detail.dividendmoney = dividendmoney.toLocaleString(2);
+                                detailsWithTransactions.push(detail);
+                            }
                         }
+                    }
+
+                    this.details = detailsWithTransactions;
+
+                    if (this.details.length === 0) {
+                        console.warn("No details with transactions found.");
                     }
                 } else {
                     console.error("ข้อมูล details ไม่มีข้อมูลหรือไม่ใช่อาร์เรย์");
                 }
             } catch (warning) {
-                console.error("Error fetching data:", warning);
                 this.modal.warning.message = 'ไม่สามารถดึงข้อมูลได้';
                 this.modal.warning.open = true;
             }
@@ -978,18 +907,6 @@ export default {
                         rowData[header.value] = item.amount.toLocaleString(2);
                     } else if (header.value === 'money') {
                         rowData[header.value] = item.money;
-                    } else if (header.value === 'total_percent') {
-                        rowData[header.value] = item.total_percent + '%';
-                    } else if (header.value === 'present_profit') {
-                        rowData[header.value] = item.present_profit;
-                    } else if (header.value === 'total') {
-                        rowData[header.value] = item.total;
-                    } else if (header.value === 'dividend_amount') {
-                        rowData[header.value] = item.dividend_amount;
-                    } else if (header.value === 'present_price') {
-                        rowData[header.value] = item.present_price;
-                    } else if (header.value === 'balance_dividend') {
-                        rowData[header.value] = item.balance_dividend;
                     } else if (header.value === 'from_id') {
                         rowData[header.value] = this.getFromByNo(item.from_id).from;
                     } else if (header.value === 'stock_id') {
