@@ -353,10 +353,6 @@ export default {
             this.$store.dispatch('api/log/addLogs', log);
         },
 
-        goToNewStock() {
-            this.$router.push('/app/stock/new_stock');
-        },
-
         goToStockManagement() {
             this.$router.push('/app/stock/management');
         },

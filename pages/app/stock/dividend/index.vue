@@ -170,8 +170,8 @@
                 </template>
             </v-data-table>
             <div class="text-center">
-                <v-btn class="mb-4" color="#e50211" @click="goToHome">
-                    <v-icon>mdi-keyboard-backspace</v-icon>ย้อนกลับ
+                <v-btn class = "mb-4" color="#e50211" @click="goToStockManagement">
+                    ย้อนกลับ
                 </v-btn>
             </div>
         </v-card>
@@ -349,10 +349,6 @@ export default {
             } catch (error) {
                 console.error('Failed to fetch dividends:', error);
             }
-        },
-
-        goToHome() {
-            this.$router.push('/app/stock/management');
         },
 
         getTotalDividends(stockId) {
@@ -657,6 +653,10 @@ export default {
 
         goBack() {
             window.location.reload();
+        },
+
+        goToStockManagement() {
+            this.$router.push('/app/stock/management');
         },
 
         recordLog() {

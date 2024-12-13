@@ -188,11 +188,6 @@
                     </div>
                 </template>
             </v-data-table>
-            <div class="text-center">
-                <v-btn class="mb-4" color="#e50211" @click="goToHome">
-                    <v-icon>mdi-home</v-icon>กลับไปหน้าหลัก
-                </v-btn>
-            </div>
         </v-card>
 
         <v-dialog v-model="dialog" max-width="300px">
@@ -394,10 +389,6 @@ export default {
             } catch (error) {
                 console.error('Failed to fetch dividends:', error);
             }
-        },
-
-        goToHome() {
-            this.$router.push('/app/home');
         },
 
         getTotalDividends(stockId) {

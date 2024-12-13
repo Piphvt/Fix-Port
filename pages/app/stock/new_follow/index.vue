@@ -58,7 +58,7 @@
                         <v-btn color="#24b224" @click="showModalResult = true" :disabled="!isFormValid" class="mr-2">
                             บันทึก
                         </v-btn>
-                        <v-btn color="#e50211" @click="goToStocksManagement">
+                        <v-btn color="#e50211" @click="goToStockFollow">
                             ย้อนกลับ
                         </v-btn>
                     </div>
@@ -236,8 +236,8 @@ export default {
             this.$store.dispatch('api/log/addLogs', log);
         },
 
-        goToStocksManagement() {
-            this.$router.push('/app/stock/management');
+        goToStockFollow() {
+            this.$router.push('/app/stock/stock_follow');
         },
     },
 };

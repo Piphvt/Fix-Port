@@ -37,9 +37,6 @@
                     <v-btn color="#24b224" @click="saveUpdate" :disabled="csvData.length === 0 || isLoadingClosePrice">
                         <v-icon>mdi-content-save</v-icon>บันทึก
                     </v-btn>
-                    <v-btn class="ml-2" color="#e50211" @click="goToHome">
-                        <v-icon>mdi-home</v-icon>กลับไปหน้าหลัก
-                    </v-btn>
                 </v-col>
             </v-row>
         </v-card>
@@ -87,10 +84,6 @@ export default {
 
         goBack() {
             window.location.reload();
-        },
-
-        goToHome() {
-            this.$router.push('/app/home');
         },
 
         async checkRank() {

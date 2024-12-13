@@ -183,8 +183,8 @@
                 </template>
             </v-data-table>
             <div class="text-center">
-                <v-btn class="mb-4" color="#e50211" @click="goToHome">
-                    <v-icon>mdi-home</v-icon>กลับไปหน้าหลัก
+                <v-btn class = "mb-4" color="#e50211" @click="goToStockFollow">
+                    ย้อนกลับ
                 </v-btn>
             </div>
         </v-card>
@@ -389,10 +389,6 @@ export default {
     },
 
     methods: {
-        goToHome() {
-            this.$router.push('/app/home');
-        },
-
         async fetchSetData() {
             this.sets = await this.$store.dispatch('api/set/getSets')
         },
@@ -711,12 +707,8 @@ export default {
             this.$store.dispatch('api/log/addLogs', log);
         },
 
-        goToNewStock() {
-            this.$router.push('/app/stock/new_follow');
-        },
-
-        goToFollowResult() {
-            this.$router.push('/app/stock/result_follow');
+        goToStockFollow() {
+            this.$router.push('/app/stock/stock_follow');
         },
     },
 };
