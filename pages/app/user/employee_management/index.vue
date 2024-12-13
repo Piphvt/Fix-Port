@@ -73,13 +73,25 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType !== 'ranks_id' && searchType !== 'updated_date'"
-                                v-model="searchQuery" :items="getSearchItems(searchType)" label="ค้นหา" dense outlined
-                                append-icon="mdi-magnify" class="mx-2 same-size small-font" hide-no-data hide-details
-                                clearable></v-autocomplete>
+                            <v-autocomplete v-if="searchType === 'fname'" v-model="selectedFname"
+                                class="mx-2 search-size small-font" :items="getSearchItems('fname')" label="ค้นหาชื่อ"
+                                dense outlined clearable multiple>
+                            </v-autocomplete>
 
-                            <v-select v-if="searchType === 'ranks_id'" v-model="selectedTopics" :items="actionTopics"
-                                dense outlined multiple class="mx-2 search-size small-font"></v-select>
+                            <v-autocomplete v-if="searchType === 'email'" v-model="selectedEmail"
+                                class="mx-2 search-size small-font" :items="getSearchItems('email')" label="ค้นหาอีเมล"
+                                dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'phone'" v-model="selectedPhone"
+                                class="mx-2 search-size small-font" :items="getSearchItems('phone')"
+                                label="ค้นหาเบอร์โทรศัพท์" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'ranks_id'" v-model="selectedRank"
+                                class="mx-2 search-size small-font" :items="getSearchItems('ranks_id')"
+                                label="ค้นหาตำแหน่ง" dense outlined clearable multiple>
+                            </v-autocomplete>
 
                             <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
@@ -194,11 +206,6 @@
                     </div>
                 </template>
             </v-data-table>
-            <div class="text-center">
-                <v-btn class="mb-4" color="#e50211" @click="goToHome">
-                    <v-icon>mdi-home</v-icon>กลับไปหน้าหลัก
-                </v-btn>
-            </div>
         </v-card>
 
         <v-dialog v-model="dialog" max-width="300px">
@@ -260,6 +267,11 @@ export default {
             employees: [],
             ranks: [],
 
+            selectedFname: [],
+            selectedEmail: [],
+            selectedPhone: [],
+            selectedRank: [],
+
             sortBy: 'updated_date',
             currentAction: '',
             searchQuery: '',
@@ -284,13 +296,6 @@ export default {
             selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['updated_date', 'picture', 'ranks_id', 'email', 'fname', 'lname', 'phone', 'gender', 'emp_id', 'detail'],
-
-            searchQueries: {
-                'fname': [],
-                'email': [],
-                'phone': [],
-            },
 
             searchTypes: [
                 { text: 'ชื่อ', value: 'fname' },
@@ -300,11 +305,7 @@ export default {
                 { text: 'เวลา', value: 'updated_date' }
             ],
 
-            actionTopics: [
-                { text: 'ผู้พัฒนา', value: 'ผู้พัฒนา' },
-                { text: 'พนักงานทั่วไป', value: 'พนักงานทั่วไป' },
-                { text: 'แอดมิน', value: 'แอดมิน' },
-            ],
+            visibleColumns: ['updated_date', 'picture', 'ranks_id', 'email', 'fname', 'lname', 'phone', 'gender', 'emp_id', 'detail'],
 
             headers: [
                 {
@@ -406,10 +407,6 @@ export default {
             event.target.src = `http://localhost:3001/file/default/${item.picture}`;
         },
 
-        goToHome() {
-            this.$router.push('/app/home');
-        },
-
         getEmployeeById(empId) {
             return this.employees.find(employee => employee.no === empId);
         },
@@ -445,6 +442,8 @@ export default {
                 return this.employees.map(emp => emp.email);
             } else if (type === 'phone') {
                 return this.employees.map(emp => emp.phone);
+            } else if (type === 'ranks_id') {
+                return this.employees.map(emp => this.getRankName(emp.ranks_id));
             }
             return [];
         },
@@ -524,7 +523,7 @@ export default {
 
         formatDateTime(date) {
             if (moment(date).isValid()) {
-                return moment(date).format('YYYY-MM-DD HH:mm');
+                return moment(date).format('YYYY/MM/DD HH:mm');
             }
             return 'Invalid Date';
         },
@@ -554,10 +553,8 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'ranks_id') {
-                this.addTopicToSearch();
-            } else if (this.searchType === 'fname' || this.searchType === 'email' || this.searchType === 'phone') {
-                this.addTextToSearch();
+            if (this.searchType === 'fname' || this.searchType === 'email' || this.searchType === 'phone' || this.searchType === 'ranks_id') {
+                this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
                     query: this.searchQuery,
@@ -573,53 +570,65 @@ export default {
             }
         },
 
-        addTextToSearch() {
-            const trimmedQuery = this.searchQuery.trim();
-            if (trimmedQuery) {
-                this.searchQueries[this.searchType].push(trimmedQuery);
+        addSearchItemsToSearch() {
+            const selectedItems =
+                this.searchType === 'phone' ? this.selectedPhone :
+                    this.searchType === 'email' ? this.selectedEmail :
+                        this.searchType === 'fname' ? this.selectedFname :
+                            this.searchType === 'ranks_id' ? this.selectedRank : [];
+
+            if (selectedItems.length > 0) {
                 this.savedSearches.push({
-                    query: this.searchQueries[this.searchType],
+                    query: selectedItems,
                     type: this.searchType,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
-                this.searchQuery = '';
-            }
-        },
 
-        addTopicToSearch() {
-            this.savedSearches.push({
-                query: '',
-                type: 'ranks_id',
-                topics: [...this.selectedTopics],
-                start: this.startDateTime,
-                end: this.endDateTime
-            });
-            this.selectedTopics = [];
-            this.startDateTime = '';
-            this.endDateTime = '';
+                if (this.searchType === 'phone') {
+                    this.selectedPhone = [];
+                } else if (this.searchType === 'email') {
+                    this.selectedEmail = [];
+                } else if (this.searchType === 'fname') {
+                    this.selectedFname = [];
+                } else if (this.searchType === 'ranks_id') {
+                    this.selectedRank = [];
+                }
+
+                this.startDateTime = '';
+                this.endDateTime = '';
+            }
         },
 
         applySearchFilter(employee, search) {
-            const field = employee[search.type] ? employee[search.type].toLowerCase() : '';
             let queryMatched = true;
 
-            if (search.type === 'email' || search.type === 'phone') {
-                queryMatched = this.searchQueries[search.type].some(query =>
-                    field.includes(query.toLowerCase())
-                );
+            let field;
+            if (search.type === 'ranks_id') {
+                field = this.getRankName(employee.ranks_id);
             } else if (search.type === 'fname') {
-                const field = `${employee.fname} ${employee.lname}`.toLowerCase();
-                queryMatched = this.searchQueries[search.type].some(query =>
-                    field.includes(query.toLowerCase())
-                );
+                field = this.getEmployeeName(employee.no);
             } else {
-                const searchQuery = search.query.toLowerCase();
-                queryMatched = field.includes(searchQuery);
+                field = employee[search.type];
             }
-            const timeMatched = search.type === 'updated_date' ? this.checkTimeRange(employee, search) : true;
-            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getRankName(employee.ranks_id)) : true;
-            return queryMatched && timeMatched && topicMatched;
+
+            if (Array.isArray(search.query)) {
+                queryMatched = search.query.some(query => {
+                    const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
+                    return lowerCaseField.includes(query.toLowerCase());
+                });
+            } else if (typeof search.query === 'string') {
+                const searchQuery = search.query.toLowerCase();
+                queryMatched = typeof field === 'string' && field.toLowerCase().includes(searchQuery);
+            } else {
+                queryMatched = false;
+            }
+
+            const timeMatched = search.type === 'updated_date'
+                ? this.checkTimeRange(employee, search)
+                : true;
+
+            return queryMatched && timeMatched;
         },
 
         checkTimeRange(employee, search) {
@@ -645,7 +654,7 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
+            const worksheet = workbook.addWorksheet('พนักงานทั้งหมด');
 
             const headers = this.filteredHeaders
                 .filter(header => header.value !== 'picture' && header.value !== 'detail')
@@ -661,11 +670,13 @@ export default {
                 const rowData = {};
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'updated_date') {
-                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
+                        rowData[header.value] = this.formatDateTime(item.updated_date);
                     } else if (header.value === 'ranks_id') {
                         rowData[header.value] = this.getRankName(item.ranks_id);
                     } else if (header.value === 'emp_id') {
                         rowData[header.value] = this.getEmployeeName(item.emp_id);
+                    } else if (header.value === 'fname') {
+                        rowData[header.value] = this.getEmployeeName(item.no);
                     } else if (header.value !== 'picture' && header.value !== 'detail') {
                         rowData[header.value] = item[header.value];
                     }

@@ -73,13 +73,20 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType !== 'type_id' && searchType !== 'updated_date'"
-                                v-model="searchQuery" :items="getSearchItems(searchType)" label="ค้นหา" dense outlined
-                                append-icon="mdi-magnify" class="mx-2 same-size small-font" hide-no-data hide-details
-                                clearable></v-autocomplete>
+                            <v-autocomplete v-if="searchType === 'nickname'" v-model="selectedNicknames"
+                                class="mx-2 search-size small-font" :items="getSearchItems('nickname')"
+                                label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
+                            </v-autocomplete>
 
-                            <v-select v-if="searchType === 'type_id'" v-model="selectedTopics" :items="actionTopics"
-                                dense outlined multiple class="mx-2 search-size small-font"></v-select>
+                            <v-autocomplete v-if="searchType === 'id'" v-model="selectedIds"
+                                class="mx-2 search-size small-font" :items="getSearchItems('id')"
+                                label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'type_id'" v-model="selectedTopics"
+                                class="mx-2 search-size small-font" :items="getSearchItems('type_id')"
+                                label="ค้นหาประเภท" dense outlined clearable multiple>
+                            </v-autocomplete>
 
                             <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
@@ -129,9 +136,11 @@
                         </v-list-item>
                     </v-list>
                 </v-menu>
-                <v-btn @click="goToNewUser" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
-                    <v-icon left color="#24b224">mdi-account-plus</v-icon> เพิ่มลูกค้า
-                </v-btn>
+                <div>
+                    <v-btn @click="goToNewUser" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#24b224">mdi-account-plus</v-icon> เพิ่มลูกค้า
+                    </v-btn>
+                </div>
             </div>
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
@@ -140,6 +149,13 @@
                     <v-avatar size="40">
                         <img :src="`http://localhost:3001/file/profile/${item.picture}`" alt="picture" />
                     </v-avatar>
+                </template>
+                <template v-slot:item.select="{ item }">
+                    <div class="text-center"
+                        style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                        <v-checkbox v-if="isSelectingItems" v-model="selectedItems" :value="item.no"
+                            style="transform: scale(1);" />
+                    </div>
                 </template>
                 <template v-slot:item.id="{ item }">
                     <div class="text-center">{{ item.id }}</div>
@@ -177,20 +193,22 @@
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item @click="showConfirmDialog('delete', item)" class="custom-list-item">
+                                <v-list-item @click="toggleSelectItems" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
                                 </v-list-item>
                             </v-list>
+
                         </v-menu>
                     </div>
                 </template>
             </v-data-table>
             <div class="text-center">
-                <v-btn class="mb-4" color="#e50211" @click="goToHome">
-                    <v-icon>mdi-home</v-icon>กลับไปหน้าหลัก
+                <v-btn v-if="isSelectingItems && selectedItems.length > 0" color="red" @click="deleteSelectedItems"
+                    class="mb-4" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-icon left color="white">mdi-delete</v-icon> ลบ
                 </v-btn>
             </div>
         </v-card>
@@ -258,6 +276,14 @@ export default {
             employees: [],
             bases: [],
 
+            selectedNicknames: [],
+            selectedIds: [],
+            selectedTopics: [],
+
+            selectedItems: [],
+            handleConfirm: null,
+            isSelectingItems: false,
+
             sortBy: 'updated_date',
             currentAction: '',
             searchQuery: '',
@@ -279,16 +305,9 @@ export default {
             currentItem: null,
             customerNo: null,
             actionType: null,
-            selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['updated_date', 'id', 'nickname', 'type_id', 'base_id', 'emp_id', 'detail'],
-
-            searchQueries: {
-                'nickname': [],
-                'id': [],
-            },
-
+            
             searchTypes: [
                 { text: 'ชื่อเล่น', value: 'nickname' },
                 { text: 'รหัสสมาชิก', value: 'id' },
@@ -296,13 +315,17 @@ export default {
                 { text: 'เวลา', value: 'updated_date' }
             ],
 
-            actionTopics: [
-                { text: 'เทรดเอง', value: 'เทรดเอง' },
-                { text: 'เทรดตามโค้ช', value: 'เทรดตามโค้ช' },
-                { text: 'ยังไม่ระบุ', value: 'ยังไม่ระบุ' },
-            ],
+            visibleColumns: ['updated_date', 'id', 'nickname', 'type_id', 'base_id', 'emp_id', 'detail', 'select'],
 
             headers: [
+                {
+                    text: '',
+                    value: 'select',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
                 {
                     text: 'เวลา',
                     value: 'updated_date',
@@ -372,18 +395,44 @@ export default {
             return filteredCustomers;
         },
 
-        formattedDetailLines() {
-            return this.selectedItemDetail.split('\n');
-        },
-
         filteredHeaders() {
             return this.headers.filter(header => this.visibleColumns.includes(header.value));
         },
     },
 
     methods: {
-        goToHome() {
-            this.$router.push('/app/home');
+        toggleSelectItems() {
+            this.isSelectingItems = !this.isSelectingItems;
+        },
+
+        async deleteSelectedItems() {
+            // ตั้งฟังก์ชันที่จะทำการลบ
+            this.handleConfirm = async () => {
+                const selectedIds = this.selectedItems;
+
+                // ลบรายการที่เลือก
+                for (let i = 0; i < selectedIds.length; i++) {
+                    try {
+                        // ใช้ API เดิมในการลบ
+                        await this.$store.dispatch('api/customer/deleteCustomer', selectedIds[i]);
+                    } catch (error) {
+                        console.error(`Error deleting customer with id ${selectedIds[i]}:`, error);
+                    }
+                }
+
+                // รีเฟรชรายการหลังจากลบ
+                this.$emit('updateItems');
+                this.selectedItems = [];
+                this.isSelectingItems = false;
+
+                // แสดงข้อความและเปิด ModalComplete
+                this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
+                this.modal.complete.open = true; // เปิด ModalComplete
+                this.modalConfirmOpen = false; // ปิด ModalConfirm
+            };
+
+            // เปิด ModalConfirm
+            this.modalConfirmOpen = true;
         },
 
         async fetchTypeData() {
@@ -432,6 +481,8 @@ export default {
                 return this.customers.map(emp => emp.nickname);
             } else if (type === 'id') {
                 return this.customers.map(emp => emp.id);
+            } else if (type === 'type_id') {
+                return this.customers.map(emp => this.getTypeName(emp.type_id));
             }
             return [];
         },
@@ -440,21 +491,6 @@ export default {
             this.currentAction = action;
             this.currentItem = item;
             this.modalConfirmOpen = true;
-        },
-
-        async handleConfirm() {
-            if (this.currentAction === 'delete') {
-                try {
-                    await this.$store.dispatch('api/customer/deleteCustomer', this.currentItem.no);
-                    this.modal.complete.message = 'ลบลูกค้าเรียบร้อยแล้ว';
-                    this.recordLog();
-                    this.modal.complete.open = true;
-                } catch (warning) {
-                    this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
-                    this.modal.complete.open = true;
-                }
-            }
-            this.modalConfirmOpen = false;
         },
 
         async checkRank() {
@@ -535,69 +571,74 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'type_id') {
-                this.addTopicToSearch();
-            } else if (this.searchType === 'nickname' || this.searchType === 'id') {
-                this.addTextToSearch();
+            if (this.searchType === 'nickname' || this.searchType === 'id' || this.searchType === 'type_id') {
+                this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
                     query: this.searchQuery,
                     type: this.searchType,
-                    topic: this.selectedTopic,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
                 this.searchQuery = '';
-                this.selectedTopic = '';
                 this.startDateTime = '';
                 this.endDateTime = '';
             }
         },
 
-        addTextToSearch() {
-            const trimmedQuery = this.searchQuery.trim();
-            if (trimmedQuery) {
-                this.searchQueries[this.searchType].push(trimmedQuery);
+        addSearchItemsToSearch() {
+            const selectedItems =
+                this.searchType === 'nickname' ? this.selectedNicknames :
+                    this.searchType === 'id' ? this.selectedIds :
+                        this.searchType === 'type_id' ? this.selectedTopics : [];
+
+            if (selectedItems.length > 0) {
                 this.savedSearches.push({
-                    query: this.searchQueries[this.searchType],
+                    query: selectedItems,
                     type: this.searchType,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
-                this.searchQuery = '';
-            }
-        },
 
-        addTopicToSearch() {
-            this.savedSearches.push({
-                query: '',
-                type: 'type_id',
-                topics: [...this.selectedTopics],
-                start: this.startDateTime,
-                end: this.endDateTime
-            });
-            this.selectedTopics = [];
-            this.startDateTime = '';
-            this.endDateTime = '';
+                if (this.searchType === 'nickname') {
+                    this.selectedNicknames = [];
+                } else if (this.searchType === 'id') {
+                    this.selectedIds = [];
+                } else if (this.searchType === 'type_id') {
+                    this.selectedTopics = [];
+                }
+
+                this.startDateTime = '';
+                this.endDateTime = '';
+            }
         },
 
         applySearchFilter(customer, search) {
-            const field = customer[search.type];
             let queryMatched = true;
-            const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
-            if (search.type === 'id' || search.type === 'nickname') {
-                queryMatched = this.searchQueries[search.type].some(query =>
-                    lowerCaseField.includes(query.toLowerCase())
-                );
+
+            let field;
+            if (search.type === 'type_id') {
+                field = this.getTypeName(customer.type_id);
+            } else {
+                field = customer[search.type];
+            }
+
+            if (search.type === 'id' || search.type === 'nickname' || search.type === 'type_id') {
+                queryMatched = search.query.some(query => {
+                    const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
+                    return lowerCaseField.includes(query.toLowerCase());
+                });
             } else {
                 const searchQuery = search.query.toLowerCase();
-                queryMatched = lowerCaseField.includes(searchQuery);
+                queryMatched = typeof field === 'string' && field.toLowerCase().includes(searchQuery);
             }
-            const timeMatched = search.type === 'updated_date' ? this.checkTimeRange(customer, search) : true;
-            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getTypeName(customer.type_id)) : true;
-            return queryMatched && timeMatched && topicMatched;
-        }
-        ,
+
+            const timeMatched = search.type === 'updated_date'
+                ? this.checkTimeRange(customer, search)
+                : true;
+
+            return queryMatched && timeMatched;
+        },
 
         checkTimeRange(customer, search) {
             const customerTime = moment(customer.updated_date);
@@ -622,10 +663,10 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
+            const worksheet = workbook.addWorksheet('ลูกค้าทั้งหมด');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'picture' && header.value !== 'detail')
+                .filter(header => header.value !== 'picture' && header.value !== 'detail' && header.value !== 'select')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -645,7 +686,7 @@ export default {
                         rowData[header.value] = this.getEmployeeName(item.emp_id);
                     } else if (header.value === 'base_id') {
                         rowData[header.value] = this.getBaseName(item.base_id);
-                    } else if (header.value !== 'picture' && header.value !== 'detail') {
+                    } else if (header.value !== 'picture' && header.value !== 'detail' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }
                 });
