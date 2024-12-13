@@ -154,11 +154,6 @@
                     <div class="text-center">{{ formatDateTime(item.time) }}</div>
                 </template>
             </v-data-table>
-            <div class="text-center">
-                <v-btn class="mb-4" color="#e50211" @click="goToHome">
-                    <v-icon>mdi-home</v-icon>กลับไปหน้าหลัก
-                </v-btn>
-            </div>
         </v-card>
 
         <v-dialog v-model="dialog" max-width="300px">
@@ -384,10 +379,6 @@ export default {
         },
         onImageError(event, item) {
             event.target.src = `http://localhost:3001/file/default/${item.picture}`;
-        },
-
-        goToHome() {
-            this.$router.push('/app/home');
         },
 
         getSearchItems(type) {
