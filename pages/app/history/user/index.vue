@@ -69,14 +69,20 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType !== 'action' && searchType !== 'time'"
-                                v-model="searchQuery" :items="getSearchItems(searchType)" label="ค้นหา" dense outlined
-                                append-icon="mdi-magnify" class="mx-2 same-size small-font" hide-no-data
-                                hide-details></v-autocomplete>
+                            <v-autocomplete v-if="searchType === 'emp_name'" v-model="selectedName"
+                                class="mx-2 search-size small-font" :items="getSearchItems('emp_name')"
+                                label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
+                            </v-autocomplete>
 
+                            <v-autocomplete v-if="searchType === 'emp_email'" v-model="selectedEmail"
+                                class="mx-2 search-size small-font" :items="getSearchItems('emp_email')"
+                                label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
+                            </v-autocomplete>
 
-                            <v-select v-if="searchType === 'action'" v-model="selectedTopics" :items="actionTopics"
-                                dense outlined multiple class="mx-2 search-size small-font"></v-select>
+                            <v-autocomplete v-if="searchType === 'action'" v-model="selectedAction"
+                                class="mx-2 search-size small-font" :items="getSearchItems('action')"
+                                label="ค้นหาประเภท" dense outlined clearable multiple>
+                            </v-autocomplete>
 
 
                             <v-menu v-if="searchType === 'time'" v-model="datePickerMenu"
@@ -238,6 +244,10 @@ export default {
 
             logs: [],
 
+            selectedName: [],
+            selectedEmail: [],
+            selectedAction: [],
+
             startDateTime: '',
             endDateTime: '',
             selectedItemDetail: '',
@@ -251,7 +261,6 @@ export default {
             endDatePickerMenu: false,
             showSavedSearchesDialog: false,
             showColumnSelector: false,
-            selectedTopics: [],
             savedSearches: [],
             visibleColumns: ['time', 'picture', 'action', 'emp_email', 'emp_name', 'customer_id', 'detail'],
 
@@ -377,6 +386,7 @@ export default {
             }
             return 'ข้อมูลทั่วไป';
         },
+
         onImageError(event, item) {
             event.target.src = `http://localhost:3001/file/default/${item.picture}`;
         },
@@ -386,6 +396,8 @@ export default {
                 return this.logs.map(log => log.emp_name);
             } else if (type === 'emp_email') {
                 return this.logs.map(log => log.emp_email);
+            } else if (type === 'action') {
+                return this.logs.map(log => log.action);
             }
             return [];
         },
@@ -463,68 +475,69 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'action') {
-                this.addTopicToSearch();
-            } else if (this.searchType === 'emp_name' || this.searchType === 'emp_email') {
-                this.addTextToSearch();
+            if (this.searchType === 'emp_name' || this.searchType === 'emp_email' || this.searchType === 'action') {
+                this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
                     query: this.searchQuery,
                     type: this.searchType,
-                    topic: this.selectedTopic,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
                 this.searchQuery = '';
-                this.selectedTopic = '';
                 this.startDateTime = '';
                 this.endDateTime = '';
             }
         },
 
-        addTextToSearch() {
-            const trimmedQuery = this.searchQuery.trim();
-            if (trimmedQuery) {
-                this.searchQueries[this.searchType].push(trimmedQuery);
+        addSearchItemsToSearch() {
+            const selectedItems =
+                this.searchType === 'emp_name' ? this.selectedName :
+                    this.searchType === 'emp_email' ? this.selectedEmail :
+                        this.searchType === 'action' ? this.selectedAction : [];
+
+            if (selectedItems.length > 0) {
                 this.savedSearches.push({
-                    query: this.searchQueries[this.searchType],
+                    query: selectedItems,
                     type: this.searchType,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
-                this.searchQuery = '';
-            }
-        },
 
-        addTopicToSearch() {
-            this.savedSearches.push({
-                query: '',
-                type: 'action',
-                topics: [...this.selectedTopics],
-                start: this.startDateTime,
-                end: this.endDateTime
-            });
-            this.selectedTopics = [];
-            this.startDateTime = '';
-            this.endDateTime = '';
+                if (this.searchType === 'emp_name') {
+                    this.selectedName = [];
+                } else if (this.searchType === 'emp_email') {
+                    this.selectedEmail = [];
+                } else if (this.searchType === 'action') {
+                    this.selectedAction = [];
+                }
+
+                this.startDateTime = '';
+                this.endDateTime = '';
+            }
         },
 
         applySearchFilter(log, search) {
-            const field = log[search.type] ? log[search.type].toLowerCase() : '';
             let queryMatched = true;
+            const field = log[search.type];
 
-            if (search.type === 'emp_name' || search.type === 'emp_email') {
-                queryMatched = this.searchQueries[search.type].some(query =>
-                    field.includes(query.toLowerCase())
-                );
-            } else {
+            if (Array.isArray(search.query)) {
+                queryMatched = search.query.some(query => {
+                    const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
+                    return lowerCaseField.includes(query.toLowerCase());
+                });
+            } else if (typeof search.query === 'string') {
                 const searchQuery = search.query.toLowerCase();
-                queryMatched = field.includes(searchQuery);
+                queryMatched = typeof field === 'string' && field.toLowerCase().includes(searchQuery);
+            } else {
+                queryMatched = false;
             }
 
-            const timeMatched = search.type === 'time' ? this.checkTimeRange(log, search) : true;
-            const topicMatched = search.topics ? search.topics.some(topic => topic === log.action) : true;
-            return queryMatched && timeMatched && topicMatched;
+            const timeMatched = search.type === 'time'
+                ? this.checkTimeRange(log, search)
+                : true;
+
+            return queryMatched && timeMatched;
         },
 
         checkTimeRange(log, search) {
@@ -557,7 +570,7 @@ export default {
                 .map(header => ({
                     header: header.text,
                     key: header.value,
-                    style: { font: { name: 'Angsana New' , size: 16 } }
+                    style: { font: { name: 'Angsana New', size: 16 } }
                 }));
 
             worksheet.columns = headers;
@@ -589,7 +602,7 @@ export default {
                     };
                 });
             });
-            
+
             const currentDate = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
             workbook.xlsx.writeBuffer().then(buffer => {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
