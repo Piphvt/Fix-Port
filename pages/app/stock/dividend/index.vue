@@ -6,7 +6,7 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <EditStock :open="editStock" :data="editAllData" @update:edit="editStock = false" />
-        <CreateDividend :open="createSetOpen" @update:open="createSetOpen = false" />
+        <DividendCreate :open="createSetOpen" @update:open="createSetOpen = false" />
 
         <v-card class="custom-card" flat>
             <v-container>
