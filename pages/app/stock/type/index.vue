@@ -5,8 +5,8 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
-        <EditSet :open="editSet" :data="editAllData" @update:edit="editSet = false" />
-        <CreateSet :open="createSetOpen" @update:open="createSetOpen = false" />
+        <SetEdit :open="editSet" :data="editAllData" @update:edit="editSet = false" />
+        <SetCreate :open="createSetOpen" @update:open="createSetOpen = false" />
 
         <v-card class="custom-card" flat>
             <v-container>
