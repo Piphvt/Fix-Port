@@ -24,7 +24,7 @@
                     <br />
                     <v-icon>mdi-phone</v-icon> เบอร์โทรศัพท์ : {{ employee.phone }}
                     <br />
-                    <v-icon>mdi-chair-rolling</v-icon> ตำแหน่ง : {{ getRankName(employee.ranks_id) }}
+                    <v-icon>mdi-chair-rolling</v-icon> ตำแหน่ง : {{ getRankName(employee.rank_no) }}
                     <br />
                     <v-icon>mdi-gender-male-female</v-icon> เพศ : {{ employee.gender }}
                     <br />
@@ -101,7 +101,7 @@ export default {
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.ranks_id.toString();
+                const RankID = this.$auth.user.rank_no.toString();
                 if (Status === '2') {
                     this.$router.push('/');
                     await this.$auth.logout();

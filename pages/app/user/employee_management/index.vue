@@ -88,8 +88,8 @@
                                 label="ค้นหาเบอร์โทรศัพท์" dense outlined clearable multiple>
                             </v-autocomplete>
 
-                            <v-autocomplete v-if="searchType === 'ranks_id'" v-model="selectedRank"
-                                class="mx-2 search-size small-font" :items="getSearchItems('ranks_id')"
+                            <v-autocomplete v-if="searchType === 'rank_no'" v-model="selectedRank"
+                                class="mx-2 search-size small-font" :items="getSearchItems('rank_no')"
                                 label="ค้นหาตำแหน่ง" dense outlined clearable multiple>
                             </v-autocomplete>
 
@@ -118,7 +118,7 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.ranks_id === 1" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -173,9 +173,9 @@
                 <template v-slot:item.gender="{ item }">
                     <div class="text-center">{{ item.gender }}</div>
                 </template>
-                <template v-slot:item.ranks_id="{ item }">
-                    <div class="text-center" :style="{ color: getStatusText(getRankName(item.ranks_id)).color }">
-                        {{ getRankName(item.ranks_id) }}
+                <template v-slot:item.rank_no="{ item }">
+                    <div class="text-center" :style="{ color: getStatusText(getRankName(item.rank_no)).color }">
+                        {{ getRankName(item.rank_no) }}
                     </div>
                 </template>
                 <template v-slot:item.updated_date="{ item }">
@@ -301,11 +301,11 @@ export default {
                 { text: 'ชื่อ', value: 'fname' },
                 { text: 'อีเมล', value: 'email' },
                 { text: 'เบอร์โทรศัพท์', value: 'phone' },
-                { text: 'ตำแหน่ง', value: 'ranks_id' },
+                { text: 'ตำแหน่ง', value: 'rank_no' },
                 { text: 'เวลา', value: 'updated_date' }
             ],
 
-            visibleColumns: ['updated_date', 'picture', 'ranks_id', 'email', 'fname', 'lname', 'phone', 'gender', 'emp_id', 'detail'],
+            visibleColumns: ['updated_date', 'picture', 'rank_no', 'email', 'fname', 'lname', 'phone', 'gender', 'emp_id', 'detail'],
 
             headers: [
                 {
@@ -325,7 +325,7 @@ export default {
 
                 {
                     text: 'ตำแหน่ง',
-                    value: 'ranks_id',
+                    value: 'rank_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -442,8 +442,8 @@ export default {
                 return this.employees.map(emp => emp.email);
             } else if (type === 'phone') {
                 return this.employees.map(emp => emp.phone);
-            } else if (type === 'ranks_id') {
-                return this.employees.map(emp => this.getRankName(emp.ranks_id));
+            } else if (type === 'rank_no') {
+                return this.employees.map(emp => this.getRankName(emp.rank_no));
             }
             return [];
         },
@@ -456,8 +456,8 @@ export default {
 
         async handleConfirm() {
             if (this.currentAction === 'delete') {
-                const currentRank = this.getRankName(this.$auth.user.ranks_id);
-                const targetRank = this.getRankName(this.currentItem.ranks_id);
+                const currentRank = this.getRankName(this.$auth.user.rank_no);
+                const targetRank = this.getRankName(this.currentItem.rank_no);
                 if (currentRank === 'ผู้พัฒนา' && targetRank === 'ผู้พัฒนา') {
                     this.modal.warning.open = true;
                     this.modal.warning.message = 'ไม่สามารถลบผู้ใช้งานที่มีตำแหน่งผู้พัฒนาได้';
@@ -484,7 +484,7 @@ export default {
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.ranks_id.toString();
+                const RankID = this.$auth.user.rank_no.toString();
                 if (Status === '2') {
                     this.$router.push('/');
                     await this.$auth.logout();
@@ -534,7 +534,7 @@ export default {
         },
 
         onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchType !== 'updated_date' && this.searchType !== 'ranks_id';
+            this.isSearchFieldVisible = this.searchType !== 'updated_date' && this.searchType !== 'rank_no';
         },
 
         validateDateRange() {
@@ -553,7 +553,7 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'fname' || this.searchType === 'email' || this.searchType === 'phone' || this.searchType === 'ranks_id') {
+            if (this.searchType === 'fname' || this.searchType === 'email' || this.searchType === 'phone' || this.searchType === 'rank_no') {
                 this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
@@ -575,7 +575,7 @@ export default {
                 this.searchType === 'phone' ? this.selectedPhone :
                     this.searchType === 'email' ? this.selectedEmail :
                         this.searchType === 'fname' ? this.selectedFname :
-                            this.searchType === 'ranks_id' ? this.selectedRank : [];
+                            this.searchType === 'rank_no' ? this.selectedRank : [];
 
             if (selectedItems.length > 0) {
                 this.savedSearches.push({
@@ -591,7 +591,7 @@ export default {
                     this.selectedEmail = [];
                 } else if (this.searchType === 'fname') {
                     this.selectedFname = [];
-                } else if (this.searchType === 'ranks_id') {
+                } else if (this.searchType === 'rank_no') {
                     this.selectedRank = [];
                 }
 
@@ -604,8 +604,8 @@ export default {
             let queryMatched = true;
 
             let field;
-            if (search.type === 'ranks_id') {
-                field = this.getRankName(employee.ranks_id);
+            if (search.type === 'rank_no') {
+                field = this.getRankName(employee.rank_no);
             } else if (search.type === 'fname') {
                 field = this.getEmployeeName(employee.no);
             } else {
@@ -671,8 +671,8 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'updated_date') {
                         rowData[header.value] = this.formatDateTime(item.updated_date);
-                    } else if (header.value === 'ranks_id') {
-                        rowData[header.value] = this.getRankName(item.ranks_id);
+                    } else if (header.value === 'rank_no') {
+                        rowData[header.value] = this.getRankName(item.rank_no);
                     } else if (header.value === 'emp_id') {
                         rowData[header.value] = this.getEmployeeName(item.emp_id);
                     } else if (header.value === 'fname') {
