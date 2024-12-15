@@ -22,7 +22,7 @@
                         </v-col>
 
                         <v-col cols="3">
-                            <v-select v-model="item.set_id" :items="sets" item-text="name" item-value="id"
+                            <v-select v-model="item.set_no" :items="sets" item-text="name" item-value="id"
                                 label="ประเภท" clearable dense outlined>
                             </v-select>
                         </v-col>
@@ -85,8 +85,7 @@ export default {
             valid: false,
             showModalResult: false,
             withdrawalItems: [{
-                name: '', set_id: null, dividend_amount: null,
-                closing_price: null
+                name: '', set_no: null, closing_price: null
             }],
             sets: [],
 
@@ -110,14 +109,14 @@ export default {
             return name !== null && name !== '';
         },
 
-        isFromValid(set_id) {
-            return set_id !== null && set_id !== '';
+        isFromValid(set_no) {
+            return set_no !== null && set_no !== '';
         },
 
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.ranks_id.toString();
+                const RankID = this.$auth.user.rank_no.toString();
                 if (Status === '2') {
                     this.$router.push('/');
                     await this.$auth.logout();
@@ -153,9 +152,8 @@ export default {
             for (const stock of this.withdrawalItems) {
                 try {
                     await this.$store.dispatch('api/stock/addStock', {
-                        name: stock.name,
-                        set_id: stock.set_id,
-                        dividend_amount: stock.dividend_amount,
+                        stock: stock.name,
+                        set_no: stock.set_no,
                         closing_price: stock.closing_price,
                         emp_id: this.$auth.user.no,
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
@@ -183,7 +181,7 @@ export default {
 
         async fetchSetsData() {
             try {
-                const response = await this.$store.dispatch('api/set/getSets');
+                const response = await this.$store.dispatch('api/set/getSet');
                 if (response) {
                     this.sets = response.map(item => ({ id: item.no, name: item.set }));
                 }
@@ -195,8 +193,7 @@ export default {
         addProduct() {
             this.withdrawalItems.push({
                 name: '',
-                set_id: null,
-                dividend_amount: null,
+                set_no: null,
                 closing_price: null,
             });
         },
@@ -211,11 +208,10 @@ export default {
 
         recordLog() {
             const details = this.withdrawalItems.map((item, index) => {
-                const setName = this.sets.find(set => set.id === item.set_id)?.name || 'ยังไม่ระบุ';
+                const setName = this.sets.find(set => set.id === item.set_no)?.name || 'ยังไม่ระบุ';
                 return `หุ้นที่ ${index + 1}\n` +
                     `ชื่อ : ${item.name || 'ยังไม่ระบุ'}\n` +
                     `ประเภท : ${setName}\n` +
-                    `จำนวนปันผล : ${item.dividend_amount || 'ยังไม่ระบุ'}\n` +
                     `ราคาปิด : ${item.closing_price || 'ยังไม่ระบุ'}`;
             }).join('\n\n');
 

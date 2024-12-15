@@ -73,12 +73,12 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType !== 'set_id' && searchType !== 'updated_date'"
+                            <v-autocomplete v-if="searchType !== 'set_no' && searchType !== 'updated_date'"
                                 v-model="searchQuery" :items="getSearchItems(searchType)" label="ค้นหา" dense outlined
                                 append-icon="mdi-magnify" class="mx-2 same-size small-font" hide-no-data hide-details
                                 clearable></v-autocomplete>
 
-                            <v-select v-if="searchType === 'set_id'" v-model="selectedTopics" :items="actionTopics"
+                            <v-select v-if="searchType === 'set_no'" v-model="selectedTopics" :items="actionTopics"
                                 dense outlined multiple class="mx-2 search-size small-font"></v-select>
 
                             <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
@@ -106,7 +106,7 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.ranks_id === 1" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -149,13 +149,13 @@
                         <img :src="`http://localhost:3001/file/profile/${item.picture}`" alt="picture" />
                     </v-avatar>
                 </template>
-                <template v-slot:item.set_id="{ item }">
-                    <div class="text-center" :style="{ color: getFromText(getSetName(item.set_id)).color }">
-                        {{ getSetName(item.set_id) }}
+                <template v-slot:item.set_no="{ item }">
+                    <div class="text-center" :style="{ color: getFromText(getSetName(item.set_no)).color }">
+                        {{ getSetName(item.set_no) }}
                     </div>
                 </template>
-                <template v-slot:item.emp_id="{ item }">
-                    <div class="text-center">{{ getEmployeeName(item.emp_id) }}</div>
+                <template v-slot:item.employee_no="{ item }">
+                    <div class="text-center">{{ getEmployeeName(item.employee_no) }}</div>
                 </template>
                 <template v-slot:item.updated_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
@@ -258,7 +258,7 @@ export default {
             sortBy: 'updated_date',
             currentAction: '',
             searchQuery: '',
-            searchType: 'name',
+            searchType: 'stock',
             selectedItemDetail: '',
             startDateTime: '',
             endDateTime: '',
@@ -279,17 +279,17 @@ export default {
             selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['updated_date', 'set_id', 'name', 'dividend_amount', 'closing_price', 'comment', 'emp_id', 'detail'],
+            visibleColumns: ['updated_date', 'set_no', 'stock', 'dividend_amount', 'closing_price', 'comment', 'employee_no', 'detail'],
 
             searchQueries: {
-                'name': [],
-                'emp_id': [],
+                'stock': [],
+                'employee_no': [],
             },
 
             searchTypes: [
-                { text: 'ชื่อหุ้น', value: 'name' },
-                { text: 'ทำรายการโดย', value: 'emp_id' },
-                { text: 'ประเภท', value: 'set_id' },
+                { text: 'ชื่อหุ้น', value: 'stock' },
+                { text: 'ทำรายการโดย', value: 'employee_no' },
+                { text: 'ประเภท', value: 'set_no' },
                 { text: 'เวลา', value: 'updated_date' }
             ],
 
@@ -305,7 +305,7 @@ export default {
 
                 {
                     text: 'ประเภท',
-                    value: 'set_id',
+                    value: 'set_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -313,7 +313,7 @@ export default {
 
                 {
                     text: 'ชื่อหุ้น',
-                    value: 'name',
+                    value: 'stock',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -345,7 +345,7 @@ export default {
 
                 {
                     text: 'ทำรายการโดย',
-                    value: 'emp_id',
+                    value: 'employee_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -385,7 +385,7 @@ export default {
     methods: {
         async fetchDividendData() {
             try {
-                this.dividends = await this.$store.dispatch('api/dividend/getDividends');
+                this.dividends = await this.$store.dispatch('api/dividend/getDividend');
             } catch (error) {
                 console.error('Failed to fetch dividends:', error);
             }
@@ -394,7 +394,7 @@ export default {
         getTotalDividends(stockId) {
             const currentYear = new Date().getFullYear();
             const total = this.dividends
-                .filter(dividend => dividend.stock_id === stockId &&
+                .filter(dividend => dividend.stock_no === stockId &&
                     new Date(dividend.created_date).getFullYear() === currentYear)
                 .reduce((total, dividend) => {
                     return total.add(new Decimal(dividend.dividend));
@@ -405,7 +405,7 @@ export default {
 
         async fetchSetTopic() {
             try {
-                const settopics = await this.$store.dispatch('api/set/getSets');
+                const settopics = await this.$store.dispatch('api/set/getSet');
                 this.actionTopics = settopics.map(set => ({
                     text: set.set,
                     value: set.set
@@ -416,7 +416,7 @@ export default {
         },
 
         async fetchSetData() {
-            this.sets = await this.$store.dispatch('api/set/getSets')
+            this.sets = await this.$store.dispatch('api/set/getSet')
         },
 
         getSetName(setId) {
@@ -425,11 +425,11 @@ export default {
         },
 
         async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStocks');
+            this.stocks = await this.$store.dispatch('api/stock/getStock');
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
         },
 
         getEmployeeName(empId) {
@@ -448,14 +448,13 @@ export default {
         },
 
         getSearchItems(type) {
-            if (type === 'name') {
-                return this.stocks.map(emp => emp.name);
-            } else if (type === 'emp_id') {
-                return this.stocks.map(emp => this.getEmployeeName(emp.emp_id));
+            if (type === 'stock') {
+                return this.stocks.map(emp => emp.stock);
+            } else if (type === 'employee_no') {
+                return this.stocks.map(emp => this.getEmployeeName(emp.employee_no));
             }
             return [];
-        }
-        ,
+        },
 
         showConfirmDialog(action, item) {
             this.currentAction = action;
@@ -481,7 +480,7 @@ export default {
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.ranks_id.toString();
+                const RankID = this.$auth.user.rank_no.toString();
                 if (Status === '2') {
                     this.$router.push('/');
                     await this.$auth.logout();
@@ -537,7 +536,7 @@ export default {
         },
 
         onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchSet !== 'updated_date' && this.searchType !== 'set_id';
+            this.isSearchFieldVisible = this.searchSet !== 'updated_date' && this.searchType !== 'set_no';
         },
 
         validateDateRange() {
@@ -555,9 +554,9 @@ export default {
             if (!this.validateDateRange()) {
                 return;
             }
-            if (this.searchType === 'set_id') {
+            if (this.searchType === 'set_no') {
                 this.addTopicToSearch();
-            } else if (this.searchType === 'name' || this.searchType === 'emp_id') {
+            } else if (this.searchType === 'stock' || this.searchType === 'employee_no') {
                 this.addTextToSearch();
             } else {
                 this.savedSearches.push({
@@ -595,7 +594,7 @@ export default {
         addTopicToSearch() {
             this.savedSearches.push({
                 query: '',
-                type: 'set_id',
+                type: 'set_no',
                 topics: [...this.selectedTopics],
                 start: this.startDateTime,
                 end: this.endDateTime
@@ -609,13 +608,13 @@ export default {
             const field = stock[search.type];
             let queryMatched = true;
             const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
-            if (search.type === 'emp_id') {
+            if (search.type === 'employee_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const empName = this.getEmployeeName(stock.emp_id);
+                    const empName = this.getEmployeeName(stock.employee_no);
                     return empName.toLowerCase().includes(query.toLowerCase());
                 });
             }
-            else if (search.type === 'name') {
+            else if (search.type === 'stock') {
                 queryMatched = this.searchQueries[search.type].some(query =>
                     lowerCaseField.includes(query.toLowerCase())
                 );
@@ -624,7 +623,7 @@ export default {
                 queryMatched = lowerCaseField.includes(searchQuery);
             }
             const timeMatched = search.type === 'updated_date' ? this.checkTimeRange(stock, search) : true;
-            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getSetName(stock.set_id)) : true;
+            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getSetName(stock.set_no)) : true;
             return queryMatched && timeMatched && topicMatched;
         },
 
@@ -668,10 +667,10 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'updated_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value === 'set_id') {
-                        rowData[header.value] = this.getSetName(item.set_id);
-                    } else if (header.value === 'emp_id') {
-                        rowData[header.value] = this.getEmployeeName(item.emp_id);
+                    } else if (header.value === 'set_no') {
+                        rowData[header.value] = this.getSetName(item.set_no);
+                    } else if (header.value === 'employee_no') {
+                        rowData[header.value] = this.getEmployeeName(item.employee_no);
                     } else if (header.value === 'dividend_amount') {
                         rowData[header.value] = this.getTotalDividends(item.no);
                     } else if (header.value !== 'picture' && header.value !== 'detail') {
@@ -715,24 +714,22 @@ export default {
 
         recordLog() {
             const log = {
-                stock_id: this.currentItem.name,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
+                type_no: this.currentItem.no,
+                employee_no: this.$auth.user.no,
                 detail: this.currentAction === 'delete'
-                    ? `ประเภท : ${this.getSetName(this.currentItem.set_id) || 'ยังไม่ระบุ'}\n` +
+                    ? `ประเภท : ${this.getSetName(this.currentItem.set_no) || 'ยังไม่ระบุ'}\n` +
                     `จำนวนปันผล : ${this.currentItem.dividend_amount || 'ยังไม่ระบุ'}\n` +
                     `ราคาปิด : ${this.currentItem.closing_price || 'ยังไม่ระบุ'}\n` +
                     `หมายเหตุ : ${this.currentItem.comment || 'ยังไม่ระบุ'}`
-                    : `ประเภท : ${this.getSetName(this.currentItem.set_id) || 'ยังไม่ระบุ'}\n` +
+                    : `ประเภท : ${this.getSetName(this.currentItem.set_no) || 'ยังไม่ระบุ'}\n` +
                     `จำนวนปันผล : ${this.currentItem.dividend_amount || 'ยังไม่ระบุ'}\n` +
                     `ราคาปิด : ${this.currentItem.closing_price || 'ยังไม่ระบุ'}\n` +
                     `หมายเหตุ : ${this.currentItem.comment || 'ยังไม่ระบุ'}`,
                 type: 2,
-                picture: this.$auth.user.picture || 'Unknown',
                 action: this.currentAction === 'delete' ? 'ลบหุ้น' : 'ไม่ลบหุ้น',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
 
         goToNewStock() {

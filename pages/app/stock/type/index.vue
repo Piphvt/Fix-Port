@@ -44,8 +44,8 @@
                 item-key="no" :items-per-page="5">
                 <template v-slot:item.emp_id="{ item }">
                     <div class="text-center">
-                        <span v-if="getEmployeeById(item.emp_id)">{{ getEmployeeById(item.emp_id).fname }} {{
-                            getEmployeeById(item.emp_id).lname }}</span>
+                        <span v-if="getEmployeeById(item.employee_no)">{{ getEmployeeById(item.employee_no).fname }} {{
+                            getEmployeeById(item.employee_no).lname }}</span>
                         <span v-else>ไม่ทราบ</span>
                     </div>
                 </template>
@@ -216,12 +216,9 @@ export default {
     },
 
     methods: {
-        getEmployeeById(empId) {
-            return this.employees.find(employee => employee.no === empId);
-        },
-
+    
         async fetchSetData() {
-            this.sets = await this.$store.dispatch('api/set/getSets')
+            this.sets = await this.$store.dispatch('api/set/getSet')
         },
 
         getSetName(setId) {
@@ -230,12 +227,11 @@ export default {
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
         },
 
-        getEmployeeName(empId) {
-            const employee = this.employees.find(e => e.no === empId);
-            return employee ? employee.fname + ' ' + employee.lname : 'ไม่ทราบ';
+        getEmployeeById(empId) {
+            return this.employees.find(employee => employee.no === empId);
         },
 
         openEditSet(set) {
@@ -246,15 +242,6 @@ export default {
         showEditDialog(item) {
             this.selectedStock = item;
             this.editDialogOpen = true;
-        },
-
-        getSearchItems(type) {
-            if (type === 'name') {
-                return this.stocks.map(emp => emp.name);
-            } else if (type === 'emp_id') {
-                return this.stocks.map(emp => this.getEmployeeName(emp.emp_id));
-            }
-            return [];
         },
 
         showConfirmDialog(action, item) {
@@ -281,7 +268,7 @@ export default {
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.ranks_id.toString();
+                const RankID = this.$auth.user.rank_no.toString();
                 if (Status === '2') {
                     this.$router.push('/');
                     await this.$auth.logout();
@@ -350,7 +337,7 @@ export default {
                     : 'ลบประเภทหุ้น',
                 time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
 
         goToStockManagement() {

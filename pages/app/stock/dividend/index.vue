@@ -104,7 +104,7 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.ranks_id === 1" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -143,10 +143,10 @@
                     </v-avatar>
                 </template>
                 <template v-slot:item.emp_id="{ item }">
-                    <div class="text-center">{{ getEmployeeName(item.emp_id) }}</div>
+                    <div class="text-center">{{ getEmployeeName(item.employee_no) }}</div>
                 </template>
-                <template v-slot:item.stock_id="{ item }">
-                    <div class="text-center">{{ getStockName(item.stock_id) }}</div>
+                <template v-slot:item.stock_no="{ item }">
+                    <div class="text-center">{{ getStockName(item.stock_no) }}</div>
                 </template>
                 <template v-slot:item.created_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.created_date) }}</div>
@@ -241,7 +241,7 @@ export default {
             sortBy: 'created_date',
             currentAction: '',
             searchQuery: '',
-            searchType: 'stock_id',
+            searchType: 'stock_no',
             selectedItemDetail: '',
             startDateTime: '',
             endDateTime: '',
@@ -263,15 +263,15 @@ export default {
             selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['created_date', 'stock_id', 'dividend', 'emp_id', 'detail'],
+            visibleColumns: ['created_date', 'stock_no', 'dividend', 'emp_id', 'detail'],
 
             searchQueries: {
-                'stock_id': [],
+                'stock_no': [],
                 'emp_id': [],
             },
 
             searchTypes: [
-                { text: 'ชื่อหุ้น', value: 'stock_id' },
+                { text: 'ชื่อหุ้น', value: 'stock_no' },
                 { text: 'ทำรายการโดย', value: 'emp_id' },
                 { text: 'วันที่จ่ายปันผล', value: 'created_date' }
             ],
@@ -288,7 +288,7 @@ export default {
 
                 {
                     text: 'ชื่อหุ้น',
-                    value: 'stock_id',
+                    value: 'stock_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -345,7 +345,7 @@ export default {
         async fetchDividendData() {
             try {
                 // Fetch dividends from the API
-                this.dividends = await this.$store.dispatch('api/dividend/getDividends');
+                this.dividends = await this.$store.dispatch('api/dividend/getDividend');
             } catch (error) {
                 console.error('Failed to fetch dividends:', error);
             }
@@ -354,7 +354,7 @@ export default {
         getTotalDividends(stockId) {
             const currentYear = new Date().getFullYear();
             const total = this.dividends
-                .filter(dividend => dividend.stock_id === stockId &&
+                .filter(dividend => dividend.stock_no === stockId &&
                     new Date(dividend.created_date).getFullYear() === currentYear)
                 .reduce((total, dividend) => {
                     return total.add(new Decimal(dividend.dividend));
@@ -365,16 +365,16 @@ export default {
 
 
         async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStocks');
+            this.stocks = await this.$store.dispatch('api/stock/getStock');
         },
 
         getStockName(stockID) {
             const stock = this.stocks.find(s => s.no === stockID);
-            return stock ? stock.name : '';
+            return stock ? stock.stock : '';
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
         },
 
         getEmployeeName(empId) {
@@ -393,14 +393,13 @@ export default {
         },
 
         getSearchItems(type) {
-            if (type === 'stock_id') {
-                return this.stocks.map(stock => stock.name);
+            if (type === 'stock_no') {
+                return this.stocks.map(stock => stock.stock);
             } else if (type === 'emp_id') {
-                return this.stocks.map(emp => this.getEmployeeName(emp.emp_id));
+                return this.stocks.map(emp => this.getEmployeeName(emp.employee_no));
             }
             return [];
-        }
-        ,
+        },
 
         showConfirmDialog(action, item) {
             this.currentAction = action;
@@ -426,7 +425,7 @@ export default {
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.ranks_id.toString();
+                const RankID = this.$auth.user.rank_no.toString();
                 if (Status === '2') {
                     this.$router.push('/');
                     await this.$auth.logout();
@@ -500,7 +499,7 @@ export default {
             if (!this.validateDateRange()) {
                 return;
             }
-            if (this.searchType === 'stock_id' || this.searchType === 'emp_id') {
+            if (this.searchType === 'stock_no' || this.searchType === 'emp_id') {
                 this.addTextToSearch();
             } else {
                 this.savedSearches.push({
@@ -538,7 +537,7 @@ export default {
         addTopicToSearch() {
             this.savedSearches.push({
                 query: '',
-                type: 'stock_id',
+                type: 'stock_no',
                 topics: [...this.selectedTopics],
                 start: this.startDateTime,
                 end: this.endDateTime
@@ -558,9 +557,9 @@ export default {
                     return empName.toLowerCase().includes(query.toLowerCase());
                 });
             }
-            else if (search.type === 'stock_id') {
+            else if (search.type === 'stock_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const stockName = this.getStockName(dividend.stock_id);
+                    const stockName = this.getStockName(dividend.stock_no);
                     return stockName.toLowerCase().includes(query.toLowerCase());
                 });
             } else {
@@ -568,7 +567,7 @@ export default {
                 queryMatched = lowerCaseField.includes(searchQuery);
             }
             const timeMatched = search.type === 'created_date' ? this.checkTimeRange(dividend, search) : true;
-            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getStockName(dividend.stock_id)) : true;
+            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getStockName(dividend.stock_no)) : true;
             return queryMatched && timeMatched && topicMatched;
         },
 
@@ -612,8 +611,8 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'created_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD');
-                    } else if (header.value === 'stock_id') {
-                        rowData[header.value] = this.getStockName(item.stock_id);
+                    } else if (header.value === 'stock_no') {
+                        rowData[header.value] = this.getStockName(item.stock_no);
                     } else if (header.value === 'emp_id') {
                         rowData[header.value] = this.getEmployeeName(item.emp_id);
                     } else if (header.value !== 'picture' && header.value !== 'detail') {
@@ -661,9 +660,8 @@ export default {
 
         recordLog() {
             const log = {
-                stock_id: this.currentItem.name,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
+                type_no: this.currentItem.no,
+                employee_no: this.$auth.user.no,
                 detail: this.currentAction === 'delete'
                     ?
                     `จำนวนปันผล : ${this.currentItem.dividend_amount || 'ยังไม่ระบุ'}\n` +
@@ -674,9 +672,8 @@ export default {
                     `ราคาปิด : ${this.currentItem.closing_price || 'ยังไม่ระบุ'}\n` +
                     `หมายเหตุ : ${this.currentItem.comment || 'ยังไม่ระบุ'}`,
                 type: 2,
-                picture: this.$auth.user.picture || 'Unknown',
                 action: this.currentAction === 'delete' ? 'ลบหุ้น' : 'ไม่ลบหุ้น',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLogs', log);
         },
