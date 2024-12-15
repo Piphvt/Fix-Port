@@ -1,94 +1,77 @@
 const { connection } = require('../database');
 
-exports.getBases = (req, res) => {
-    connection.query('SELECT * FROM `bases`',
-        function (err, results, fields) {
-            res.json(results);
-        }
-    );
-}
-
 exports.getBase = (req, res) => {
-    const no = req.params.no;
-    connection.query('SELECT * FROM `bases` WHERE `no` = ?',
-        [no], function (err, results) {
-            res.json(results);
-        }
-    );
-}
+    connection.query('SELECT * FROM `bases`', function (err, results, fields) {
+        res.json(results);
+    });
+};
 
 exports.addBase = async (req, res) => {
     try {
-        const { base, emp_id, created_date, updated_date } = req.body;
-        connection.query('SELECT * FROM `bases` WHERE `base` = ?',
-            [base], function (err, results) {
-                if (results.length > 0) {
-                    return res.status(400).json({ message: "Base already exists" });
-                } else {
-                    const baseData = {
-                        base,
-                        emp_id,
-                        created_date,
-                        updated_date,
+        const { base, employee_no, created_date, updated_date } = req.body;
+        connection.query('SELECT * FROM `bases` WHERE `base` = ?', [base], function (err, results) {
+            if (results.length > 0) {
+                return res.status(400).json({ message: "ฐานข้อมูลนี้มีอยู่แล้ว" });
+            } else {
+                const baseData = {
+                    base,
+                    employee_no,
+                    created_date,
+                    updated_date,
+                };
+                connection.query('INSERT INTO `bases` SET ?', [baseData], function (err, results) {
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มฐานข้อมูล" });
                     }
-                    connection.query('INSERT INTO `bases` SET ?',
-                        [baseData], function (err, results) {
-                            if (err) {
-                                console.error(err);
-                                return res.status(500).json({ message: "Error adding base" });
-                            }
-                            res.json({ message: "New Base added", results });
-                        }
-                    );
-                }
+                    res.json({ message: "เพิ่มฐานข้อมูลใหม่สำเร็จ", results });
+                });
             }
-        );
-
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
-}
+};
 
 exports.updateBase = async (req, res) => {
     try {
-        const { base, emp_id } = req.body;
+        const { base, employee_no } = req.body;
         const no = req.params.no;
         connection.query('SELECT * FROM `bases` WHERE `base` = ? AND no != ?', [base, no], function (err, results) {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ message: "Internal server error" });
+                return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
             }
             if (results.length > 0) {
-                return res.status(400).json({ message: "Base already exists" });
+                return res.status(400).json({ message: "ฐานข้อมูลนี้มีอยู่แล้ว" });
             }
-            connection.query('UPDATE `bases` SET `base` = ?, `emp_id` = ?, `updated_date` = now() WHERE no = ?',
-                [base, emp_id, no], function (err, updateResults) {
+            connection.query(
+                'UPDATE `bases` SET `base` = ?, `employee_no` = ?, `updated_date` = now() WHERE no = ?',
+                [base, employee_no, no],
+                function (err, updateResults) {
                     if (err) {
                         console.error(err);
-                        return res.status(500).json({ message: "Internal server error" });
+                        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
                     }
-                    res.json({ message: "Base updated", updateResults });
+                    res.json({ message: "อัปเดตฐานข้อมูลสำเร็จ", updateResults });
                 }
             );
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
-}
+};
 
 exports.deleteBase = (req, res) => {
     try {
         const BaseNo = req.params.no;
-        connection.query('DELETE FROM `bases` WHERE no = ?',
-            [BaseNo], function (err, results) {
-                res.json({ message: "Base deleted", results });
-            }
-        );
-
+        connection.query('DELETE FROM `bases` WHERE no = ?', [BaseNo], function (err, results) {
+            res.json({ message: "ลบฐานข้อมูลสำเร็จ", results });
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
-}
+};

@@ -1,38 +1,11 @@
 const bcrypt = require("bcrypt");
 const { connection } = require("../database");
 
-exports.getEmployees = (req, res) => {
+exports.getEmployee = (req, res) => {
     connection.query('SELECT * FROM `employees`',
         function (err, results, fields) {
             res.json(results);
         }
-    );
-}
-
-exports.getEmployee = (req, res) => {
-    const no = req.params.no;
-    connection.query('SELECT * FROM `employees` WHERE `no` = ?',
-        [no], function (err, results) {
-            res.json(results);
-        }
-    );
-}
-
-exports.getEmployeeEmail = (req, res) => {
-    const email = req.params.email;
-    connection.query('SELECT * FROM `employees` WHERE `email` = ?', 
-        [email], function (err, results) {
-        res.json(results);
-    }
-    );
-}
-
-exports.getEmployeePhone = (req, res) => {
-    const phone = req.params.phone;
-    connection.query('SELECT * FROM `employees` WHERE `phone` = ?', 
-        [phone], function (err, results) {
-        res.json(results);
-    }
     );
 }
 
@@ -46,75 +19,75 @@ exports.updateEmployeePassword = async (req, res) => {
             }
         );
 
-        console.log("Employee Password Updated Successfully");
+        console.log("อัปเดตรหัสผ่านพนักงานสำเร็จ");
 
     } catch (error) {
-        console.log("Update Employee Password Error", error);
-        return res.status(500).json({ message: "Internal Server Error" });
+        console.log("เกิดข้อผิดพลาดในการอัปเดตรหัสผ่านพนักงาน", error);
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
 
 exports.updateEmployee = async (req, res) => {
     try {
-      console.log('Received data:', req.body);
+      console.log('ข้อมูลที่ได้รับ:', req.body);
       const { fname, lname, phone, gender } = req.body;
       connection.query('UPDATE `employees` SET `fname`= ?, `lname`= ?, `phone`= ?, `gender`= ?, `updated_date`= now() WHERE no = ?',
         [fname, lname, phone, gender, req.params.no], function (err, results) {
           if (err) {
-            console.error('Error updating employee:', err);
-            return res.status(500).json({ message: 'Error updating employee' });
+            console.error('เกิดข้อผิดพลาดในการอัปเดตพนักงาน:', err);
+            return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปเดตพนักงาน' });
           }
           res.json(results);
         }
       );
-      console.log('Employee Updated Successfully');
+      console.log('อัปเดตข้อมูลพนักงานสำเร็จ');
     } catch (error) {
-      console.log('Update Employee Error', error);
-      return res.status(500).json({ message: 'Internal Server Error' });
+      console.log('เกิดข้อผิดพลาดในการอัปเดตพนักงาน', error);
+      return res.status(500).json({ message: 'ข้อผิดพลาดภายในเซิร์ฟเวอร์' });
     }
-  }
+}
   
 
-  exports.updateEmployeeAll = async (req, res) => {
+exports.updateEmployeeAll = async (req, res) => {
     try {
-        const { email, fname, lname, ranks_id, phone, gender, status } = req.body;
+        const { email, fname, lname, rank_no, phone, gender, status } = req.body;
         connection.query('SELECT * FROM `employees` WHERE `email` = ? AND `no` != ?', [email, req.params.no], (err, results) => {
             if (err) {
-                console.error('Error checking email:', err);
-                return res.status(500).json({ message: 'Internal Server Error' });
+                console.error('เกิดข้อผิดพลาดในการตรวจสอบอีเมล:', err);
+                return res.status(500).json({ message: 'ข้อผิดพลาดภายในเซิร์ฟเวอร์' });
             }
             if (results.length > 0) {
-                return res.status(400).json({ message: 'Email already exists' });
+                return res.status(400).json({ message: 'อีเมลนี้มีผู้ใช้งานแล้ว' });
             }
-            connection.query('UPDATE `employees` SET `email` = ?, `fname` = ?, `lname` = ?, `ranks_id` = ?, `phone` = ?, `gender` = ?, `status` = ?, `updated_date` = now() WHERE `no` = ?',
-                [email, fname, lname, ranks_id, phone, gender, status, req.params.no], (err, results) => {
+            connection.query('UPDATE `employees` SET `email` = ?, `fname` = ?, `lname` = ?, `rank_no` = ?, `phone` = ?, `gender` = ?, `status` = ?, `updated_date` = now() WHERE `no` = ?',
+                [email, fname, lname, rank_no, phone, gender, status, req.params.no], (err, results) => {
                     if (err) {
-                        console.error('Error updating employee:', err);
-                        return res.status(500).json({ message: 'Error updating employee' });
+                        console.error('เกิดข้อผิดพลาดในการอัปเดตพนักงาน:', err);
+                        return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปเดตพนักงาน' });
                     }
                     res.json(results);
                 }
             );
-            console.log("Employee Updated Successfully");
+            console.log("อัปเดตข้อมูลพนักงานสำเร็จ");
         });
     } catch (error) {
-        console.log("Update Employee Error", error);
-        return res.status(500).json({ message: "Internal Server Error" });
+        console.log("เกิดข้อผิดพลาดในการอัปเดตพนักงาน", error);
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 };
 
 exports.updateEmployeeStatus = async (req, res) => {
     try {
-        const { status, emp_id } = req.body;
-        connection.query('UPDATE `employees` SET `status` = ?, `emp_id` = ?, `updated_date` = now() WHERE `no` = ?',
-            [status, emp_id, req.params.no], function (err, results) {
+        const { status, employee_no } = req.body;
+        connection.query('UPDATE `employees` SET `status` = ?, `employee_no` = ?, `updated_date` = now() WHERE `no` = ?',
+            [status, employee_no, req.params.no], function (err, results) {
                 res.json(results);
             }
         );
-        console.log("Employee Updated Successfully");
+        console.log("อัปเดตข้อมูลพนักงานสำเร็จ");
     } catch (error) {
-        console.log("Update Employee Error", error);
-        return res.status(500).json({ message: "Internal Server Error" });
+        console.log("เกิดข้อผิดพลาดในการอัปเดตพนักงาน", error);
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
 
@@ -123,13 +96,13 @@ exports.deleteEmployee = (req, res) => {
         const EmployeeId = req.params.no;
         connection.query('DELETE FROM `employees` WHERE no = ?',
             [EmployeeId], function (err, results) {
-                res.json({ message: "Employee Deleted", results });
+                res.json({ message: "ลบข้อมูลพนักงานเรียบร้อย", results });
             }
         );
 
     } catch (error) {
-        console.log("Delete Employee Error", error);
-        return res.status(500).json({ message: "Internal Server Error" });
+        console.log("เกิดข้อผิดพลาดในการลบพนักงาน", error);
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
 
@@ -140,4 +113,4 @@ exports.getEmployeesByStatus = (req, res) => {
         res.json(results);
       }
     );
-  }
+}

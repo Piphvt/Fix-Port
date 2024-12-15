@@ -1,94 +1,77 @@
 const { connection } = require('../database');
 
-exports.getCommissions = (req, res) => {
-    connection.query('SELECT * FROM `commissions`',
-        function (err, results, fields) {
-            res.json(results);
-        }
-    );
-}
-
 exports.getCommission = (req, res) => {
-    const no = req.params.no;
-    connection.query('SELECT * FROM `commissions` WHERE `no` = ?',
-        [no], function (err, results) {
-            res.json(results);
-        }
-    );
-}
+    connection.query('SELECT * FROM `commissions`', function (err, results, fields) {
+        res.json(results);
+    });
+};
 
 exports.addCommission = async (req, res) => {
     try {
-        const { commission, emp_id, created_date, updated_date } = req.body;
-        connection.query('SELECT * FROM `commissions` WHERE `commission` = ?',
-            [commission], function (err, results) {
-                if (results.length > 0) {
-                    return res.status(400).json({ message: "Commission already exists" });
-                } else {
-                    const commissionData = {
-                        commission,
-                        emp_id,
-                        created_date,
-                        updated_date,
+        const { commission, employee_no, created_date, updated_date } = req.body;
+        connection.query('SELECT * FROM `commissions` WHERE `commission` = ?', [commission], function (err, results) {
+            if (results.length > 0) {
+                return res.status(400).json({ message: "ค่าธรรมเนียมนี้มีอยู่แล้ว" });
+            } else {
+                const commissionData = {
+                    commission,
+                    employee_no,
+                    created_date,
+                    updated_date,
+                };
+                connection.query('INSERT INTO `commissions` SET ?', [commissionData], function (err, results) {
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มค่าธรรมเนียม" });
                     }
-                    connection.query('INSERT INTO `commissions` SET ?',
-                        [commissionData], function (err, results) {
-                            if (err) {
-                                console.error(err);
-                                return res.status(500).json({ message: "Error adding commission" });
-                            }
-                            res.json({ message: "New Commission added", results });
-                        }
-                    );
-                }
+                    res.json({ message: "เพิ่มค่าธรรมเนียมใหม่สำเร็จ", results });
+                });
             }
-        );
-
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
-}
+};
 
 exports.updateCommission = async (req, res) => {
     try {
-        const { commission, emp_id } = req.body;
+        const { commission, employee_no } = req.body;
         const no = req.params.no;
         connection.query('SELECT * FROM `commissions` WHERE `commission` = ? AND no != ?', [commission, no], function (err, results) {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ message: "Internal server error" });
+                return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
             }
             if (results.length > 0) {
-                return res.status(400).json({ message: "Commission already exists" });
+                return res.status(400).json({ message: "ค่าธรรมเนียมนี้มีอยู่แล้ว" });
             }
-            connection.query('UPDATE `commissions` SET `commission` = ?, `emp_id` = ?, `updated_date` = now() WHERE no = ?',
-                [commission, emp_id, no], function (err, updateResults) {
+            connection.query(
+                'UPDATE `commissions` SET `commission` = ?, `employee_no` = ?, `updated_date` = now() WHERE no = ?',
+                [commission, employee_no, no],
+                function (err, updateResults) {
                     if (err) {
                         console.error(err);
-                        return res.status(500).json({ message: "Internal server error" });
+                        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
                     }
-                    res.json({ message: "Commission updated", updateResults });
+                    res.json({ message: "อัปเดตค่าธรรมเนียมสำเร็จ", updateResults });
                 }
             );
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
-}
+};
 
 exports.deleteCommission = (req, res) => {
     try {
         const CommissionNo = req.params.no;
-        connection.query('DELETE FROM `commissions` WHERE no = ?',
-            [CommissionNo], function (err, results) {
-                res.json({ message: "Commission deleted", results });
-            }
-        );
-
+        connection.query('DELETE FROM `commissions` WHERE no = ?', [CommissionNo], function (err, results) {
+            res.json({ message: "ลบค่าธรรมเนียมสำเร็จ", results });
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
-}
+};
