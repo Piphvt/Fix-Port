@@ -79,7 +79,7 @@ def fetch_symbols_from_db():
             database=DB_NAME
         )
         cursor = connection.cursor()
-        cursor.execute("SELECT name FROM stocks")
+        cursor.execute("SELECT stock FROM stocks")
         result = cursor.fetchall()
         symbols = [row[0] for row in result]
         return symbols

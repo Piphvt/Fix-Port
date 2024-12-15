@@ -2,8 +2,8 @@
     <div>
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
-        <UpdateClosePrice :open.sync="isLoadingClosePrice" @cancel-fetch="cancelFetchClosePriceData" />
-        <UpdateDividendYield :open.sync="isLoadingDividendYield" @cancel-fetch="cancelFetchDividendYieldData" />
+        <StockClosePrice :open.sync="isLoadingClosePrice" @cancel-fetch="cancelFetchClosePriceData" />
+        <StockDividendYield :open.sync="isLoadingDividendYield" @cancel-fetch="cancelFetchDividendYieldData" />
         <v-card class="custom-card" flat>
             <v-container>
                 <v-row justify="center" align="center">
@@ -89,7 +89,7 @@ export default {
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.ranks_id.toString();
+                const RankID = this.$auth.user.rank_no.toString();
                 if (Status === '2') {
                     this.$router.push('/');
                     await this.$auth.logout();
@@ -246,7 +246,7 @@ export default {
         async parseDividendYieldData(data) {
             try {
                 // เรียกดูข้อมูลที่มีอยู่ในฐานข้อมูล
-                const existingDividends = await this.$store.dispatch('api/dividend/getDividends', {
+                const existingDividends = await this.$store.dispatch('api/dividend/getDividend', {
                     x_date: moment().tz('Asia/Bangkok').format('YYYY-MM-DD'), // ใช้วันที่ปัจจุบันในการตรวจสอบ
                     stock_id: null // ถ้าต้องการตรวจสอบสำหรับทุก stock_id
                 });
@@ -328,7 +328,7 @@ export default {
                         const newCreatedDate = moment.tz(created_date, 'Asia/Bangkok').toDate();
 
                         // ตรวจสอบข้อมูล dividend
-                        const existingDividend = await this.$store.dispatch('api/dividend/getDividends', {
+                        const existingDividend = await this.$store.dispatch('api/dividend/getDividend', {
                             x_date: moment(created_date).tz('Asia/Bangkok').format('YYYY-MM-DD'), // ใช้ฟอร์แมตวันที่
                             stock_id: stockId
                         });
@@ -384,7 +384,7 @@ export default {
                     : 'ลบประเภทหุ้น',
                 time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
 
     },

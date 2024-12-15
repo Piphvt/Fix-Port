@@ -36,7 +36,7 @@ def get_stock_symbols():
         )
         
         cursor = connection.cursor()
-        cursor.execute("SELECT name FROM stocks")
+        cursor.execute("SELECT stock FROM stocks")
         symbols = cursor.fetchall()
         
         # ดึงชื่อหุ้นออกมาเป็นลิสต์
