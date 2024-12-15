@@ -1,12 +1,7 @@
 export const actions = {
-    async getCommissions({ getters }, data) {
+    async getCommission({ getters }, data) {
         return await this.$axios
             .get('commission', data)
-            .then((res) => res.data)
-    },
-    async getCommission({ getters }, no) {
-        return await this.$axios
-            .get(`commission/${no}`)
             .then((res) => res.data)
     },
     async addCommission({ getters }, data) {

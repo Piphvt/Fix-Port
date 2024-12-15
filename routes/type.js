@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
-const {getTypes, getType, addType, updateType, deleteType} = require('../controller/types');
+const { getType, addType, updateType, deleteType } = require('../controller/types');
 
-router.get('/', getTypes);
-router.get('/:no', getType);
-router.post('/',addType)
+router.get('/', getType);
+router.post('/', addType)
 router.put('/update-type/:no', updateType);
 router.delete('/:no', deleteType);
 

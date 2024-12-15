@@ -57,22 +57,12 @@ exports.getDefault = (req, res) => {
     });
 }
 
-exports.readDefault = (req, res) => {
-    const { picture } = req.params;
-    res.sendFile(path.join(__dirname, `../uploads/default/${picture}`));
-}
-
-exports.readProfile = (req, res) => {
-    const { picture } = req.params;
-    res.sendFile(path.join(__dirname, `../uploads/profile/${picture}`));
-}
-
-exports.downloadProfile = (req, res) => {
+exports.downloadPicture = (req, res) => {
     const { picture } = req.params;
     res.download(path.join(__dirname, `../uploads/profile/${picture}`));
 }
 
-exports.uploadProfile = (req, res) => {
+exports.uploadPicture = (req, res) => {
     uploadProfile.single('file')(req, res, (err) => {
         if (err) {
             console.error('เกิดข้อผิดพลาดในการอัปโหลดไฟล์:', err);

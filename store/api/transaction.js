@@ -1,12 +1,7 @@
 export const actions = {
-    async getTransactions({ getters }, data) {
+    async getTransaction({ getters }, data) {
         return await this.$axios
             .get('transaction', data)
-            .then((res) => res.data)
-    },
-    async getTransaction({ getters }, no) {
-        return await this.$axios
-            .get(`transaction/${no}`)
             .then((res) => res.data)
     },
     async addTransaction({ getters }, data) {

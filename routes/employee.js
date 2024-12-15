@@ -1,12 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const { getEmployees, getEmployee, getEmployeeEmail, getEmployeePhone, updateEmployeePassword, updateEmployee, updateEmployeeAll, deleteEmployee, getEmployeesByStatus, updateEmployeeStatus } = require('../controller/employees');
+const { getEmployee, updateEmployeePassword, updateEmployee, updateEmployeeAll, updateEmployeeStatus, deleteEmployee, getEmployeesByStatus } = require('../controller/employees');
 
-router.get('/', getEmployees);
-router.get('/:no', getEmployee);
-router.get('/email/:email', getEmployeeEmail);
-router.get('/phone/:phone', getEmployeePhone);
+router.get('/', getEmployee);
 router.put('/update-password/:no', updateEmployeePassword);
 router.put('/update-employee/:no', updateEmployee);
 router.put('/update-employee-all/:no', updateEmployeeAll);

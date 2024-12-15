@@ -1,12 +1,7 @@
 export const actions = {
-    async getFroms({ getters }, data) {
+    async getFrom({ getters }, data) {
         return await this.$axios
             .get('from', data)
-            .then((res) => res.data)
-    },
-    async getFrom({ getters }, no) {
-        return await this.$axios
-            .get(`from/${no}`)
             .then((res) => res.data)
     },
     async addFrom({ getters }, data) {

@@ -1,12 +1,7 @@
 export const actions = {
-    async getBases({ getters }, data) {
+    async getBase({ getters }, data) {
         return await this.$axios
             .get('base', data)
-            .then((res) => res.data)
-    },
-    async getBase({ getters }, no) {
-        return await this.$axios
-            .get(`base/${no}`)
             .then((res) => res.data)
     },
     async addBase({ getters }, data) {

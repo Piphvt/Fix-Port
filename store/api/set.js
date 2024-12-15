@@ -1,12 +1,7 @@
 export const actions = {
-    async getSets({ getters }, data) {
+    async getSet({ getters }, data) {
         return await this.$axios
             .get('set', data)
-            .then((res) => res.data)
-    },
-    async getSet({ getters }, no) {
-        return await this.$axios
-            .get(`set/${no}`)
             .then((res) => res.data)
     },
     async addSet({ getters }, data) {

@@ -1,12 +1,7 @@
 export const actions = {
-    async getDividends({ getters }, data) {
+    async getDividend({ getters }, data) {
         return await this.$axios
             .get('dividend', data)
-            .then((res) => res.data)
-    },
-    async getDividend({ getters }, no) {
-        return await this.$axios
-            .get(`dividend/${no}`)
             .then((res) => res.data)
     },
     async addDividend({ getters }, data) {

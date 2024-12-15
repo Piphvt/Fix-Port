@@ -1,12 +1,7 @@
 export const actions = {
-    async getRanks({ getters }, data) {
+    async getRank({ getters }, data) {
         return await this.$axios
         .get('rank', data)
-        .then((res) => res.data)
-        },
-    async getRank({ getters }, no) {
-        return await this.$axios
-        .get(`rank/${no}`)
         .then((res) => res.data)
         },
     async addRank({ getters }, data) {

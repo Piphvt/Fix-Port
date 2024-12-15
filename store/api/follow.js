@@ -1,15 +1,10 @@
 export const actions = {
-    async getFollows({ getters }, data) {
+    async getFollow({ getters }, data) {
         return await this.$axios
             .get('follow', data)
             .then((res) => res.data)
     },
-    async getFollow({ getters }, no) {
-        return await this.$axios
-            .get(`follow/${no}`)
-            .then((res) => res.data)
-    },
-    async getFollowsResult({ getters }, no) {
+    async getFollowResult({ getters }, no) {
         return await this.$axios
             .get(`follow/result/${no}`)
             .then((res) => res.data)

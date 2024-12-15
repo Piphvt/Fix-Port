@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const { getFollows, getFollow, getFollowsByResult, addFollow, updateFollow, deleteFollow} = require('../controller/follows');
+const { getFollow, getFollowsByResult, addFollow, updateFollow, deleteFollow} = require('../controller/follows');
 
-router.get('/', getFollows);
-router.get('/:no', getFollow);
+router.get('/', getFollow);
 router.get('/result/:no', getFollowsByResult);
 router.post('/', addFollow);
 router.put('/update-follow/:no', updateFollow);

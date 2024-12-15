@@ -1,12 +1,7 @@
 export const actions = {
-    async getCustomers({ getters }, data) {
+    async getCustomer({ getters }, data) {
         return await this.$axios
             .get('customer', data)
-            .then((res) => res.data)
-    },
-    async getCustomer({ getters }, no) {
-        return await this.$axios
-            .get(`customer/${no}`)
             .then((res) => res.data)
     },
     async addCustomer({ getters }, data) {

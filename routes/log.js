@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-const { getLogs, getLogsByType, getLog, addLogs } = require('../controller/logs');
+const { getLog, getLogByType, addLog,deleteLog } = require('../controller/logs');
 
-router.get('/', getLogs);
-router.get('/:no', getLog);
-router.get('/type/:no', getLogsByType);
-router.post('/', addLogs);
+router.get('/', getLog);
+router.get('/type/:no', getLogByType);
+router.post('/', addLog);
+router.delete('/:no', deleteLog);
 
 module.exports = router;
