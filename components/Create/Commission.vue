@@ -130,7 +130,7 @@ export default {
                 action: 'เพิ่มค่าธรรมเนียมใหม่',
                 time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

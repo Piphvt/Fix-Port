@@ -75,7 +75,7 @@ export default {
             newStockType: '',
             isOpen: this.open,
             isFormValid: false,
-            selectedDate: '', // ตัวแปรเก็บวันที่ที่เลือก
+            selectedDate: '',
             datePickerMenu: false,
             modal: {
                 complete: { open: false, message: '' },
@@ -101,9 +101,9 @@ export default {
     methods: {
         async fetchStockData() {
             try {
-                const response = await this.$store.dispatch('api/stock/getStocks');
+                const response = await this.$store.dispatch('api/stock/getStock');
                 if (response) {
-                    this.stocks = response.map(item => ({ no: item.no, name: item.name }));
+                    this.stocks = response.map(item => ({ no: item.no, name: item.stock }));
                 }
             } catch (error) {
                 console.error('Error fetching stocks:', error);
@@ -173,7 +173,7 @@ export default {
                 action: 'เพิ่มประเภทหุ้นใหม่',
                 time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

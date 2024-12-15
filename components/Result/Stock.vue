@@ -40,7 +40,7 @@ export default {
         formattedStocks() {
             const sets = this.sets || [];
             return this.stocks.map(stock => {
-                const set = sets.find(s => s.id === stock.set_id);
+                const set = sets.find(s => s.id === stock.set_no);
                 return {
                     ...stock,
                     set_name: set ? set.name : 'ยังไม่ระบุ',
