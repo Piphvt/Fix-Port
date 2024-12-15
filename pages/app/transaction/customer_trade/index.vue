@@ -150,9 +150,9 @@
                         <span v-else>ไม่ทราบ</span>
                     </div>
                 </template>
-                <template v-slot:item.customer_id="{ item }">
+                <template v-slot:item.customer_no="{ item }">
                     <div class="text-center">
-                        {{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}
+                        {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}
                     </div>
                 </template>
 
@@ -214,17 +214,17 @@
 
                 <template v-slot:item.customer_name="{ item }">
                     <div class="text-center">
-                        {{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}
+                        {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}
                     </div>
                 </template>
                 <template v-slot:item.detail_amount="{ item }">
                     <div class="text-center" style="color:#ff66c4">
-                        {{ getDetailByNo(item.stock_detail_id)?.amount || 'N/A' }}
+                        {{ getDetailByNo(item.stock_detail_no)?.amount || 'N/A' }}
                     </div>
                 </template>
-                <template v-slot:item.stock_id="{ item }">
+                <template v-slot:item.stock_no="{ item }">
                     <div class="text-center">
-                        {{ getStockByNo(item.stock_id)?.name || 'N/A' }}
+                        {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}
                     </div>
                 </template>
                 <template v-slot:item.commission="{ item }">
@@ -232,10 +232,10 @@
                         {{ item.commission || 'N/A' }}
                     </div>
                 </template>
-                <template v-slot:item.from_id="{ item }">
+                <template v-slot:item.from_no="{ item }">
                     <div class="text-center">
-                        <span :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
-                            {{ getFromByNo(item.from_id)?.from || 'N/A' }}
+                        <span :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
+                            {{ getFromByNo(item.from_no)?.from || 'N/A' }}
                         </span>
                     </div>
                 </template>
@@ -341,7 +341,7 @@ export default {
             sortBy: 'updated_date',
             currentAction: '',
             searchQuery: '',
-            searchType: 'customer_id',
+            searchType: 'customer_no',
             selectedItemDetail: '',
             startDateTime: '',
             endDateTime: '',
@@ -362,19 +362,19 @@ export default {
             selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['updated_date', 'customer_id', 'customer_name', 'stock_id', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_id', 'emp_id', 'detail'],
+            visibleColumns: ['updated_date', 'customer_no', 'customer_name', 'stock_no', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_no', 'emp_id', 'detail'],
 
             searchQueries: {
-                'customer_id': [],
+                'customer_no': [],
                 'customer_name': [],
-                'stock_id': [],
+                'stock_no': [],
                 'emp_id': [],
             },
 
             searchTypes: [
-                { text: 'รหัสสมาชิก', value: 'customer_id' },
+                { text: 'รหัสสมาชิก', value: 'customer_no' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
-                { text: 'ชื่อหุ้นที่ติด', value: 'stock_id' },
+                { text: 'ชื่อหุ้นที่ติด', value: 'stock_no' },
                 { text: 'ทำรายการโดย', value: 'emp_id' },
                 { text: 'ประเภทพอร์ต', value: 'port' },
                 { text: 'เวลา', value: 'updated_date' }
@@ -397,7 +397,7 @@ export default {
 
                 {
                     text: 'รหัสสมาชิก',
-                    value: 'customer_id',
+                    value: 'customer_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -413,7 +413,7 @@ export default {
 
                 {
                     text: 'ชื่อหุ้น',
-                    value: 'stock_id',
+                    value: 'stock_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -493,7 +493,7 @@ export default {
 
                 {
                     text: 'ที่มาที่ไป',
-                    value: 'from_id',
+                    value: 'from_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -542,10 +542,10 @@ export default {
         async fetchDetailData() {
             this.details = await this.$store.dispatch('api/detail/getDetail');
             this.transactions.forEach(transaction => {
-                const detail = this.details.find(detail => detail.no === transaction.stock_detail_id);
+                const detail = this.details.find(detail => detail.no === transaction.stock_detail_no);
                 if (detail) {
-                    transaction.customer_id = detail.customer_id;
-                    transaction.stock_id = detail.stock_id;
+                    transaction.customer_no = detail.customer_no;
+                    transaction.stock_no = detail.stock_no;
                 }
             });
         },
@@ -569,11 +569,11 @@ export default {
         },
 
         getSearchItems(type) {
-            if (type === 'stock_id') {
-                return this.stocks.map(stock => stock.name);
+            if (type === 'stock_no') {
+                return this.stocks.map(stock => stock.stock);
             } else if (type === 'customer_name') {
                 return this.customers.map(customer => customer.nickname);
-            } else if (type === 'customer_id') {
+            } else if (type === 'customer_no') {
                 return this.customers.map(customer => customer.id);
             } else if (type === 'emp_id') {
                 return this.employees.map(employee => employee.fname + ' ' + employee.lname);
@@ -641,7 +641,7 @@ export default {
 
             if (Array.isArray(commissionData)) {
                 this.transactions.forEach(transaction => {
-                    const matchingCommission = commissionData.find(c => c.no === transaction.commission_id);
+                    const matchingCommission = commissionData.find(c => c.no === transaction.commission_no);
 
                     if (matchingCommission) {
                         const result = transaction.price * transaction.amount;
@@ -763,7 +763,7 @@ export default {
 
             if (this.searchType === 'port') {
                 this.addTopicToSearch();
-            } else if (this.searchType === 'stock_id' || this.searchType === 'customer_name' || this.searchType === 'customer_id' || this.searchType === 'emp_id') {
+            } else if (this.searchType === 'stock_no' || this.searchType === 'customer_name' || this.searchType === 'customer_no' || this.searchType === 'emp_id') {
                 this.addTextToSearch();
             } else {
                 this.savedSearches.push({
@@ -813,17 +813,17 @@ export default {
             const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
             if (search.type === 'customer_name') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(transaction.customer_id);
+                    const cust = this.getCustomerByNo(transaction.customer_no);
                     return cust.nickname.toLowerCase().includes(query.toLowerCase());
                 });
-            } else if (search.type === 'customer_id') {
+            } else if (search.type === 'customer_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(transaction.customer_id);
+                    const cust = this.getCustomerByNo(transaction.customer_no);
                     return cust.id.toLowerCase().includes(query.toLowerCase());
                 });
-            } else if (search.type === 'stock_id') {
+            } else if (search.type === 'stock_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const st = this.getStockByNo(transaction.stock_id);
+                    const st = this.getStockByNo(transaction.stock_no);
                     return st.name.toLowerCase().includes(query.toLowerCase());
                 });
             } else if (search.type === 'emp_id') {
@@ -890,14 +890,14 @@ export default {
                         rowData[header.value] = item.money;
                     } else if (header.value === 'type') {
                         rowData[header.value] = this.getTypeText(item.type).text;
-                    } else if (header.value === 'from_id') {
-                        rowData[header.value] = this.getFromByNo(item.from_id).from;
-                    } else if (header.value === 'stock_id') {
-                        rowData[header.value] = this.getStockByNo(item.stock_id).name;
-                    } else if (header.value === 'customer_id') {
-                        rowData[header.value] = this.getCustomerByNo(item.customer_id).id;
+                    } else if (header.value === 'from_no') {
+                        rowData[header.value] = this.getFromByNo(item.from_no).from;
+                    } else if (header.value === 'stock_no') {
+                        rowData[header.value] = this.getStockByNo(item.stock_no).stock;
+                    } else if (header.value === 'customer_no') {
+                        rowData[header.value] = this.getCustomerByNo(item.customer_no).id;
                     } else if (header.value === 'customer_name') {
-                        rowData[header.value] = this.getCustomerByNo(item.customer_id).nickname;
+                        rowData[header.value] = this.getCustomerByNo(item.customer_no).nickname;
                     } else if (header.value === 'emp_id') {
                         rowData[header.value] = this.getEmployeeByNo(item.emp_id).fname + ' ' + this.getEmployeeByNo(item.emp_id).lname;
                     } else if (header.value !== 'detail' && header.value !== 'action') {
@@ -940,11 +940,11 @@ export default {
         },
 
         recordLog() {
-            const stock = this.getStockByNo(this.currentItem.stock_id);
-            const from = this.getFromByNo(this.currentItem.from_id);
-            const customer = this.getCustomerByNo(this.currentItem.customer_id)
+            const stock = this.getStockByNo(this.currentItem.stock_no);
+            const from = this.getFromByNo(this.currentItem.from_no);
+            const customer = this.getCustomerByNo(this.currentItem.customer_no)
             const log = {
-                customer_id: `${customer ? customer.id : 'ไม่พบรหัสลูกค้า'}`,
+                customer_no: `${customer ? customer.id : 'ไม่พบรหัสลูกค้า'}`,
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
                 detail: this.currentAction === 'delete'

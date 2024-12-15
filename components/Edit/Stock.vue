@@ -145,7 +145,7 @@ export default {
   methods: {
     async setSetOptions() {
       try {
-        this.sets = await this.$store.dispatch('api/set/getSets');
+        this.sets = await this.$store.dispatch('api/set/getSet');
 
         const setIcons = {
           'SET': 'mdi-numeric-1',

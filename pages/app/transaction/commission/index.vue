@@ -42,10 +42,10 @@
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
                 item-key="no" :items-per-page="5">
-                <template v-slot:item.emp_id="{ item }">
+                <template v-slot:item.employee_no="{ item }">
                     <div class="text-center">
-                        <span v-if="getEmployeeById(item.emp_id)">{{ getEmployeeById(item.emp_id).fname }} {{
-                            getEmployeeById(item.emp_id).lname }}</span>
+                        <span v-if="getEmployeeById(item.employee_no)">{{ getEmployeeById(item.employee_no).fname }} {{
+                            getEmployeeById(item.employee_no).lname }}</span>
                         <span v-else>ไม่ทราบ</span>
                     </div>
                 </template>
@@ -163,7 +163,7 @@ export default {
             savedSearches: [],
             editAllData: {},
             showColumnSelector: false,
-            visibleColumns: ['updated_date', 'commission', 'emp_id', 'detail'],
+            visibleColumns: ['updated_date', 'commission', 'employee_no', 'detail'],
 
             headers: [
                 {
@@ -183,7 +183,7 @@ export default {
 
                 {
                     text: 'ทำรายการโดย',
-                    value: 'emp_id',
+                    value: 'employee_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -251,8 +251,8 @@ export default {
         getSearchItems(type) {
             if (type === 'name') {
                 return this.stocks.map(emp => emp.name);
-            } else if (type === 'emp_id') {
-                return this.stocks.map(emp => this.getEmployeeName(emp.emp_id));
+            } else if (type === 'employee_no') {
+                return this.stocks.map(emp => this.getEmployeeName(emp.employee_no));
             }
             return [];
         },
@@ -304,7 +304,7 @@ export default {
 
         formatDateTime(date) {
             if (moment(date).isValid()) {
-                return moment(date).format('YYYY-MM-DD HH:mm');
+                return moment(date).format('YYYY/MM/DD HH:mm');
             }
             return 'Invalid Date';
         },

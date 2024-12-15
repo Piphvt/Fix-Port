@@ -153,15 +153,15 @@
                         </td>
                         <td v-if="visibleColumns.includes('updated_date')" class="text-center">
                             {{ formatDateTime(item.updated_date) }}</td>
-                        <td v-if="visibleColumns.includes('customer_id')" class="text-center">
-                            {{ getCustomerByNo(item.customer_id)?.id || 'ยังไม่ระบุ' }}</td>
+                        <td v-if="visibleColumns.includes('customer_no')" class="text-center">
+                            {{ getCustomerByNo(item.customer_no)?.id || 'ยังไม่ระบุ' }}</td>
                         <td v-if="visibleColumns.includes('customer_name')" class="text-center">
-                            {{ getCustomerByNo(item.customer_id)?.nickname || 'ยังไม่ระบุ' }}</td>
-                        <td v-if="visibleColumns.includes('stock_id')" class="text-center">
-                            {{ getStockByNo(item.stock_id)?.name || 'ยังไม่ระบุ' }}</td>
-                        <td v-if="visibleColumns.includes('from_id')" class="text-center"
-                            :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
-                            {{ getFromByNo(item.from_id)?.from || 'ยังไม่ระบุ' }}</td>
+                            {{ getCustomerByNo(item.customer_no)?.nickname || 'ยังไม่ระบุ' }}</td>
+                        <td v-if="visibleColumns.includes('stock_no')" class="text-center">
+                            {{ getStockByNo(item.stock_no)?.stock || 'ยังไม่ระบุ' }}</td>
+                        <td v-if="visibleColumns.includes('from_no')" class="text-center"
+                            :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
+                            {{ getFromByNo(item.from_no)?.from || 'ยังไม่ระบุ' }}</td>
                         <td v-if="visibleColumns.includes('created_date')" class="text-center"
                             :style="{ color: getDateColor(item.created_date) }">
                             {{ formatDate(item.created_date) }}</td>
@@ -190,15 +190,15 @@
                         <td v-if="visibleColumns.includes('port')" class="text-center"
                             :style="{ color: getPortText(item.total_percent).color }">
                             {{ getPortText(item.total_percent).text }}</td>
-                        <td v-if="visibleColumns.includes('emp_id')" class="text-center">
-                            {{ getEmployeeByNo(item.emp_id)?.fname + ' ' + getEmployeeByNo(item.emp_id)?.lname ||
+                        <td v-if="visibleColumns.includes('employee_no')" class="text-center">
+                            {{ getEmployeeByNo(item.employee_no)?.fname + ' ' + getEmployeeByNo(item.employee_no)?.lname ||
                                 'ยังไม่ระบุ' }}</td>
                         <td v-if="visibleColumns.includes('comment')" class="text-center">
                             {{ item.comment || '-' }}</td>
-                        <td v-if="visibleColumns.includes('type_id')" class="text-center">
-                            {{ getTypeByNo(getCustomerByNo(item.customer_id)?.type_id)?.type || 'ยังไม่ระบุ' }}</td>
-                        <td v-if="visibleColumns.includes('base_id')" class="text-center">
-                            {{ getBaseByNo(getCustomerByNo(item.customer_id)?.base_id)?.base || 'ยังไม่ระบุ' }}</td>
+                        <td v-if="visibleColumns.includes('type_no')" class="text-center">
+                            {{ getTypeByNo(getCustomerByNo(item.customer_no)?.type_no)?.type || 'ยังไม่ระบุ' }}</td>
+                        <td v-if="visibleColumns.includes('base_no')" class="text-center">
+                            {{ getBaseByNo(getCustomerByNo(item.customer_no)?.base_no)?.base || 'ยังไม่ระบุ' }}</td>
                         <td class="text-center">
                             <v-menu offset-y>
                                 <template v-slot:activator="{ on, attrs }">
@@ -226,15 +226,15 @@
                         <td class="text-center" style="color:#e6c56c">หุ้นเดิม</td>
                         <td v-if="visibleColumns.includes('updated_date')" class="text-center">
                             {{ formatDateTime(item.detailupdated_date) }}</td>
-                        <td v-if="visibleColumns.includes('customer_id')" class="text-center">
-                            {{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('customer_no')" class="text-center">
+                            {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
                         <td v-if="visibleColumns.includes('customer_name')" class="text-center">
-                            {{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('stock_id')" class="text-center">
-                            {{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('from_id')" class="text-center"
-                            :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
-                            {{ getFromByNo(item.from_id)?.from || 'N/A' }}</td>
+                            {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('stock_no')" class="text-center">
+                            {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('from_no')" class="text-center"
+                            :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
+                            {{ getFromByNo(item.from_no)?.from || 'N/A' }}</td>
                         <td v-if="visibleColumns.includes('created_date')" class="text-center"
                             :style="{ color: getDateColor(item.created_date) }">
                             {{ formatDate(item.created_date) }}</td>
@@ -263,14 +263,14 @@
                         <td v-if="visibleColumns.includes('port')" class="text-center"
                             :style="{ color: getPortText(item.detailtotal_percent).color }">
                             {{ getPortText(item.detailtotal_percent).text }}</td>
-                        <td v-if="visibleColumns.includes('emp_id')" class="text-center">
-                            {{ getEmployeeByNo(item.detailemp_id)?.fname + ' ' +
-                                getEmployeeByNo(item.detailemp_id)?.lname || 'ไม่ทราบ'
+                        <td v-if="visibleColumns.includes('employee_no')" class="text-center">
+                            {{ getEmployeeByNo(item.detailemployee_no)?.fname + ' ' +
+                                getEmployeeByNo(item.detailemployee_no)?.lname || 'ไม่ทราบ'
                             }}</td>
                         <td v-if="visibleColumns.includes('comment')" class="text-center">
                             {{ item.comment || '-' }}</td>
-                        <td v-if="visibleColumns.includes('type_id')" class="text-center"></td>
-                        <td v-if="visibleColumns.includes('base_id')" class="text-center"></td>
+                        <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
+                        <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
                         <td class="text-center"></td>
                     </tr>
 
@@ -279,15 +279,15 @@
                         <td class="text-center" style="color:#6ce69f">ซื้อเพิ่ม</td>
                         <td v-if="visibleColumns.includes('updated_date')" class="text-center">
                             {{ formatDateTime(transaction.updated_date) }}</td>
-                        <td v-if="visibleColumns.includes('customer_id')" class="text-center">
-                            {{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('customer_no')" class="text-center">
+                            {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
                         <td v-if="visibleColumns.includes('customer_name')" class="text-center">
-                            {{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('stock_id')" class="text-center">
-                            {{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('from_id')" class="text-center"
-                            :style="{ color: getFromText(getFromByNo(transaction.from_id)?.from).color }">
-                            {{ getFromByNo(transaction.from_id)?.from || 'N/A' }}</td>
+                            {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('stock_no')" class="text-center">
+                            {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('from_no')" class="text-center"
+                            :style="{ color: getFromText(getFromByNo(transaction.from_no)?.from).color }">
+                            {{ getFromByNo(transaction.from_no)?.from || 'N/A' }}</td>
                         <td v-if="visibleColumns.includes('created_date')" class="text-center"
                             :style="{ color: getDateColor(transaction.created_date) }">
                             {{ formatDate(transaction.created_date) }}</td>
@@ -316,14 +316,14 @@
                         <td v-if="visibleColumns.includes('port')" class="text-center"
                             :style="{ color: getPortText(transaction.total_percent).color }">
                             {{ getPortText(transaction.total_percent).text }}</td>
-                        <td v-if="visibleColumns.includes('emp_id')" class="text-center">
-                            {{ getEmployeeByNo(transaction.emp_id)?.fname + ' ' +
-                                getEmployeeByNo(transaction.emp_id)?.lname ||
+                        <td v-if="visibleColumns.includes('employee_no')" class="text-center">
+                            {{ getEmployeeByNo(transaction.employee_no)?.fname + ' ' +
+                                getEmployeeByNo(transaction.employee_no)?.lname ||
                                 'ไม่ทราบ' }}</td>
                         <td v-if="visibleColumns.includes('comment')" class="text-center">
                             {{ item.comment || '-' }}</td>
-                        <td v-if="visibleColumns.includes('type_id')" class="text-center"></td>
-                        <td v-if="visibleColumns.includes('base_id')" class="text-center"></td>
+                        <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
+                        <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
                         <td class="text-center"></td>
                     </tr>
 
@@ -331,15 +331,15 @@
                         <td class="text-center" style="color:#cb6ce6">รวมหักปันผล</td>
                         <td v-if="visibleColumns.includes('updated_date')" class="text-center">
                             {{ formatDateTime(item.updated_date) }}</td>
-                        <td v-if="visibleColumns.includes('customer_id')" class="text-center">
-                            {{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('customer_no')" class="text-center">
+                            {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
                         <td v-if="visibleColumns.includes('customer_name')" class="text-center">
-                            {{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('stock_id')" class="text-center">
-                            {{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('from_id')" class="text-center"
-                            :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
-                            {{ getFromByNo(item.from_id)?.from || 'N/A' }}</td>
+                            {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('stock_no')" class="text-center">
+                            {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('from_no')" class="text-center"
+                            :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
+                            {{ getFromByNo(item.from_no)?.from || 'N/A' }}</td>
                         <td v-if="visibleColumns.includes('created_date')" class="text-center"
                             :style="{ color: getDateColor(item.created_date) }">
                             {{ formatDate(item.created_date) }}</td>
@@ -355,7 +355,7 @@
                             {{ item.balance_dividend }}</td>
                         <td v-if="visibleColumns.includes('closing_price')" class="text-center" style="color:#ff914d">
                             {{ item.closing_price }}</td>
-                        <td v-if="visibleColumns.includes('base_id')" class="text-center">
+                        <td v-if="visibleColumns.includes('base_no')" class="text-center">
                             {{ item.present_price }}</td>
                         <td v-if="visibleColumns.includes('total')" class="text-center">
                             {{ item.total }}</td>
@@ -368,13 +368,13 @@
                         <td v-if="visibleColumns.includes('port')" class="text-center"
                             :style="{ color: getPortText(item.total_percent).color }">
                             {{ getPortText(item.total_percent).text }}</td>
-                        <td v-if="visibleColumns.includes('emp_id')" class="text-center">
-                            {{ getEmployeeByNo(item.emp_id)?.fname + ' ' + getEmployeeByNo(item.emp_id)?.lname ||
+                        <td v-if="visibleColumns.includes('employee_no')" class="text-center">
+                            {{ getEmployeeByNo(item.employee_no)?.fname + ' ' + getEmployeeByNo(item.employee_no)?.lname ||
                                 'ไม่ทราบ' }}</td>
                         <td v-if="visibleColumns.includes('comment')" class="text-center">
                             {{ item.comment || '-' }}</td>
-                        <td v-if="visibleColumns.includes('type_id')" class="text-center"></td>
-                        <td v-if="visibleColumns.includes('base_id')" class="text-center"></td>
+                        <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
+                        <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
                         <td class="text-center"></td>
                     </tr>
                 </template>
@@ -443,7 +443,7 @@ export default {
             sortBy: 'updated_date',
             currentAction: '',
             searchQuery: '',
-            searchType: 'customer_id',
+            searchType: 'customer_no',
             selectedItemDetail: '',
             startDateTime: '',
             endDateTime: '',
@@ -466,16 +466,16 @@ export default {
             editAllData: {},
 
             searchQueries: {
-                'customer_id': [],
+                'customer_no': [],
                 'customer_name': [],
-                'stock_id': [],
-                'emp_id': [],
+                'stock_no': [],
+                'employee_no': [],
             },
 
             searchTypes: [
-                { text: 'รหัสสมาชิก', value: 'customer_id' },
+                { text: 'รหัสสมาชิก', value: 'customer_no' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
-                { text: 'ชื่อหุ้นที่ติด', value: 'stock_id' },
+                { text: 'ชื่อหุ้นที่ติด', value: 'stock_no' },
                 { text: 'ประเภทพอร์ต', value: 'port' },
                 { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
@@ -487,7 +487,7 @@ export default {
                 { text: 'กำไร', value: 'กำไร' },
             ],
 
-            visibleColumns: ['action', 'updated_date', 'customer_id', 'customer_name', 'stock_id', 'created_date', 'price', 'amount', 'money', 'dividend_amount', 'balance_dividend', 'closing_price', 'present_price', 'total', 'present_profit', 'percent', 'total_percent', 'port', 'from_id', 'type_id', 'base_id', 'comment', 'emp_id', 'detail'],
+            visibleColumns: ['action', 'updated_date', 'customer_no', 'customer_name', 'stock_no', 'created_date', 'price', 'amount', 'money', 'dividend_amount', 'balance_dividend', 'closing_price', 'present_price', 'total', 'present_profit', 'percent', 'total_percent', 'port', 'from_no', 'type_no', 'base_no', 'comment', 'employee_no', 'detail'],
 
             headers: [
 
@@ -508,7 +508,7 @@ export default {
 
                 {
                     text: 'รหัสสมาชิก',
-                    value: 'customer_id',
+                    value: 'customer_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -524,7 +524,7 @@ export default {
 
                 {
                     text: 'ชื่อหุ้นที่ติด',
-                    value: 'stock_id',
+                    value: 'stock_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -532,7 +532,7 @@ export default {
 
                 {
                     text: 'ที่มาที่ไป',
-                    value: 'from_id',
+                    value: 'from_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -636,7 +636,7 @@ export default {
 
                 {
                     text: 'ทำรายการโดย',
-                    value: 'emp_id',
+                    value: 'employee_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -652,7 +652,7 @@ export default {
 
                 {
                     text: 'ประเภทลูกค้า',
-                    value: 'type_id',
+                    value: 'type_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -660,7 +660,7 @@ export default {
 
                 {
                     text: 'ฐานทุน',
-                    value: 'base_id',
+                    value: 'base_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -681,7 +681,7 @@ export default {
         filtered() {
             let filteredDetails = this.details.map(detail => {
                 const transactions = detail.transactions || [];
-                const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_id === detail.no);
+                const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_no === detail.no);
 
                 return {
                     ...detail,
@@ -719,22 +719,22 @@ export default {
         },
 
         getSearchItems(type) {
-            if (type === 'stock_id') {
+            if (type === 'stock_no') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getStockByNo(detail.stock_id)?.name)
-                    .map(detail => this.getStockByNo(detail.stock_id).name);
+                    .filter(detail => detail.amount > 0 && this.getStockByNo(detail.stock_no)?.stock)
+                    .map(detail => this.getStockByNo(detail.stock_no).stock);
             } else if (type === 'customer_name') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getCustomerByNo(detail.customer_id)?.nickname)
-                    .map(detail => this.getCustomerByNo(detail.customer_id).nickname);
-            } else if (type === 'customer_id') {
+                    .filter(detail => detail.amount > 0 && this.getCustomerByNo(detail.customer_no)?.nickname)
+                    .map(detail => this.getCustomerByNo(detail.customer_no).nickname);
+            } else if (type === 'customer_no') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getCustomerByNo(detail.customer_id)?.id)
-                    .map(detail => this.getCustomerByNo(detail.customer_id).id);
-            } else if (type === 'emp_id') {
+                    .filter(detail => detail.amount > 0 && this.getCustomerByNo(detail.customer_no)?.id)
+                    .map(detail => this.getCustomerByNo(detail.customer_no).id);
+            } else if (type === 'employee_no') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.emp_id)?.fname + ' ' + this.getEmployeeByNo(detail.emp_id)?.lname)
-                    .map(detail => this.getEmployeeByNo(detail.emp_id)?.fname + ' ' + this.getEmployeeByNo(detail.emp_id)?.lname);
+                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .map(detail => this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname);
             }
             return [];
         },
@@ -816,8 +816,8 @@ export default {
                 if (Array.isArray(this.details) && this.details.length > 0) {
                     for (const detail of this.details) {
                         detail.isOpen = false;
-                        if (detail.stock_id) {
-                            const stock = this.stocks.find(s => s.no === detail.stock_id);
+                        if (detail.stock_no) {
+                            const stock = this.stocks.find(s => s.no === detail.stock_no);
                             const closingPriceData = stock ? stock.closing_price : null;
                             let detail_total_Dividend = new Decimal(0);
                             let balance_dividend = 0;
@@ -831,13 +831,13 @@ export default {
 
                             if (detail.created_date) {
                                 const dividendData = await this.$store.dispatch('api/dividend/getDividend', {
-                                    stock_id: detail.stock_id,
+                                    stock_no: detail.stock_no,
                                     created_date: detail.created_date
                                 });
 
                                 const filteredDividendData = dividendData.filter(dividend => {
                                     const dividendDate = moment(dividend.created_date);
-                                    return dividend.stock_id === detail.stock_id && dividendDate.isSameOrAfter(moment(detail.created_date));
+                                    return dividend.stock_no === detail.stock_no && dividendDate.isSameOrAfter(moment(detail.created_date));
                                 });
 
                                 detail_total_Dividend = filteredDividendData.reduce((sum, dividend) =>
@@ -846,10 +846,10 @@ export default {
                                 balance_dividend = detail.amount * detail_total_Dividend.toNumber();
                             }
 
-                            const transactions = await this.$store.dispatch('api/transaction/getTransaction', { stock_detail_id: detail.no });
+                            const transactions = await this.$store.dispatch('api/transaction/getTransaction', { stock_detail_no: detail.no });
 
-                            const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_id === detail.no);
-                            const type2Transactions = transactions.filter(t => t.type === 2 && t.stock_detail_id === detail.no);
+                            const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_no === detail.no);
+                            const type2Transactions = transactions.filter(t => t.type === 2 && t.stock_detail_no === detail.no);
 
                             detail.transactions = type1Transactions;
                             let remainingAmount = 0;
@@ -890,13 +890,13 @@ export default {
 
                                     if (commission && transaction.created_date) {
                                         const dividendData = await this.$store.dispatch('api/dividend/getDividend', {
-                                            stock_id: detail.stock_id,
+                                            stock_no: detail.stock_no,
                                             created_date: transaction.created_date
                                         });
 
                                         const filteredDividendData = dividendData.filter(dividend => {
                                             const dividendDate = moment(dividend.created_date);
-                                            return dividend.stock_id === detail.stock_id && dividendDate.isSameOrAfter(moment(transaction.created_date));
+                                            return dividend.stock_no === detail.stock_no && dividendDate.isSameOrAfter(moment(transaction.created_date));
                                         });
 
                                         transactiontotalDividend = filteredDividendData.reduce((sum, dividend) =>
@@ -948,22 +948,22 @@ export default {
                             detail.detailbalance_dividend = balance_dividend.toLocaleString(2);
                             detail.detailpresent_profit = (detailtotal - detailmoney).toLocaleString(2);
                             detail.detailtotal_percent = (((detailtotal - detailmoney) / detailmoney) * 100).toLocaleString(2);
-                            detail.detailemp_id = detail.emp_id;
+                            detail.detailemployee_no = detail.employee_no;
 
                             const lasted_updated_date = transactions
-                                .filter(transaction => transaction.stock_detail_id === detail.no)
+                                .filter(transaction => transaction.stock_detail_no === detail.no)
                                 .map(transaction => transaction.updated_date);
 
                             const latest_updated_date = lasted_updated_date.length > 0
                                 ? moment.max(lasted_updated_date.map(date => moment(date)))
                                 : moment(detail.updated_date);
 
-                            const lasted_emp_id = lasted_updated_date.length > 0
+                            const lasted_employee_no = lasted_updated_date.length > 0
                                 ? transactions
-                                    .filter(transaction => transaction.stock_detail_id === detail.no)
-                                    .map(transaction => transaction.emp_id)
+                                    .filter(transaction => transaction.stock_detail_no === detail.no)
+                                    .map(transaction => transaction.employee_no)
                                     .pop()
-                                : detail.emp_id;
+                                : detail.employee_no;
 
                             const money = (detail.price * detail.amount) + transactionTotalSum;
                             const amount = detail.amount + transactionAmountSum;
@@ -984,7 +984,7 @@ export default {
                             detail.total = total.toLocaleString(2);
                             detail.present_profit = (total - money).toLocaleString(2);
                             detail.total_percent = (((total - money) / money) * 100).toLocaleString(2);
-                            detail.emp_id = lasted_emp_id;
+                            detail.employee_no = lasted_employee_no;
                             detail.type1Transactions = type1Transactions;
 
                             const dividendmoney = money - (transactionDividendTotalSum + balance_dividend);
@@ -1136,7 +1136,7 @@ export default {
 
             if (this.searchType === 'port') {
                 this.addTopicToSearch();
-            } else if (this.searchType === 'stock_id' || this.searchType === 'customer_name' || this.searchType === 'customer_id' || this.searchType === 'emp_id') {
+            } else if (this.searchType === 'stock_no' || this.searchType === 'customer_name' || this.searchType === 'customer_no' || this.searchType === 'employee_no') {
                 this.addTextToSearch();
             } else {
                 this.savedSearches.push({
@@ -1186,22 +1186,22 @@ export default {
             const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
             if (search.type === 'customer_name') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(detail.customer_id);
+                    const cust = this.getCustomerByNo(detail.customer_no);
                     return cust.nickname.toLowerCase().includes(query.toLowerCase());
                 });
-            } else if (search.type === 'customer_id') {
+            } else if (search.type === 'customer_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(detail.customer_id);
+                    const cust = this.getCustomerByNo(detail.customer_no);
                     return cust.id.toLowerCase().includes(query.toLowerCase());
                 });
-            } else if (search.type === 'stock_id') {
+            } else if (search.type === 'stock_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const st = this.getStockByNo(detail.stock_id);
+                    const st = this.getStockByNo(detail.stock_no);
                     return st.name.toLowerCase().includes(query.toLowerCase());
                 });
-            } else if (search.type === 'emp_id') {
+            } else if (search.type === 'employee_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const emp = this.getEmployeeByNo(detail.emp_id);
+                    const emp = this.getEmployeeByNo(detail.employee_no);
                     return emp.fname.toLowerCase().includes(query.toLowerCase()) + ' ' + emp.lname.toLowerCase().includes(query.toLowerCase());
                 });
             } else {
@@ -1273,18 +1273,18 @@ export default {
                         rowData[header.value] = item.present_price;
                     } else if (header.value === 'balance_dividend') {
                         rowData[header.value] = item.balance_dividend;
-                    } else if (header.value === 'from_id') {
-                        rowData[header.value] = this.getFromByNo(item.from_id).from;
-                    } else if (header.value === 'stock_id') {
-                        rowData[header.value] = this.getStockByNo(item.stock_id).name;
-                    } else if (header.value === 'customer_id') {
-                        rowData[header.value] = this.getCustomerByNo(item.customer_id).id;
+                    } else if (header.value === 'from_no') {
+                        rowData[header.value] = this.getFromByNo(item.from_no).from;
+                    } else if (header.value === 'stock_no') {
+                        rowData[header.value] = this.getStockByNo(item.stock_no).stock;
+                    } else if (header.value === 'customer_no') {
+                        rowData[header.value] = this.getCustomerByNo(item.customer_no).id;
                     } else if (header.value === 'customer_name') {
-                        rowData[header.value] = this.getCustomerByNo(item.customer_id).nickname;
+                        rowData[header.value] = this.getCustomerByNo(item.customer_no).nickname;
                     } else if (header.value === 'port') {
                         rowData[header.value] = this.getPortText(item.total_percent).text;
-                    } else if (header.value === 'emp_id') {
-                        rowData[header.value] = this.getEmployeeByNo(item.emp_id).fname + ' ' + this.getEmployeeByNo(item.emp_id).lname;
+                    } else if (header.value === 'employee_no') {
+                        rowData[header.value] = this.getEmployeeByNo(item.employee_no).fname + ' ' + this.getEmployeeByNo(item.employee_no).lname;
                     } else if (header.value !== 'detail' && header.value !== 'action') {
                         rowData[header.value] = item[header.value];
                     }
@@ -1325,11 +1325,11 @@ export default {
         },
 
         recordLog() {
-            const stock = this.getStockByNo(this.currentItem.stock_id);
-            const from = this.getFromByNo(this.currentItem.from_id);
-            const customer = this.getCustomerByNo(this.currentItem.customer_id)
+            const stock = this.getStockByNo(this.currentItem.stock_no);
+            const from = this.getFromByNo(this.currentItem.from_no);
+            const customer = this.getCustomerByNo(this.currentItem.customer_no)
             const log = {
-                customer_id: `${customer ? customer.id : 'ไม่พบรหัสลูกค้า'}`,
+                customer_no: `${customer ? customer.id : 'ไม่พบรหัสลูกค้า'}`,
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
                 detail: this.currentAction === 'delete'

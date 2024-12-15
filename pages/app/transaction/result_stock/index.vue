@@ -134,9 +134,9 @@
                 </v-menu>
             </div>
 
-            <v-data-table :headers="filteredHeaders" :items="details" :item-value="customer_id" item-key="customer_id">
+            <v-data-table :headers="filteredHeaders" :items="details" :item-value="customer_no" item-key="customer_no">
                 <template v-slot:body="{ items }">
-                    <template v-for="(group, index) in items" :key="group.customer_id + '-' + index">
+                    <template v-for="(group, index) in items" :key="group.customer_no + '-' + index">
                         <tr>
                             <td class="text-center" v-if="visibleColumns.includes('action')">
                                 <v-icon style="color:#85d7df" @click="group.isOpen = !group.isOpen">
@@ -146,9 +146,9 @@
                             <td v-if="visibleColumns.includes('updated_date')" class="text-center">
                                 {{ formatDateTime(group.updated_date) }}</td>
                             <td class="text-center">
-                                {{ getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ' }}</td>
+                                {{ getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ' }}</td>
                             <td class="text-center">
-                                {{ getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ' }}
+                                {{ getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ' }}
                             </td>
                             <td class="text-center">
                                 {{ (group.from1TotalDifference || 0).toLocaleString() }}</td>
@@ -165,7 +165,7 @@
                             <td class="text-center"><v-btn color="#5271ff" @click="openStockPopup(group, 'group')" icon>
                                     <v-icon>mdi-eye</v-icon></v-btn></td>
                             <td class="text-center"><v-btn color="#00bf63"
-                                    @click="exportForPerson(group.customer_id, 'group', group)" icon>
+                                    @click="exportForPerson(group.customer_no, 'group', group)" icon>
                                     <v-icon>mdi-file-excel</v-icon></v-btn></td>
                         </tr>
 
@@ -197,7 +197,7 @@
                                             <v-icon>mdi-eye</v-icon>
                                         </v-btn></td>
                                     <td class="text-center"><v-btn color="#00bf63"
-                                            @click="exportForPerson(group.customer_id, 'year', year)" icon>
+                                            @click="exportForPerson(group.customer_no, 'year', year)" icon>
                                             <v-icon>mdi-file-excel</v-icon></v-btn></td>
                                 </tr>
 
@@ -225,7 +225,7 @@
                                             @click="openStockPopup(group, 'month', month)" icon>
                                             <v-icon>mdi-eye</v-icon></v-btn></td>
                                     <td class="text-center"><v-btn color="#00bf63"
-                                            @click="exportForPerson(group.customer_id, 'month', month)" icon>
+                                            @click="exportForPerson(group.customer_no, 'month', month)" icon>
                                             <v-icon>mdi-file-excel</v-icon></v-btn></td>
                                 </tr>
                             </template>
@@ -305,7 +305,7 @@ export default {
             sortBy: 'updated_date',
             currentAction: '',
             searchQuery: '',
-            searchType: 'customer_id',
+            searchType: 'customer_no',
             selectedItemDetail: '',
             startDateTime: '',
             endDateTime: '',
@@ -327,16 +327,16 @@ export default {
 
 
             searchQueries: {
-                'customer_id': [],
+                'customer_no': [],
                 'customer_name': [],
-                'stock_id': [],
+                'stock_no': [],
                 'emp_id': [],
             },
 
             searchTypes: [
-                { text: 'รหัสสมาชิก', value: 'customer_id' },
+                { text: 'รหัสสมาชิก', value: 'customer_no' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
-                { text: 'ชื่อหุ้นที่ติด', value: 'stock_id' },
+                { text: 'ชื่อหุ้นที่ติด', value: 'stock_no' },
                 { text: 'ประเภทพอร์ต', value: 'port' },
                 { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
@@ -348,7 +348,7 @@ export default {
                 { text: 'กำไร', value: 'กำไร' },
             ],
 
-            visibleColumns: ['action', 'updated_date', 'customer_id', 'customer_name', 'base_stock', 'new_stock', 'tactic_stock', 'total', 'detail', 'export'],
+            visibleColumns: ['action', 'updated_date', 'customer_no', 'customer_name', 'base_stock', 'new_stock', 'tactic_stock', 'total', 'detail', 'export'],
 
             headers: [
 
@@ -368,7 +368,7 @@ export default {
 
                 {
                     text: 'รหัสสมาชิก',
-                    value: 'customer_id',
+                    value: 'customer_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -437,7 +437,7 @@ export default {
         filtered() {
             let filteredDetails = this.details.map(detail => {
                 const transactions = detail.transactions || [];
-                const type1Transactions = transactions.filter(t => t.stock_detail_id === detail.no);
+                const type1Transactions = transactions.filter(t => t.stock_detail_no === detail.no);
 
                 return {
                     ...detail,
@@ -521,12 +521,12 @@ export default {
         },
 
         getSearchItems(type) {
-            if (type === 'stock_id') {
-                return this.details.map(detail => this.getStockByNo(detail.stock_id)?.name);
+            if (type === 'stock_no') {
+                return this.details.map(detail => this.getStockByNo(detail.stock_no)?.stock);
             } else if (type === 'customer_name') {
-                return this.details.map(detail => this.getCustomerByNo(detail.customer_id)?.nickname);
-            } else if (type === 'customer_id') {
-                return this.details.map(detail => this.getCustomerByNo(detail.customer_id)?.id);
+                return this.details.map(detail => this.getCustomerByNo(detail.customer_no)?.nickname);
+            } else if (type === 'customer_no') {
+                return this.details.map(detail => this.getCustomerByNo(detail.customer_no)?.id);
             } else if (type === 'emp_id') {
                 return this.details.map(detail => this.getEmployeeByNo(detail.emp_id)?.fname + ' ' + this.getEmployeeByNo(detail.emp_id)?.lname);
             }
@@ -579,14 +579,14 @@ export default {
                     await this.fetchCommissionData();
 
                     const groupedDetails = this.details.reduce((acc, detail) => {
-                        const stockTransactions = transactions.filter(t => t.stock_detail_id === detail.no);
+                        const stockTransactions = transactions.filter(t => t.stock_detail_no === detail.no);
 
                         if (stockTransactions.length > 0) {
-                            const customerId = detail.customer_id;
+                            const customerId = detail.customer_no;
 
                             if (!acc[customerId]) {
                                 acc[customerId] = {
-                                    customer_id: customerId,
+                                    customer_no: customerId,
                                     isOpen: false,
                                     stocks: [],
                                     updated_date: null,
@@ -619,40 +619,40 @@ export default {
                             const lastBuyValues = {};
 
                             const groupedStockTransactions = stockTransactions.reduce((grouped, transaction) => {
-                                if (!grouped[transaction.from_id]) {
-                                    grouped[transaction.from_id] = {
-                                        from_id: transaction.from_id,
+                                if (!grouped[transaction.from_no]) {
+                                    grouped[transaction.from_no] = {
+                                        from_no: transaction.from_no,
                                         transactions: [],
                                     };
                                 }
 
-                                const detail = this.details.find(d => d.no === transaction.stock_detail_id);
+                                const detail = this.details.find(d => d.no === transaction.stock_detail_no);
 
-                                if (detail && (transaction.from_id === 1 || transaction.from_id === 2) && !lastBuyValues[transaction.from_id]) {
+                                if (detail && (transaction.from_no === 1 || transaction.from_no === 2) && !lastBuyValues[transaction.from_no]) {
                                     const money = detail.amount * detail.price;
                                     transaction.buy = money;
-                                    lastBuyValues[transaction.from_id] = money;
+                                    lastBuyValues[transaction.from_no] = money;
                                 } else if (transaction.type === 1 && !transaction.hasOwnProperty('buy')) {
-                                    const commission = this.commissions.find(c => c.no === transaction.commission_id);
-                                    const commission_id = commission ? commission.commission : 0;
+                                    const commission = this.commissions.find(c => c.no === transaction.commission_no);
+                                    const commission_no = commission ? commission.commission : 0;
                                     const money = transaction.amount * transaction.price;
-                                    const comfee = money * commission_id;
+                                    const comfee = money * commission_no;
                                     const vat = comfee * 0.07;
                                     const total = money + comfee + vat;
                                     transaction.buy = total;
                                 }
 
                                 if (transaction.type === 2 && !transaction.hasOwnProperty('sale')) {
-                                    const commission = this.commissions.find(c => c.no === transaction.commission_id);
-                                    const commission_id = commission ? commission.commission : 0;
+                                    const commission = this.commissions.find(c => c.no === transaction.commission_no);
+                                    const commission_no = commission ? commission.commission : 0;
                                     const money = transaction.amount * transaction.price;
-                                    const comfee = money * commission_id;
+                                    const comfee = money * commission_no;
                                     const vat = comfee * 0.07;
                                     const total = money - (comfee + vat);
                                     transaction.sale = total;
                                 }
 
-                                grouped[transaction.from_id].transactions.push(transaction);
+                                grouped[transaction.from_no].transactions.push(transaction);
 
                                 return grouped;
                             }, {});
@@ -670,11 +670,11 @@ export default {
                                 const totalSale = group.transactions.reduce((sum, tx) => sum + (tx.sale || 0), 0);
                                 const totalDifference = totalSale - totalBuy;
 
-                                if (group.from_id === 1) {
+                                if (group.from_no === 1) {
                                     acc[customerId].from1TotalDifference += totalDifference;
-                                } else if (group.from_id === 2) {
+                                } else if (group.from_no === 2) {
                                     acc[customerId].from2TotalDifference += totalDifference;
-                                } else if (group.from_id === 3) {
+                                } else if (group.from_no === 3) {
                                     acc[customerId].from3TotalDifference += totalDifference;
                                 }
 
@@ -701,13 +701,13 @@ export default {
                                     };
                                 }
 
-                                if (group.from_id === 1) {
+                                if (group.from_no === 1) {
                                     yearlyData.from1TotalDifference += totalDifference;
                                     yearlyData.monthlyDifferences[transactionMonth].from1TotalDifference += totalDifference;
-                                } else if (group.from_id === 2) {
+                                } else if (group.from_no === 2) {
                                     yearlyData.from2TotalDifference += totalDifference;
                                     yearlyData.monthlyDifferences[transactionMonth].from2TotalDifference += totalDifference;
-                                } else if (group.from_id === 3) {
+                                } else if (group.from_no === 3) {
                                     yearlyData.from3TotalDifference += totalDifference;
                                     yearlyData.monthlyDifferences[transactionMonth].from3TotalDifference += totalDifference;
                                 }
@@ -887,7 +887,7 @@ export default {
 
             if (this.searchType === 'port') {
                 this.addTopicToSearch();
-            } else if (this.searchType === 'stock_id' || this.searchType === 'customer_name' || this.searchType === 'customer_id' || this.searchType === 'emp_id') {
+            } else if (this.searchType === 'stock_no' || this.searchType === 'customer_name' || this.searchType === 'customer_no' || this.searchType === 'emp_id') {
                 this.addTextToSearch();
             } else {
                 this.savedSearches.push({
@@ -937,17 +937,17 @@ export default {
             const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
             if (search.type === 'customer_name') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(detail.customer_id);
+                    const cust = this.getCustomerByNo(detail.customer_no);
                     return cust.nickname.toLowerCase().includes(query.toLowerCase());
                 });
-            } else if (search.type === 'customer_id') {
+            } else if (search.type === 'customer_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(detail.customer_id);
+                    const cust = this.getCustomerByNo(detail.customer_no);
                     return cust.id.toLowerCase().includes(query.toLowerCase());
                 });
-            } else if (search.type === 'stock_id') {
+            } else if (search.type === 'stock_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const st = this.getStockByNo(detail.stock_id);
+                    const st = this.getStockByNo(detail.stock_no);
                     return st.name.toLowerCase().includes(query.toLowerCase());
                 });
             } else if (search.type === 'emp_id') {
@@ -1004,14 +1004,14 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'updated_date') {
                         rowData[header.value] = moment(group.updated_date).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value === 'from_id') {
-                        rowData[header.value] = this.getFromByNo(group.from_id)?.from || '';
-                    } else if (header.value === 'stock_id') {
-                        rowData[header.value] = this.getStockByNo(group.stock_id)?.name || '';
-                    } else if (header.value === 'customer_id') {
-                        rowData[header.value] = this.getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ';
+                    } else if (header.value === 'from_no') {
+                        rowData[header.value] = this.getFromByNo(group.from_no)?.from || '';
+                    } else if (header.value === 'stock_no') {
+                        rowData[header.value] = this.getStockByNo(group.stock_no)?.stock || '';
+                    } else if (header.value === 'customer_no') {
+                        rowData[header.value] = this.getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ';
                     } else if (header.value === 'customer_name') {
-                        rowData[header.value] = this.getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ';
+                        rowData[header.value] = this.getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ';
                     } else if (header.value === 'base_stock') {
                         rowData[header.value] = (group.from1TotalDifference || 0).toLocaleString();
                     } else if (header.value === 'new_stock') {
@@ -1031,7 +1031,7 @@ export default {
             const yearlyWorksheet = workbook.addWorksheet('สรุปรายปี');
             yearlyWorksheet.columns = [
                 { header: 'ปี', key: 'year', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'รหัสสมาชิก', key: 'customer_id', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'รหัสสมาชิก', key: 'customer_no', style: { font: { name: 'Angsana New', size: 16 } } },
                 { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16 } } },
                 { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
                 { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
@@ -1043,10 +1043,10 @@ export default {
                 if (group.yearlyDifferences && Object.keys(group.yearlyDifferences).length > 0) {
                     Object.keys(group.yearlyDifferences).forEach((year) => {
                         const yearlyData = group.yearlyDifferences[year];
-                        const customer = this.getCustomerByNo(group.customer_id);
+                        const customer = this.getCustomerByNo(group.customer_no);
                         const rowData = {
                             year: year,
-                            customer_id: customer ? customer.id : 'ยังไม่ระบุ',
+                            customer_no: customer ? customer.id : 'ยังไม่ระบุ',
                             customer_name: customer ? customer.nickname : 'ยังไม่ระบุ',
                             from1TotalDifference: (yearlyData.from1TotalDifference || 0).toLocaleString(),
                             from2TotalDifference: (yearlyData.from2TotalDifference || 0).toLocaleString(),
@@ -1063,7 +1063,7 @@ export default {
             const monthlyWorksheet = workbook.addWorksheet('สรุปรายเดือน');
             monthlyWorksheet.columns = [
                 { header: 'เดือน', key: 'month', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'รหัสสมาชิก', key: 'customer_id', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'รหัสสมาชิก', key: 'customer_no', style: { font: { name: 'Angsana New', size: 16 } } },
                 { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16 } } },
                 { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
                 { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
@@ -1080,12 +1080,12 @@ export default {
                         if (yearlyData.monthlyDifferences && Object.keys(yearlyData.monthlyDifferences).length > 0) {
                             Object.keys(yearlyData.monthlyDifferences).forEach((month) => {
                                 const monthlyData = yearlyData.monthlyDifferences[month];
-                                const customer = this.getCustomerByNo(year.customer_id);
+                                const customer = this.getCustomerByNo(year.customer_no);
                                 const months = this.formatMonthYearName(month).name;
 
                                 const rowData = {
                                     month: months,
-                                    customer_id: customer ? customer.id : 'ยังไม่ระบุ',
+                                    customer_no: customer ? customer.id : 'ยังไม่ระบุ',
                                     customer_name: customer ? customer.nickname : 'ยังไม่ระบุ',
                                     from1TotalDifference: (monthlyData.from1TotalDifference || 0).toLocaleString(),
                                     from2TotalDifference: (monthlyData.from2TotalDifference || 0).toLocaleString(),
@@ -1180,17 +1180,17 @@ export default {
 
                 worksheet.columns = headers;
 
-                let filteredData = this.filtered.filter(group => group.customer_id === customerId);
+                let filteredData = this.filtered.filter(group => group.customer_no === customerId);
 
                 filteredData.forEach(group => {
                     const rowData = {};
                     this.filteredHeaders.forEach(header => {
                         if (header.value === 'updated_date') {
                             rowData[header.value] = this.formatDateTime(group.updated_date);
-                        } else if (header.value === 'customer_id') {
-                            rowData[header.value] = this.getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ';
+                        } else if (header.value === 'customer_no') {
+                            rowData[header.value] = this.getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ';
                         } else if (header.value === 'customer_name') {
-                            rowData[header.value] = this.getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ';
+                            rowData[header.value] = this.getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ';
                         } else if (header.value === 'base_stock') {
                             rowData[header.value] = (group.from1TotalDifference || 0).toLocaleString();
                         } else if (header.value === 'new_stock') {
@@ -1212,7 +1212,7 @@ export default {
 
                 const newHeaders = [
                     { header: 'ข้อมูลวันที่', key: 'updated_date' },
-                    { header: 'รหัสลูกค้า', key: 'customer_id' },
+                    { header: 'รหัสลูกค้า', key: 'customer_no' },
                     { header: 'ชื่อหุ้น', key: 'customer_name' },
                     { header: 'มูลค่าซื้อ', key: 'base_stock' },
                     { header: 'มูลค่าขาย', key: 'new_stock' },
@@ -1237,14 +1237,14 @@ export default {
                         group.stocks.forEach((stock) => {  // ใช้ forEach เพื่อวนลูปผ่านแต่ละ stock
                             const rowData = {
                                 updated_date: this.formatDateTime(stock.updated_date),  // ฟังก์ชันนี้แปลงเวลา
-                                customer_id: this.getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ',
-                                customer_name: this.getStockByNo(stock.stock_id)?.name || 'ยังไม่ระบุ',
-                                base_stock: (stock.Buy || 0).toLocaleString(),  // ใช้ toLocaleString แสดงผลตัวเลขในรูปแบบที่ต้องการ
+                                customer_no: this.getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ',
+                                customer_name: this.getStockByNo(stock.stock_no)?.stock || 'ยังไม่ระบุ',
+                                base_stock: (stock.Buy || 0).toLocaleString(),
                                 new_stock: (stock.Sale || 0).toLocaleString(),
                                 tactic_stock: (stock.Total || 0).toLocaleString(),
-                                total: this.getFromByNo(stock.from_id)?.from || 'ยังไม่ระบุ',  // แสดง 'ยังไม่ระบุ' ถ้าไม่มีข้อมูล
+                                total: this.getFromByNo(stock.from_no)?.from || 'ยังไม่ระบุ',
                             };
-                            worksheet.addRow(rowData);  // เพิ่ม rowData ลงใน worksheet
+                            worksheet.addRow(rowData);
                         });
                     }
                 });
@@ -1256,7 +1256,7 @@ export default {
                 const yearlyWorksheet = workbook.addWorksheet('สรุปรายปี');
                 yearlyWorksheet.columns = [
                     { header: 'ปี', key: 'year', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'รหัสสมาชิก', key: 'customer_id', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'รหัสสมาชิก', key: 'customer_no', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
                     { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
                     { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
                     { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
@@ -1269,7 +1269,7 @@ export default {
                         return false;
                     }
 
-                    return group.customer_id === customerId &&
+                    return group.customer_no === customerId &&
                         Object.keys(group.yearlyDifferences).some(year => {
                             return parseInt(year) === parseInt(date);
                         });
@@ -1294,8 +1294,8 @@ export default {
                         Object.values(group.yearlyDifferences).forEach((yearlyData) => {
                             const rowData = {
                                 year: date,
-                                customer_id: this.getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ',
-                                customer_name: this.getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ',
+                                customer_no: this.getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ',
+                                customer_name: this.getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ',
                                 from1TotalDifference: (yearlyData.from1TotalDifference || 0).toLocaleString(),
                                 from2TotalDifference: (yearlyData.from2TotalDifference || 0).toLocaleString(),
                                 from3TotalDifference: (yearlyData.from3TotalDifference || 0).toLocaleString(),
@@ -1311,7 +1311,7 @@ export default {
                 const monthlyWorksheet = workbook.addWorksheet('สรุปรายเดือน');
                 monthlyWorksheet.columns = [
                     { header: 'เดือน', key: 'month', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'รหัสสมาชิก', key: 'customer_id', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'รหัสสมาชิก', key: 'customer_no', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
                     { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
                     { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
                     { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
@@ -1324,7 +1324,7 @@ export default {
                         return false;
                     }
 
-                    return group.customer_id === customerId &&
+                    return group.customer_no === customerId &&
                         Object.keys(group.yearlyDifferences).some(year => {
                             return parseInt(year) === parseInt(date);
                         });
@@ -1367,8 +1367,8 @@ export default {
                                     const monthlyData = yearlyData.monthlyDifferences[month];
                                     const rowData = {
                                         month: this.formatMonthYearName(month).name,
-                                        customer_id: this.getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ',
-                                        customer_name: this.getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ',
+                                        customer_no: this.getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ',
+                                        customer_name: this.getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ',
                                         from1TotalDifference: (monthlyData.from1TotalDifference || 0).toLocaleString(),
                                         from2TotalDifference: (monthlyData.from2TotalDifference || 0).toLocaleString(),
                                         from3TotalDifference: (monthlyData.from3TotalDifference || 0).toLocaleString(),

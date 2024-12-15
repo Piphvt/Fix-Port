@@ -344,7 +344,6 @@ export default {
     methods: {
         async fetchDividendData() {
             try {
-                // Fetch dividends from the API
                 this.dividends = await this.$store.dispatch('api/dividend/getDividend');
             } catch (error) {
                 console.error('Failed to fetch dividends:', error);

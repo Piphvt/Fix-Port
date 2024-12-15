@@ -6,7 +6,7 @@
                 <span class="headline">หุ้นที่ซื้อขายหุ้นของลูกค้า</span></v-card-title>
             <v-card-text class="text-center">
                 <span v-if="stockData.length > 0 && stockData[0] && stockData[0][0]">
-                    รหัสสมาชิก : {{ getCustomerByNo(stockData[0][0].customer_id)?.id }}
+                    รหัสสมาชิก : {{ getCustomerByNo(stockData[0][0].customer_no)?.id }}
                 </span>
                 <span v-if="stockData.length > 0 && stockData[0] && stockData[0][0]"> |
                     <span v-if="stockData[0][0].date && stockData[0][0].date.includes('-')">
@@ -23,18 +23,18 @@
             </v-card-text>
 
             <v-card-text>
-                <v-data-table :headers="stockHeaders" :items="transformData(stockData)" item-value="stock_id"
-                    item-key="stock_id" :items-per-page="5" style="border-spacing: 0 10px;">
+                <v-data-table :headers="stockHeaders" :items="transformData(stockData)" item-value="stock_no"
+                    item-key="stock_no" :items-per-page="5" style="border-spacing: 0 10px;">
                     <template v-slot:body="{ items }">
-                        <template v-for="(stock, index) in items" :key="stock.stock_id + '-' + index">
-                            <tr v-if="index > 0 && items[index - 1].stock_id !== stock.stock_id">
+                        <template v-for="(stock, index) in items" :key="stock.stock_no + '-' + index">
+                            <tr v-if="index > 0 && items[index - 1].stock_no !== stock.stock_no">
                                 <td colspan="6" style="border-top: 1px solid #ccc;"></td>
                             </tr>
 
                             <tr>
                                 <td class="text-center" :style="{ padding: '10px' }">{{
                                     formatDateTime(stock.updated_date) }}</td>
-                                <td class="text-center">{{ getStockByNo(stock.stock_id)?.name || 'ยังไม่ระบุ' }}</td>
+                                <td class="text-center">{{ getStockByNo(stock.stock_no)?.stock || 'ยังไม่ระบุ' }}</td>
                                 <td class="text-center" style="color:#00bf63">{{ stock.buy.toLocaleString() }}</td>
                                 <td class="text-center" style="color:#ff66c4">{{ stock.sale.toLocaleString() }}</td>
                                 <td class="text-center" :style="{ color: getColor(stock.total) }">{{
@@ -47,11 +47,11 @@
                             </tr>
 
                             <tr v-if="stock.isOpen" v-for="(grouped, subIndex) in stock.groupedTransactions"
-                                :key="(grouped.from_id || 'unknown') + '-' + stock.stock_id + '-' + subIndex">
+                                :key="(grouped.from_no || 'unknown') + '-' + stock.stock_no + '-' + subIndex">
                                 <td colspan="1"></td>
                                 <td class="text-center"
-                                    :style="{ color: getFromText(getFromByNo(grouped.from_id)?.from).color }">
-                                    {{ getFromByNo(grouped.from_id)?.from || 'ยังไม่ระบุ' }}
+                                    :style="{ color: getFromText(getFromByNo(grouped.from_no)?.from).color }">
+                                    {{ getFromByNo(grouped.from_no)?.from || 'ยังไม่ระบุ' }}
                                 </td>
                                 <td class="text-center" :style="{ padding: '10px', color: '#00bf63' }">
                                     {{ grouped.transactions.reduce((sum, tx) => sum + (tx.buy || 0), 0).toLocaleString()
@@ -105,14 +105,14 @@ export default {
         return {
             stockHeaders: [
                 { text: 'ข้อมูลวันที่', value: 'updated_date', sortable: true, align: 'center' },
-                { text: 'ชื่อหุ้น', value: 'stock_id', sortable: false, align: 'center' },
+                { text: 'ชื่อหุ้น', value: 'stock_no', sortable: false, align: 'center' },
                 { text: 'มูลค่าซื้อ', value: 'buy', sortable: false, align: 'center' },
                 { text: 'มูลค่าขาย', value: 'sale', sortable: false, align: 'center' },
                 { text: 'กำไร/ขาดทุน', value: 'total', sortable: false, align: 'center' },
                 { text: 'รายละเอียด', value: 'actions', sortable: false, align: 'center' },
             ],
             groupedHeaders: [
-                { text: 'แหล่งที่มา', value: 'from_id', sortable: false, align: 'center' },
+                { text: 'แหล่งที่มา', value: 'from_no', sortable: false, align: 'center' },
                 { text: 'มูลค่าซื้อ', value: 'buy', sortable: false, align: 'center' },
                 { text: 'มูลค่าขาย', value: 'sale', sortable: false, align: 'center' },
                 { text: 'กำไร/ขาดทุน', value: 'total', sortable: false, align: 'center' }
@@ -171,10 +171,10 @@ export default {
             return rawData
                 .filter(entry => entry && entry[0])
                 .map((entry) => {
-                    const { customer_id, stocks } = entry[0];
+                    const { customer_no, stocks } = entry[0];
                     return stocks.map((stock) => ({
-                        customer_id,
-                        stock_id: stock.stock_id,
+                        customer_no,
+                        stock_no: stock.stock_no,
                         price: stock.price,
                         amount: stock.amount,
                         buy: stock.Buy,
