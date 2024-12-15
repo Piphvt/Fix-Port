@@ -157,10 +157,10 @@
                 <template v-slot:item.email="{ item }">
                     <div class="text-center">{{ item.email }}</div>
                 </template>
-                <template v-slot:item.emp_id="{ item }">
+                <template v-slot:item.employee_no="{ item }">
                     <div class="text-center">
-                        <span v-if="getEmployeeById(item.emp_id)">{{ getEmployeeById(item.emp_id).fname }} {{
-                            getEmployeeById(item.emp_id).lname }}</span>
+                        <span v-if="getEmployeeById(item.employee_no)">{{ getEmployeeById(item.employee_no).fname }} {{
+                            getEmployeeById(item.employee_no).lname }}</span>
                         <span v-else>ไม่ทราบ</span>
                     </div>
                 </template>
@@ -174,7 +174,7 @@
                     <div class="text-center">{{ item.gender }}</div>
                 </template>
                 <template v-slot:item.rank_no="{ item }">
-                    <div class="text-center" :style="{ color: getStatusText(getRankName(item.rank_no)).color }">
+                    <div class="text-center" :style="{ color: getRankText(getRankName(item.rank_no)).color }">
                         {{ getRankName(item.rank_no) }}
                     </div>
                 </template>
@@ -305,7 +305,7 @@ export default {
                 { text: 'เวลา', value: 'updated_date' }
             ],
 
-            visibleColumns: ['updated_date', 'picture', 'rank_no', 'email', 'fname', 'lname', 'phone', 'gender', 'emp_id', 'detail'],
+            visibleColumns: ['updated_date', 'picture', 'rank_no', 'email', 'fname', 'lname', 'phone', 'gender', 'employee_no', 'detail'],
 
             headers: [
                 {
@@ -365,7 +365,7 @@ export default {
 
                 {
                     text: 'ผู้อนุมัติ',
-                    value: 'emp_id',
+                    value: 'employee_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -422,12 +422,12 @@ export default {
         },
 
         async fetchRanks() {
-            this.ranks = await this.$store.dispatch('api/rank/getRanks')
+            this.ranks = await this.$store.dispatch('api/rank/getRank')
         },
 
-        getRankName(rankId) {
-            const rank = this.ranks.find(r => r.no === rankId);
-            return rank ? rank.name : 'ไม่ทราบ';
+        getRankName(rankNo) {
+            const rank = this.ranks.find(r => r.no === rankNo);
+            return rank ? rank.rank : 'ไม่ทราบ';
         },
 
         getEmployeeName(employeeId) {
@@ -505,7 +505,7 @@ export default {
             }
         },
 
-        getStatusText(rank) {
+        getRankText(rank) {
             if (rank === 'ผู้พัฒนา') {
                 return { text: 'ผู้พัฒนา', color: '#24b224' };
             } else if (rank === 'พนักงานทั่วไป') {
@@ -518,7 +518,7 @@ export default {
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployeesStatus', '1');
+            this.employees = await this.$store.dispatch('api/employee/getEmployeeByStatus', '1');
         },
 
         formatDateTime(date) {
@@ -673,8 +673,8 @@ export default {
                         rowData[header.value] = this.formatDateTime(item.updated_date);
                     } else if (header.value === 'rank_no') {
                         rowData[header.value] = this.getRankName(item.rank_no);
-                    } else if (header.value === 'emp_id') {
-                        rowData[header.value] = this.getEmployeeName(item.emp_id);
+                    } else if (header.value === 'employee_no') {
+                        rowData[header.value] = this.getEmployeeName(item.employee_no);
                     } else if (header.value === 'fname') {
                         rowData[header.value] = this.getEmployeeName(item.no);
                     } else if (header.value !== 'picture' && header.value !== 'detail') {
@@ -718,7 +718,7 @@ export default {
 
         recordLog() {
             const log = {
-                emp_id: this.currentItem.fname + ' ' + this.currentItem.lname,
+                employee_no: this.currentItem.fname + ' ' + this.currentItem.lname,
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
                 detail: this.currentAction === 'delete'

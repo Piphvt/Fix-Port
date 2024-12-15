@@ -29,12 +29,12 @@
                         </v-col>
 
                         <v-col cols="2">
-                            <v-select v-model="item.type_id" :items="types" item-text="name" item-value="id"
+                            <v-select v-model="item.type_no" :items="types" item-text="name" item-value="id"
                                 label="ประเภท" dense outlined></v-select>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-select v-model="item.base_id" :items="bases" item-text="name" item-value="id"
+                            <v-select v-model="item.base_no" :items="bases" item-text="name" item-value="id"
                                 label="ฐานทุน" dense outlined></v-select>
                         </v-col>
 
@@ -90,7 +90,7 @@ export default {
             },
             valid: false,
             showModalResult: false,
-            withdrawalItems: [{ id: 'AQT', nickname: '', type_id: null, base_id: 3 }],
+            withdrawalItems: [{ id: 'AQT', nickname: '', type_no: null, base_no: 3 }],
             types: [],
             bases: [],
 
@@ -165,9 +165,9 @@ export default {
                     await this.$store.dispatch('api/customer/addCustomer', {
                         id: customer.id,
                         nickname: customer.nickname,
-                        type_id: customer.type_id,
-                        base_id: customer.base_id,
-                        emp_id: this.$auth.user.no,
+                        type_no: customer.type_no,
+                        base_no: customer.base_no,
+                        employee_no: this.$auth.user.no,
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                         updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                     });
@@ -194,7 +194,7 @@ export default {
 
         async fetchTypesData() {
             try {
-                const response = await this.$store.dispatch('api/type/getTypes');
+                const response = await this.$store.dispatch('api/type/getType');
                 if (response) {
                     this.types = response.map(item => ({ id: item.no, name: item.type }));
                 }
@@ -205,7 +205,7 @@ export default {
 
         async fetchBasesData() {
             try {
-                const response = await this.$store.dispatch('api/base/getBases');
+                const response = await this.$store.dispatch('api/base/getBase');
                 if (response) {
                     this.bases = response.map(item => ({ id: item.no, name: item.base }));
                 }
@@ -218,8 +218,8 @@ export default {
             this.withdrawalItems.push({
                 id: null,
                 nickname: '',
-                type_id: null,
-                base_id: null,
+                type_no: null,
+                base_no: null,
             });
         },
 
@@ -233,8 +233,8 @@ export default {
 
         recordLog() {
             const details = this.withdrawalItems.map((item, index) => {
-                const typeName = this.types.find(type => type.id === item.type_id)?.name || 'ยังไม่ระบุ';
-                const baseName = this.bases.find(base => base.id === item.base_id)?.name || 'ยังไม่ระบุ';
+                const typeName = this.types.find(type => type.id === item.type_no)?.name || 'ยังไม่ระบุ';
+                const baseName = this.bases.find(base => base.id === item.base_no)?.name || 'ยังไม่ระบุ';
                 return `ลูกค้าคนที่ ${index + 1}\nรหัส : ${item.id}\nชื่อเล่น : ${item.nickname}\nประเภท : ${typeName}\nฐานทุน : ${baseName}`;
             }).join('\n\n');
 

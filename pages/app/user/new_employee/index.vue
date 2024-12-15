@@ -306,7 +306,7 @@ export default {
 
         async fetchEmployeeData() {
             try {
-                const status2 = await this.$store.dispatch('api/employee/getEmployeesStatus', '2');
+                const status2 = await this.$store.dispatch('api/employee/getEmployeeByStatus', '2');
                 const statusMap = {
                     2: 'รอการยืนยันผู้ใช้งาน',
                 };

@@ -44,8 +44,8 @@ export default {
             const bases = this.bases || [];
 
             return this.customers.map(customer => {
-                const type = types.find(t => t.id === customer.type_id);
-                const base = bases.find(b => b.id === customer.base_id);
+                const type = types.find(t => t.id === customer.type_no);
+                const base = bases.find(b => b.id === customer.base_no);
                 return {
                     ...customer,
                     type_name: type ? type.name : 'ยังไม่ระบุ',

@@ -83,8 +83,8 @@
                                 label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
                             </v-autocomplete>
 
-                            <v-autocomplete v-if="searchType === 'type_id'" v-model="selectedTopics"
-                                class="mx-2 search-size small-font" :items="getSearchItems('type_id')"
+                            <v-autocomplete v-if="searchType === 'type_no'" v-model="selectedTopics"
+                                class="mx-2 search-size small-font" :items="getSearchItems('type_no')"
                                 label="ค้นหาประเภท" dense outlined clearable multiple>
                             </v-autocomplete>
 
@@ -163,14 +163,14 @@
                 <template v-slot:item.nickname="{ item }">
                     <div class="text-center">{{ item.nickname }}</div>
                 </template>
-                <template v-slot:item.type_id="{ item }">
-                    <div class="text-center" :style="{ color: getTypeText(getTypeName(item.type_id)).color }">
-                        {{ getTypeName(item.type_id) }}
+                <template v-slot:item.type_no="{ item }">
+                    <div class="text-center" :style="{ color: getTypeText(getTypeName(item.type_no)).color }">
+                        {{ getTypeName(item.type_no) }}
                     </div>
                 </template>
-                <template v-slot:item.base_id="{ item }">
-                    <div class="text-center" :style="{ color: getBaseText(getBaseName(item.base_id)).color }">
-                        {{ getBaseName(item.base_id) }}
+                <template v-slot:item.base_no="{ item }">
+                    <div class="text-center" :style="{ color: getBaseText(getBaseName(item.base_no)).color }">
+                        {{ getBaseName(item.base_no) }}
                     </div>
                 </template>
                 <template v-slot:item.emp_id="{ item }">
@@ -311,11 +311,11 @@ export default {
             searchTypes: [
                 { text: 'ชื่อเล่น', value: 'nickname' },
                 { text: 'รหัสสมาชิก', value: 'id' },
-                { text: 'ประเภท', value: 'type_id' },
+                { text: 'ประเภท', value: 'type_no' },
                 { text: 'เวลา', value: 'updated_date' }
             ],
 
-            visibleColumns: ['updated_date', 'id', 'nickname', 'type_id', 'base_id', 'emp_id', 'detail', 'select'],
+            visibleColumns: ['updated_date', 'id', 'nickname', 'type_no', 'base_no', 'emp_id', 'detail', 'select'],
 
             headers: [
                 {
@@ -335,7 +335,7 @@ export default {
 
                 {
                     text: 'ประเภท',
-                    value: 'type_id',
+                    value: 'type_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -359,7 +359,7 @@ export default {
 
                 {
                     text: 'ฐานทุน',
-                    value: 'base_id',
+                    value: 'base_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -436,7 +436,7 @@ export default {
         },
 
         async fetchTypeData() {
-            this.types = await this.$store.dispatch('api/type/getTypes')
+            this.types = await this.$store.dispatch('api/type/getType')
         },
 
         getTypeName(typeId) {
@@ -445,7 +445,7 @@ export default {
         },
 
         async fetchBaseData() {
-            this.bases = await this.$store.dispatch('api/base/getBases')
+            this.bases = await this.$store.dispatch('api/base/getBase')
         },
 
         getBaseName(baseId) {
@@ -454,11 +454,11 @@ export default {
         },
 
         async fetchCustomerData() {
-            this.customers = await this.$store.dispatch('api/customer/getCustomers');
+            this.customers = await this.$store.dispatch('api/customer/getCustomer');
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
         },
 
         getEmployeeName(empId) {
@@ -481,8 +481,8 @@ export default {
                 return this.customers.map(emp => emp.nickname);
             } else if (type === 'id') {
                 return this.customers.map(emp => emp.id);
-            } else if (type === 'type_id') {
-                return this.customers.map(emp => this.getTypeName(emp.type_id));
+            } else if (type === 'type_no') {
+                return this.customers.map(emp => this.getTypeName(emp.type_no));
             }
             return [];
         },
@@ -552,7 +552,7 @@ export default {
         },
 
         onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchType !== 'updated_date' && this.searchType !== 'type_id';
+            this.isSearchFieldVisible = this.searchType !== 'updated_date' && this.searchType !== 'type_no';
         },
 
         validateDateRange() {
@@ -571,7 +571,7 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'nickname' || this.searchType === 'id' || this.searchType === 'type_id') {
+            if (this.searchType === 'nickname' || this.searchType === 'id' || this.searchType === 'type_no') {
                 this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
@@ -590,7 +590,7 @@ export default {
             const selectedItems =
                 this.searchType === 'nickname' ? this.selectedNicknames :
                     this.searchType === 'id' ? this.selectedIds :
-                        this.searchType === 'type_id' ? this.selectedTopics : [];
+                        this.searchType === 'type_no' ? this.selectedTopics : [];
 
             if (selectedItems.length > 0) {
                 this.savedSearches.push({
@@ -604,7 +604,7 @@ export default {
                     this.selectedNicknames = [];
                 } else if (this.searchType === 'id') {
                     this.selectedIds = [];
-                } else if (this.searchType === 'type_id') {
+                } else if (this.searchType === 'type_no') {
                     this.selectedTopics = [];
                 }
 
@@ -617,13 +617,13 @@ export default {
             let queryMatched = true;
 
             let field;
-            if (search.type === 'type_id') {
-                field = this.getTypeName(customer.type_id);
+            if (search.type === 'type_no') {
+                field = this.getTypeName(customer.type_no);
             } else {
                 field = customer[search.type];
             }
 
-            if (search.type === 'id' || search.type === 'nickname' || search.type === 'type_id') {
+            if (search.type === 'id' || search.type === 'nickname' || search.type === 'type_no') {
                 queryMatched = search.query.some(query => {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField.includes(query.toLowerCase());
@@ -680,12 +680,12 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'updated_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value === 'type_id') {
-                        rowData[header.value] = this.getTypeName(item.type_id);
+                    } else if (header.value === 'type_no') {
+                        rowData[header.value] = this.getTypeName(item.type_no);
                     } else if (header.value === 'emp_id') {
                         rowData[header.value] = this.getEmployeeName(item.emp_id);
-                    } else if (header.value === 'base_id') {
-                        rowData[header.value] = this.getBaseName(item.base_id);
+                    } else if (header.value === 'base_no') {
+                        rowData[header.value] = this.getBaseName(item.base_no);
                     } else if (header.value !== 'picture' && header.value !== 'detail' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }
@@ -731,8 +731,8 @@ export default {
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
                 detail: this.currentAction === 'delete'
-                    ? `รหัส : ${this.currentItem.id}\nประเภท : ${this.getTypeName(this.currentItem.type_id)}\nฐานทุน : ${this.getBaseName(this.currentItem.base_id)}`
-                    : `รหัส : ${this.currentItem.id}\nประเภท : ${this.getTypeName(this.currentItem.type_id)}\nฐานทุน : ${this.getBaseName(this.currentItem.base_id)}`,
+                    ? `รหัส : ${this.currentItem.id}\nประเภท : ${this.getTypeName(this.currentItem.type_no)}\nฐานทุน : ${this.getBaseName(this.currentItem.base_no)}`
+                    : `รหัส : ${this.currentItem.id}\nประเภท : ${this.getTypeName(this.currentItem.type_no)}\nฐานทุน : ${this.getBaseName(this.currentItem.base_no)}`,
                 type: 3,
                 picture: this.$auth.user.picture || 'ไม่รู้จัก',
                 action: this.currentAction === 'delete'
