@@ -29,7 +29,7 @@ export const actions = {
         .put(`employee/update-password/${data.no}`, data)
         .then((res) => res.data)
     },
-    async getEmployeesStatus({ getters }, no) {
+    async getEmployeeByStatus({ getters }, no) {
       return await this.$axios
         .get(`employee/status/${no}`)
         .then((res) => res.data)

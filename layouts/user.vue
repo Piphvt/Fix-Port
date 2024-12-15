@@ -28,7 +28,7 @@
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item v-if="$auth.user.ranks_id === 1 || $auth.user.ranks_id === 3" @click="goToEmpManagement"
+            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="goToEmpManagement"
               class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-home-account</v-icon>
@@ -42,7 +42,7 @@
           </v-list>
         </v-menu>
 
-        <v-menu v-if="$auth.user.ranks_id === 1 || $auth.user.ranks_id === 3" bottom right :offset-y="true"
+        <v-menu v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" bottom right :offset-y="true"
           :nudge-top="8" :nudge-right="8" class="user-menu">
           <template v-slot:activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on" rounded>
@@ -97,7 +97,7 @@
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item v-if="$auth.user.ranks_id === 1 || $auth.user.ranks_id === 3" @click="goToStockTrade"
+            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="goToStockTrade"
               class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-cash</v-icon>
@@ -135,7 +135,7 @@
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item v-if="$auth.user.ranks_id === 1 || $auth.user.ranks_id === 3" @click="goToStocksHist"
+            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="goToStocksHist"
               class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-archive-clock</v-icon>
@@ -154,7 +154,7 @@
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item v-if="$auth.user.ranks_id === 1" @click="goToEmpsHist" class="custom-list-item">
+            <v-list-item v-if="$auth.user.rank_no === 1" @click="goToEmpsHist" class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-home-clock</v-icon>
               </v-list-item-icon>
@@ -208,7 +208,7 @@
             </v-list>
           </v-menu>
 
-          <v-snackbar v-if="$auth.user.ranks_id === 1 || $auth.user.ranks_id === 3" v-model="snackbar" :timeout="3000"
+          <v-snackbar v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" v-model="snackbar" :timeout="3000"
             style="width: 100px; height: 40px;" color="#24b224" absolute top right>
             <div class="snackbar-content">
               <v-icon class="small-bell-icon" style="margin-right: 8px; font-size: 16px;">mdi-bell</v-icon>{{
@@ -263,7 +263,7 @@ export default {
   methods: {
     async fetchPendingEmployeeCount() {
       try {
-        const response = await this.$store.dispatch('api/employee/getEmployeesStatus', '2');
+        const response = await this.$store.dispatch('api/employee/getEmployeeByStatus', '2');
         const newCount = response.length;
 
         if (newCount !== this.pendingEmployeesCount) {
@@ -303,7 +303,7 @@ export default {
     },
 
     async fetchEmployeeData() {
-      this.employees = await this.$store.dispatch('api/employee/getEmployees');
+      this.employees = await this.$store.dispatch('api/employee/getEmployee');
     },
 
     async recordLog() {
@@ -327,7 +327,7 @@ export default {
         detail: `ที่อยู่ : ${userLocation}\nไอพี : ${userIP}`,
         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
-      this.$store.dispatch('api/log/addLogs', log);
+      this.$store.dispatch('api/log/addLog', log);
     },
 
     goToManagement() {

@@ -1,37 +1,37 @@
 export const actions = {
     async getProfile({ getters }, data) {
         return await this.$axios
-        .get('picture/profile', data)
+        .get('file/profile', data)
+        .then((res) => res.data)
+    },    
+    async viewProfile({ getters }, data) {
+        return await this.$axios
+        .get('file/profile/:picture', data)
         .then((res) => res.data)
     },
-    async getDefault({ getters }, data) {
+    async viewDefault({ getters }, data) {
         return await this.$axios
-        .get('picture/default', data)
-        .then((res) => res.data)
-    },        
-    async downloadPicture({ getters }, data) {
-        return await this.$axios
-        .get('picture/profile/download/:picture', data)
+        .get('file/default/:picture', data)
         .then((res) => res.data)
     },
-    async uploadPicture({ getters }, data) {
+    async downloadProfile({ getters }, data) {
         return await this.$axios
-        .post('picture/profile', data)
+        .get('file/profile/download/:picture', data)
         .then((res) => res.data)
     },
-    async getPicture({ getters }, data) {
+    async uploadProfile({ getters }, data) {
         return await this.$axios
-            .get('picture', data)
-            .then((res) => res.data)
+        .post('file/profile', data)
+        .then((res) => res.data)
     },
-    async updatePicture({ getters }, data) {
+    async updateProfile({ getters }, data) {
         return await this.$axios
-        .put('picture/update-picture/:no', data)
+        .put('file/profile/update/:no', data)
         .then((res) => res.data)
     },
     async deleteProfile({ getters }, no) {
         return await this.$axios
-        .delete(`picture/picture/${no}`)
+        .delete(`file/profile/${no}`)
         .then((res) => res.data)
     },
 }

@@ -41,7 +41,7 @@ export default {
     methods: {
         async fetchPendingEmployeeCount() {
             try {
-                const response = await this.$store.dispatch('api/employee/getEmployeesStatus', '2');
+                const response = await this.$store.dispatch('api/employee/getEmployeeByStatus', '2');
                 this.pendingEmployeesCount = response.length;
             } catch (error) {
                 console.error('Error fetching pending employees:', error);
@@ -51,7 +51,7 @@ export default {
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.ranks_id.toString();
+                const RankID = this.$auth.user.rank_no.toString();
                 if (Status === '2') {
                     this.$router.push('/');
                     await this.$auth.logout();

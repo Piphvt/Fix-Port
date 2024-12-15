@@ -409,7 +409,7 @@ export default {
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.ranks_id.toString();
+                const RankID = this.$auth.user.rank_no.toString();
                 if (Status === '2') {
                     this.$router.push('/');
                     await this.$auth.logout();
@@ -431,11 +431,11 @@ export default {
         },
 
         async fetchLogData() {
-            this.logs = await this.$store.dispatch('api/log/getLogsType', '4');
+            this.logs = await this.$store.dispatch('api/log/getLogByType', '4');
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
         },
 
         getEmployeeByNo(empNo) {

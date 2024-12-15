@@ -92,13 +92,13 @@ export default {
   methods: {
 
     async fetchEmployeeData() {
-      this.employees = await this.$store.dispatch('api/employee/getEmployees');
+      this.employees = await this.$store.dispatch('api/employee/getEmployee');
     },
 
     async checkRank() {
       if (this.$auth.loggedIn) {
         const Status = this.$auth.user.status.toString();
-        const RankID = this.$auth.user.ranks_id.toString();
+        const RankID = this.$auth.user.rank_no.toString();
         if (Status === '2') {
           this.$router.push('/');
           await this.$auth.logout();
@@ -166,7 +166,7 @@ export default {
         detail: `ที่อยู่ : ${userLocation}\nไอพี : ${userIP}`,
         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
-      this.$store.dispatch('api/log/addLogs', log);
+      this.$store.dispatch('api/log/addLog', log);
     },
   },
 }

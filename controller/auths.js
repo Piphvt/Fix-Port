@@ -75,7 +75,7 @@ exports.refresh = async (req, res) => {
         fname: employeeData.fname,
         lname: employeeData.lname,
         email: employeeData.email,
-        ranks_id: employeeData.ranks_id,
+        rank_no: employeeData.rank_no,
         status: employeeData.status,
         picture: employeeData.picture,
       },
@@ -94,7 +94,7 @@ exports.logout = async (req, res) => {
 
 exports.register = async (req, res) => {
   try {
-    const { email, password, fname, lname, ranks_id, phone, gender, picture, status, created_date, updated_date } = req.body;
+    const { email, password, fname, lname, rank_no, phone, gender, picture, status, created_date, updated_date } = req.body;
     connection.query(
       'SELECT COUNT(*) AS count FROM employees WHERE email = ?', 
       [email], 
@@ -114,7 +114,7 @@ exports.register = async (req, res) => {
           password: hashedPassword,
           fname,
           lname,
-          ranks_id,
+          rank_no,
           phone,
           gender,
           picture,

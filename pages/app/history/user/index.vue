@@ -110,7 +110,7 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.ranks_id === 1" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -405,7 +405,7 @@ export default {
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.ranks_id.toString();
+                const RankID = this.$auth.user.rank_no.toString();
                 if (Status === '2') {
                     this.$router.push('/');
                     await this.$auth.logout();
@@ -427,7 +427,7 @@ export default {
         },
 
         async fetchLogData() {
-            this.logs = await this.$store.dispatch('api/log/getLogsType', '3');
+            this.logs = await this.$store.dispatch('api/log/getLogByType', '3');
         },
 
         getActionColor(action) {
