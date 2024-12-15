@@ -5,7 +5,7 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
-        <EditStock :open="editStock" :data="editAllData" @update:edit="editStock = false" />
+        <StockEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
 
         <v-card class="custom-card" flat>
             <v-container>

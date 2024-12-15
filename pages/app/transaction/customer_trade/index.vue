@@ -5,7 +5,7 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
-        <EditStockDetail :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
+        <StockEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
 
         <v-card flat>
             <v-container>

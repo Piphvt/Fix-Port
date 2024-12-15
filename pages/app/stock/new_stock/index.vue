@@ -3,7 +3,7 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <ResultStock :open="showModalResult" :stocks="withdrawalItems" :sets="sets" @confirm="confirmAndAddCustomers"
+        <StockCreateResult :open="showModalResult" :stocks="withdrawalItems" :sets="sets" @confirm="confirmAndAddCustomers"
             @cancel="showModalResult = false" @update:open="showModalResult = $event" />
 
         <v-card class="custom-card" flat>

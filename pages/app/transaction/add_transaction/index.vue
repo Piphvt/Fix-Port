@@ -3,7 +3,7 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <ResultTransaction :open="showModalResult" :detail_amount="withdrawalItems"
+        <TransactionCreateResult :open="showModalResult" :detail_amount="withdrawalItems"
             :stocks="withdrawalItems.map(item => ({ stock_id: item.stock_id }))" :customers="customers"
             :customer_id="customer_id" :customer_name="customer_name" :type="type" @confirm="confirmAndAddDetails"
             @cancel="showModalResult = false" @update:open="showModalResult = $event" />

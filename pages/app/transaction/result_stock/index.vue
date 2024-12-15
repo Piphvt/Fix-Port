@@ -5,7 +5,7 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
-        <ResultStockResult :stockData="[selectedStockData]" :dataType="selectedDataType" :dialogOpen.sync="dialogOpen"
+        <TransactionSummarize :stockData="[selectedStockData]" :dataType="selectedDataType" :dialogOpen.sync="dialogOpen"
             :date="date" />
 
 

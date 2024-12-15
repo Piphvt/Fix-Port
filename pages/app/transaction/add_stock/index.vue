@@ -3,7 +3,7 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <ResultDetail :open="showModalResult" :details="withdrawalItems" :froms="froms" :stocks="stocks"
+        <DetailCreateResult :open="showModalResult" :details="withdrawalItems" :froms="froms" :stocks="stocks"
             :customers="customers" :customer_id="customer_id" :customer_name="customer_name"
             :created_date="created_date" @confirm="confirmAndAddDetails" @cancel="showModalResult = false"
             @update:open="showModalResult = $event" />
