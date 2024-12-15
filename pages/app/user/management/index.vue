@@ -312,7 +312,7 @@ export default {
                 { text: 'ชื่อเล่น', value: 'nickname' },
                 { text: 'รหัสสมาชิก', value: 'id' },
                 { text: 'ประเภท', value: 'type_no' },
-                { text: 'เวลา', value: 'updated_date' }
+                { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
             visibleColumns: ['updated_date', 'id', 'nickname', 'type_no', 'base_no', 'emp_id', 'detail', 'select'],
@@ -327,7 +327,7 @@ export default {
                 },
 
                 {
-                    text: 'เวลา',
+                    text: 'ข้อมูลวันที่',
                     value: 'updated_date',
                     align: 'center',
                     cellClass: 'text-center',
@@ -482,7 +482,7 @@ export default {
             } else if (type === 'id') {
                 return this.customers.map(emp => emp.id);
             } else if (type === 'type_no') {
-                return this.customers.map(emp => this.getTypeName(emp.type_no));
+                return this.customers.map(emp => this.getTypeName(emp.type_no) || 'ยังไม่ระบุ');
             }
             return [];
         },
@@ -618,7 +618,7 @@ export default {
 
             let field;
             if (search.type === 'type_no') {
-                field = this.getTypeName(customer.type_no);
+                field = this.getTypeName(customer.type_no) || 'ยังไม่ระบุ';
             } else {
                 field = customer[search.type];
             }
@@ -626,11 +626,11 @@ export default {
             if (search.type === 'id' || search.type === 'nickname' || search.type === 'type_no') {
                 queryMatched = search.query.some(query => {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
-                    return lowerCaseField.includes(query.toLowerCase());
+                    return lowerCaseField === query.toLowerCase();
                 });
             } else {
                 const searchQuery = search.query.toLowerCase();
-                queryMatched = typeof field === 'string' && field.toLowerCase().includes(searchQuery);
+                queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
 
             const timeMatched = search.type === 'updated_date'

@@ -302,14 +302,14 @@ export default {
                 { text: 'อีเมล', value: 'email' },
                 { text: 'เบอร์โทรศัพท์', value: 'phone' },
                 { text: 'ตำแหน่ง', value: 'rank_no' },
-                { text: 'เวลา', value: 'updated_date' }
+                { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
             visibleColumns: ['updated_date', 'picture', 'rank_no', 'email', 'fname', 'lname', 'phone', 'gender', 'employee_no', 'detail'],
 
             headers: [
                 {
-                    text: 'เวลา',
+                    text: 'ข้อมูลวันที่',
                     value: 'updated_date',
                     align: 'center',
                     cellClass: 'text-center',
@@ -615,11 +615,11 @@ export default {
             if (Array.isArray(search.query)) {
                 queryMatched = search.query.some(query => {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
-                    return lowerCaseField.includes(query.toLowerCase());
+                    return lowerCaseField === query.toLowerCase();
                 });
             } else if (typeof search.query === 'string') {
                 const searchQuery = search.query.toLowerCase();
-                queryMatched = typeof field === 'string' && field.toLowerCase().includes(searchQuery);
+                queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             } else {
                 queryMatched = false;
             }
