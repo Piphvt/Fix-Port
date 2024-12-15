@@ -144,7 +144,7 @@ export default {
   methods: {
     async setBaseOptions() {
       try {
-        this.bases = await this.$store.dispatch('api/base/getBases');
+        this.bases = await this.$store.dispatch('api/base/getBase');
 
         const baseIcons = {
           'มีเงิน': 'mdi-cash-100',
@@ -177,7 +177,7 @@ export default {
 
     async setTypeOptions() {
       try {
-        this.types = await this.$store.dispatch('api/type/getTypes');
+        this.types = await this.$store.dispatch('api/type/getType');
 
         const typeIcons = {
           'เทรดเอง': 'mdi-account-tie-hat',
