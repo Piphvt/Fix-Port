@@ -5,7 +5,9 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
-        <EditStockDetail :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
+        <ResultStockResult :stockData="[selectedStockData]" :dataType="selectedDataType" :dialogOpen.sync="dialogOpen"
+            :date="date" />
+
 
         <v-card flat>
             <v-container>
@@ -132,63 +134,105 @@
                 </v-menu>
             </div>
 
-            <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
-                item-key="no" :items-per-page="5" style="overflow-x: auto; white-space: nowrap;">
+            <v-data-table :headers="filteredHeaders" :items="details" :item-value="customer_id" item-key="customer_id">
+                <template v-slot:body="{ items }">
+                    <template v-for="(group, index) in items" :key="group.customer_id + '-' + index">
+                        <tr>
+                            <td class="text-center" v-if="visibleColumns.includes('action')">
+                                <v-icon style="color:#85d7df" @click="group.isOpen = !group.isOpen">
+                                    {{ group.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                                </v-icon>
+                            </td>
+                            <td v-if="visibleColumns.includes('updated_date')" class="text-center">
+                                {{ formatDateTime(group.updated_date) }}</td>
+                            <td class="text-center">
+                                {{ getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ' }}</td>
+                            <td class="text-center">
+                                {{ getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ' }}
+                            </td>
+                            <td class="text-center">
+                                {{ (group.from1TotalDifference || 0).toLocaleString() }}</td>
+                            <td class="text-center">
+                                {{ (group.from2TotalDifference || 0).toLocaleString() }}</td>
+                            <td class="text-center">
+                                {{ (group.from3TotalDifference || 0).toLocaleString() }}</td>
+                            <td class="text-center" :style="{
+                                color: getColorForNumber((group.from1TotalDifference + group.from2TotalDifference +
+                                    group.from3TotalDifference) || 0)
+                            }">
+                                {{ ((group.from1TotalDifference + group.from2TotalDifference +
+                                    group.from3TotalDifference) || 0).toLocaleString() }}</td>
+                            <td class="text-center"><v-btn color="#5271ff" @click="openStockPopup(group, 'group')" icon>
+                                    <v-icon>mdi-eye</v-icon></v-btn></td>
+                            <td class="text-center"><v-btn color="#00bf63"
+                                    @click="exportForPerson(group.customer_id, 'group', group)" icon>
+                                    <v-icon>mdi-file-excel</v-icon></v-btn></td>
+                        </tr>
 
-                <template v-slot:item="{ item }">
+                        <template v-if="group.isOpen">
+                            <template v-for="(yearlyData, year) in group.yearlyDifferences" :key="year">
+                                <tr>
+                                    <td class="text-center" v-if="visibleColumns.includes('action')"></td>
+                                    <td class="text-center">
+                                        <v-icon style="color:#85d7df" @click="yearlyData.isOpen = !yearlyData.isOpen">
+                                            {{ yearlyData.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                                        </v-icon>
+                                    </td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center">{{ year }}</td>
+                                    <td class="text-center">
+                                        {{ yearlyData.from1TotalDifference.toLocaleString() }}</td>
+                                    <td class="text-center">
+                                        {{ yearlyData.from2TotalDifference.toLocaleString() }}</td>
+                                    <td class="text-center">
+                                        {{ yearlyData.from3TotalDifference.toLocaleString() }}</td>
+                                    <td class="text-center" :style="{
+                                        color: getColorForNumber((yearlyData.from1TotalDifference + yearlyData.from2TotalDifference +
+                                            yearlyData.from3TotalDifference) || 0)
+                                    }">
+                                        {{ (yearlyData.from1TotalDifference + yearlyData.from2TotalDifference +
+                                            yearlyData.from3TotalDifference).toLocaleString() }}</td>
+                                    <td class="text-center"><v-btn color="#5271ff"
+                                            @click="openStockPopup(group, 'year', year)" icon>
+                                            <v-icon>mdi-eye</v-icon>
+                                        </v-btn></td>
+                                    <td class="text-center"><v-btn color="#00bf63"
+                                            @click="exportForPerson(group.customer_id, 'year', year)" icon>
+                                            <v-icon>mdi-file-excel</v-icon></v-btn></td>
+                                </tr>
 
-                    <tr>
-                        <td class="text-center">
-                            <v-icon style="color:#85d7df" @click="toggleOpen(item)">
-                                {{ item.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
-                            </v-icon>
-                        </td>
-                        <td class="text-center">{{ formatDateTime(item.updated_date) }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.id || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.nickname || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center" style="color:#00bf63">{{ item.buy }}</td>
-                        <td class="text-center" style="color:#ff66c4">{{ 0 }}</td>
-                        <td class="text-center">{{ 0 }}</td>
-                        <td class="text-center">{{ item.total }}</td>
-                        <td class="text-center">{{ getEmployeeByNo(item.emp_id)?.fname + ' ' +
-                            getEmployeeByNo(item.emp_id)?.lname || 'ยังไม่ระบุ' }}</td>
-                    </tr>
-
-                    <tr v-if="item.isOpen">
-                        <td class="text-center"></td>
-                        <td class="text-center">
-                            <v-icon style="color:#85d7df" @click="toggleOpen(item)">
-                                {{ item.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
-                            </v-icon>
-                        </td>
-                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center" style="color:#00bf63">{{ item.detailbuy }}</td>
-                        <td class="text-center" style="color:#ff66c4">{{ item.detailsale }}</td>
-                        <td class="text-center">{{ 0 }}</td>
-                        <td class="text-center" :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
-                            {{ getFromByNo(item.from_id)?.from || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center"></td>
-                        <td class="text-center"></td>
-                    </tr>
-
-                    <tr v-if="item.transactions && item.isOpen" v-for="transaction in item.transactions"
-                        :key="transaction.id">
-                        <td class="text-center"></td>
-                        <td class="text-center"></td>
-                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center" style="color:#00bf63">{{ transaction.buy }}</td>
-                        <td class="text-center" style="color:#ff66c4">{{ transaction.sale }}</td>
-                        <td class="text-center">{{ transaction.total }}</td>
-                        <td class="text-center"
-                            :style="{ color: getFromText(getFromByNo(transaction.from_id)?.from).color }">
-                            {{ getFromByNo(transaction.from_id)?.from || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center"></td>
-                        <td class="text-center"></td>
-                    </tr>
+                                <tr v-if="yearlyData.isOpen"
+                                    v-for="(monthlyData, month) in yearlyData.monthlyDifferences" :key="month">
+                                    <td class="text-center" v-if="visibleColumns.includes('action')"></td>
+                                    <td class="text-center"></td>
+                                    <td class="text-center">-</td>
+                                    <td class="text-center" :style="{ color: formatMonthName(month).color }">
+                                        {{ formatMonthName(month).name }}
+                                    </td>
+                                    <td class="text-center">{{
+                                        monthlyData.from1TotalDifference.toLocaleString() }}</td>
+                                    <td class="text-center">{{
+                                        monthlyData.from2TotalDifference.toLocaleString() }}</td>
+                                    <td class="text-center">
+                                        {{ monthlyData.from3TotalDifference.toLocaleString() }}</td>
+                                    <td class="text-center" :style="{
+                                        color: getColorForNumber((monthlyData.from1TotalDifference + monthlyData.from2TotalDifference +
+                                            monthlyData.from3TotalDifference) || 0)
+                                    }">
+                                        {{ (monthlyData.from1TotalDifference + monthlyData.from2TotalDifference +
+                                            monthlyData.from3TotalDifference).toLocaleString() }}</td>
+                                    <td class="text-center"><v-btn color="#5271ff"
+                                            @click="openStockPopup(group, 'month', month)" icon>
+                                            <v-icon>mdi-eye</v-icon></v-btn></td>
+                                    <td class="text-center"><v-btn color="#00bf63"
+                                            @click="exportForPerson(group.customer_id, 'month', month)" icon>
+                                            <v-icon>mdi-file-excel</v-icon></v-btn></td>
+                                </tr>
+                            </template>
+                        </template>
+                    </template>
                 </template>
-
             </v-data-table>
-
 
             <div class="text-center">
                 <v-btn class="mb-4" color="#e50211" @click="goToHome">
@@ -221,8 +265,7 @@ export default {
         await this.fetchCustomerData();
         await this.fetchStockData();
         await this.fetchFromData();
-        await this.fetchBaseData();
-        await this.fetchTypeData();
+        await this.fetchCommissionData();
     },
 
     components: {
@@ -250,8 +293,12 @@ export default {
             customers: [],
             stocks: [],
             froms: [],
-            bases: [],
-            types: [],
+            commissions: [],
+
+            showAllDialog: false,
+            showAllData: {},
+            selectedStockData: null,
+            dialogOpen: false,
 
             showModalResult: false,
             ResultDetailData: {},
@@ -269,7 +316,6 @@ export default {
             showSavedSearchesDialog: false,
             showColumnSelector: false,
             modalConfirmOpen: false,
-            editAllDialog: false,
             dialog: false,
             sortDesc: true,
             selectedEmployee: null,
@@ -278,7 +324,7 @@ export default {
             actionType: null,
             selectedTopics: [],
             savedSearches: [],
-            editAllData: {},
+
 
             searchQueries: {
                 'customer_id': [],
@@ -302,7 +348,7 @@ export default {
                 { text: 'กำไร', value: 'กำไร' },
             ],
 
-            visibleColumns: ['action', 'updated_date', 'customer_id', 'customer_name', 'stock_id', 'created_date', 'price', 'amount', 'money', 'dividend_amount', 'balance_dividend', 'closing_price', 'present_price', 'total', 'present_profit', 'percent', 'total_percent', 'port', 'from_id', 'type_id', 'base_id', 'comment', 'emp_id', 'detail'],
+            visibleColumns: ['action', 'updated_date', 'customer_id', 'customer_name', 'base_stock', 'new_stock', 'tactic_stock', 'total', 'detail', 'export'],
 
             headers: [
 
@@ -338,7 +384,7 @@ export default {
 
                 {
                     text: 'หุ้นเก่า',
-                    value: 'stock_id',
+                    value: 'base_stock',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -346,7 +392,7 @@ export default {
 
                 {
                     text: 'หุ้นใหม่',
-                    value: 'created_date',
+                    value: 'new_stock',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -354,7 +400,7 @@ export default {
 
                 {
                     text: 'หุ้นแก้เกม',
-                    value: 'price',
+                    value: 'tactic_stock',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -362,15 +408,15 @@ export default {
 
                 {
                     text: 'รวม',
-                    value: 'amount',
+                    value: 'total',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },
 
                 {
-                    text: 'ทำรายการโดย',
-                    value: 'emp_id',
+                    text: 'รายละเอียด',
+                    value: 'detail',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -378,7 +424,7 @@ export default {
 
                 {
                     text: '',
-                    value: 'detail',
+                    value: 'export',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -414,6 +460,55 @@ export default {
     },
 
     methods: {
+        openStockPopup(data, type, date = null) {
+            // ล้างค่าก่อนหน้า
+            this.selectedStockData = [];
+            let filteredData = []; // ตั้งค่าเริ่มต้น
+
+            if (type === 'group') {
+                // หากเป็น group ให้ใช้ข้อมูลตามที่ส่งมา
+                filteredData = Array.isArray(data) ? JSON.parse(JSON.stringify(data)) : [JSON.parse(JSON.stringify(data))];
+            } else if (type === 'year' && date) {
+                // หากเป็นปี ให้กรองข้อมูลตามปี
+                const targetYear = parseInt(date, 10);
+                filteredData = Array.isArray(data) ? JSON.parse(JSON.stringify(data)) : [JSON.parse(JSON.stringify(data))];
+                filteredData = filteredData.map(entry => {
+                    if (entry.stocks) {
+                        entry.stocks = entry.stocks.filter(stock => {
+                            const stockDate = new Date(stock.updated_date);
+                            return stockDate.getFullYear() === targetYear;
+                        });
+                    }
+                    return entry;
+                });
+            } else if (type === 'month' && date) {
+                // หากเป็นเดือน ให้กรองข้อมูลตามปีและเดือน
+                const [targetYear, targetMonth] = date.split('-').map(val => parseInt(val, 10));
+                filteredData = Array.isArray(data) ? JSON.parse(JSON.stringify(data)) : [JSON.parse(JSON.stringify(data))];
+                filteredData = filteredData.map(entry => {
+                    if (entry.stocks) {
+                        entry.stocks = entry.stocks.filter(stock => {
+                            const stockDate = new Date(stock.updated_date);
+                            return stockDate.getFullYear() === targetYear && (stockDate.getMonth() + 1) === targetMonth;
+                        });
+                    }
+                    return entry;
+                });
+            }
+
+            // เพิ่มค่า date ลงไปในแต่ละ entry
+            this.selectedStockData = filteredData.map(entry => ({
+                ...entry,
+                date,  // เพิ่มค่า date ลงไป
+            }));
+
+            // แสดงค่าผลลัพธ์ใน console
+            console.log('selectedStockData:', this.selectedStockData);
+
+            this.selectedDataType = type || '';
+            this.dialogOpen = true;
+        },
+
         toggleOpen(item) {
             item.isOpen = !item.isOpen;
         },
@@ -422,14 +517,9 @@ export default {
             this.$router.push('/app/home');
         },
 
-        openEditAllDialog(employee) {
-            this.editAllData = employee;
-            this.editAllDialog = true;
-        },
-
-        showEditDialog(item) {
-            this.selectedEmployee = item;
-            this.editDialogOpen = true;
+        openEditAllDialog(detail) {
+            this.showAllData = detail;
+            this.showAllDialog = true;
         },
 
         getSearchItems(type) {
@@ -443,27 +533,6 @@ export default {
                 return this.details.map(detail => this.getEmployeeByNo(detail.emp_id)?.fname + ' ' + this.getEmployeeByNo(detail.emp_id)?.lname);
             }
             return [];
-        },
-
-        showConfirmDialog(action, item) {
-            this.currentAction = action;
-            this.currentItem = item;
-            this.modalConfirmOpen = true;
-        },
-
-        async handleConfirm() {
-            if (this.currentAction === 'delete') {
-                try {
-                    await this.$store.dispatch('api/detail/deleteDetail', this.currentItem.no);
-                    this.modal.complete.message = 'ลบผู้ใช้งานนี้เรียบร้อยแล้ว';
-                    this.recordLog();
-                    this.modal.complete.open = true;
-                } catch (warning) {
-                    this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
-                    this.modal.complete.open = true;
-                }
-            }
-            this.modalConfirmOpen = false;
         },
 
         async checkRank() {
@@ -498,20 +567,8 @@ export default {
             return this.employees.find(employee => employee.no === empNo);
         },
 
-        async fetchBaseData() {
-            this.bases = await this.$store.dispatch('api/base/getBases');
-        },
-
-        getBaseByNo(baseNo) {
-            return this.bases.find(base => base.no === baseNo);
-        },
-
-        async fetchTypeData() {
-            this.types = await this.$store.dispatch('api/type/getTypes');
-        },
-
-        getTypeByNo(typeNo) {
-            return this.types.find(type => type.no === typeNo);
+        async fetchCommissionData() {
+            this.commissions = await this.$store.dispatch('api/commission/getCommissions');
         },
 
         async fetchDetailData() {
@@ -520,137 +577,231 @@ export default {
                 this.details = await this.$store.dispatch('api/detail/getDetails');
 
                 if (Array.isArray(this.details) && this.details.length > 0) {
-                    const detailsWithTransactions = [];
+                    const transactions = await this.$store.dispatch('api/transaction/getTransactions');
+                    await this.fetchCommissionData();
 
-                    for (const detail of this.details) {
-                        detail.isOpen = false;
+                    const groupedDetails = this.details.reduce((acc, detail) => {
+                        const stockTransactions = transactions.filter(t => t.stock_detail_id === detail.no);
 
-                        if (detail.stock_id) {
-                            const stock = this.stocks.find(s => s.no === detail.stock_id);
-                            const closingPriceData = stock ? stock.closing_price : null;
+                        if (stockTransactions.length > 0) {
+                            const customerId = detail.customer_id;
 
-                            let detail_total_Dividend = new Decimal(0);
-                            let balance_dividend = 0;
-                            let Type1TotalSum = 0;
-                            let Type2TransactionTotalSum = 0;
-                            let Type2DetailTotalSum = 0;
-
-                            if (detail.created_date) {
-                                const dividendData = await this.$store.dispatch('api/dividend/getDividends', {
-                                    stock_id: detail.stock_id,
-                                    created_date: detail.created_date
-                                });
-
-                                const filteredDividendData = dividendData.filter(dividend => {
-                                    const dividendDate = moment(dividend.created_date);
-                                    return dividend.stock_id === detail.stock_id && dividendDate.isSameOrAfter(moment(detail.created_date));
-                                });
-
-                                detail_total_Dividend = filteredDividendData.reduce((sum, dividend) =>
-                                    sum.plus(new Decimal(dividend.dividend || 0)), new Decimal(0)
-                                );
-                                balance_dividend = detail.amount * detail_total_Dividend.toNumber();
+                            if (!acc[customerId]) {
+                                acc[customerId] = {
+                                    customer_id: customerId,
+                                    isOpen: false,
+                                    stocks: [],
+                                    updated_date: null,
+                                    Buy: 0,
+                                    Sale: 0,
+                                    Total: 0,
+                                    from1TotalDifference: 0,
+                                    from2TotalDifference: 0,
+                                    from3TotalDifference: 0,
+                                    yearlyDifferences: {},
+                                };
                             }
 
-                            const transactions = await this.$store.dispatch('api/transaction/getTransactions');
-                            const FilterTransactions = transactions.filter(t => t.stock_detail_id === detail.no);
+                            const detailUpdatedDate = moment.tz(detail.updated_date, 'Asia/Bangkok');
+                            const transactionUpdatedDates = stockTransactions.map(t =>
+                                moment.tz(t.updated_date, 'Asia/Bangkok')
+                            );
+                            const latestTransactionDate = transactionUpdatedDates.length > 0
+                                ? moment.max(transactionUpdatedDates)
+                                : null;
 
-                            if (FilterTransactions.length > 0) {
-                                detail.transactions = FilterTransactions;
-                                for (const transaction of FilterTransactions) {
-                                    if (transaction.type === 1 || transaction.type === 2) {
-                                        const commissionData = await this.$store.dispatch('api/commission/getCommissions');
-                                        const FilterCommissions = commissionData.filter(c => c.no === transaction.commission_id);
-                                        const commission = FilterCommissions.length > 0 ? FilterCommissions[0] : null;
+                            const latestDate = latestTransactionDate
+                                ? moment.max(detailUpdatedDate, latestTransactionDate)
+                                : detailUpdatedDate;
 
-                                        if (commission && transaction.created_date) {
-                                            const dividendData = await this.$store.dispatch('api/dividend/getDividends', {
-                                                stock_id: detail.stock_id,
-                                                created_date: transaction.created_date
-                                            });
+                            acc[customerId].updated_date = acc[customerId].updated_date
+                                ? moment.max(acc[customerId].updated_date, latestDate)
+                                : latestDate;
 
-                                            const filteredDividendData = dividendData.filter(dividend => {
-                                                const dividendDate = moment(dividend.created_date);
-                                                return dividend.stock_id === detail.stock_id && dividendDate.isSameOrAfter(moment(transaction.created_date));
-                                            });
+                            const lastBuyValues = {};
 
-                                            const transactiontotalDividend = filteredDividendData.reduce((sum, dividend) =>
-                                                sum.plus(new Decimal(dividend.dividend || 0)), new Decimal(0)
-                                            );
-
-                                            const money = transaction.price * transaction.amount;
-                                            const comfee = money * commission.commission;
-                                            const vat = comfee * 0.07;
-                                            const transactiontype1total = transaction.type === 1
-                                                ? money + comfee + vat
-                                                : 0;
-                                            const transactiontype2total = transaction.type === 2
-                                                ? money - (comfee + vat)
-                                                : 0;
-
-                                            transaction.buy = transactiontype1total.toLocaleString(2);
-                                            transaction.sale = transactiontype2total.toLocaleString(2);
-                                            transaction.total = (transactiontype2total - transactiontype1total).toLocaleString(2);
-                                            transaction.dividend_amount = transactiontotalDividend.toNumber();
-                                            console.log(`Detail No.${transaction.stock_detail_id} \nMoney = ${money} \nComfee = ${comfee} \nVat = ${vat} \nBuy = ${transaction.buy} \nSale = ${transaction.sale}`);
-
-                                            if (transaction.type === 1) {
-                                                Type1TotalSum += transactiontype1total;
-                                            } else if (transaction.type === 2) {
-                                                Type2TransactionTotalSum += transactiontype2total;
-                                            }
-                                        } else {
-                                            console.warn(`No commission found for commission_id: ${transaction.commission_id}`);
-                                        }
-                                    }
+                            const groupedStockTransactions = stockTransactions.reduce((grouped, transaction) => {
+                                if (!grouped[transaction.from_id]) {
+                                    grouped[transaction.from_id] = {
+                                        from_id: transaction.from_id,
+                                        transactions: [],
+                                    };
                                 }
 
-                                const lasted_updated_date = transactions
-                                    .filter(transaction => transaction.stock_detail_id === detail.no)
-                                    .map(transaction => transaction.updated_date);
+                                const detail = this.details.find(d => d.no === transaction.stock_detail_id);
 
-                                const latest_updated_date = lasted_updated_date.length > 0
-                                    ? moment.max(lasted_updated_date.map(date => moment(date)))
-                                    : moment(detail.updated_date);
+                                if (detail && (transaction.from_id === 1 || transaction.from_id === 2) && !lastBuyValues[transaction.from_id]) {
+                                    const money = detail.amount * detail.price;
+                                    transaction.buy = money;
+                                    lastBuyValues[transaction.from_id] = money;
+                                } else if (transaction.type === 1 && !transaction.hasOwnProperty('buy')) {
+                                    const commission = this.commissions.find(c => c.no === transaction.commission_id);
+                                    const commission_id = commission ? commission.commission : 0;
+                                    const money = transaction.amount * transaction.price;
+                                    const comfee = money * commission_id;
+                                    const vat = comfee * 0.07;
+                                    const total = money + comfee + vat;
+                                    transaction.buy = total;
+                                }
 
-                                const lasted_emp_id = lasted_updated_date.length > 0
-                                    ? transactions
-                                        .filter(transaction => transaction.stock_detail_id === detail.no)
-                                        .map(transaction => transaction.emp_id)
-                                        .pop()
-                                    : detail.emp_id;
+                                if (transaction.type === 2 && !transaction.hasOwnProperty('sale')) {
+                                    const commission = this.commissions.find(c => c.no === transaction.commission_id);
+                                    const commission_id = commission ? commission.commission : 0;
+                                    const money = transaction.amount * transaction.price;
+                                    const comfee = money * commission_id;
+                                    const vat = comfee * 0.07;
+                                    const total = money - (comfee + vat);
+                                    transaction.sale = total;
+                                }
 
-                                const detailbuy = detail.price * detail.amount;
-                                const buy = detailbuy + Type1TotalSum;
-                                const sale = Type2TransactionTotalSum;
-                                
-                                detail.detailbuy = detailbuy.toLocaleString(2);
-                                detail.detailsale = Type2DetailTotalSum.toLocaleString(2);
-                                detail.transactionbuy = Type1TotalSum.toLocaleString(2);
-                                detail.updated_date = latest_updated_date;
-                                detail.buy = buy.toLocaleString(2);
-                                detail.sale = sale.toLocaleString(2);
-                                detail.total = (sale - buy).toLocaleString(2);
-                                detail.emp_id = lasted_emp_id;
-                                detail.type1Transactions = FilterTransactions;
+                                grouped[transaction.from_id].transactions.push(transaction);
 
-                                detailsWithTransactions.push(detail);
-                            }
+                                return grouped;
+                            }, {});
+
+                            const stockGroupedByFromId = Object.values(groupedStockTransactions);
+
+                            const Buy = stockGroupedByFromId.reduce((sum, group) =>
+                                sum + group.transactions.reduce((subSum, tx) => subSum + (tx.buy || 0), 0), 0);
+                            const Sale = stockGroupedByFromId.reduce((sum, group) =>
+                                sum + group.transactions.reduce((subSum, tx) => subSum + (tx.sale || 0), 0), 0);
+                            const Total = Sale - Buy;
+
+                            stockGroupedByFromId.forEach(group => {
+                                const totalBuy = group.transactions.reduce((sum, tx) => sum + (tx.buy || 0), 0);
+                                const totalSale = group.transactions.reduce((sum, tx) => sum + (tx.sale || 0), 0);
+                                const totalDifference = totalSale - totalBuy;
+
+                                if (group.from_id === 1) {
+                                    acc[customerId].from1TotalDifference += totalDifference;
+                                } else if (group.from_id === 2) {
+                                    acc[customerId].from2TotalDifference += totalDifference;
+                                } else if (group.from_id === 3) {
+                                    acc[customerId].from3TotalDifference += totalDifference;
+                                }
+
+                                const transactionMonth = latestDate.format('YYYY-MM');
+                                const transactionYear = latestDate.format('YYYY');
+
+                                if (!acc[customerId].yearlyDifferences[transactionYear]) {
+                                    acc[customerId].yearlyDifferences[transactionYear] = {
+                                        from1TotalDifference: 0,
+                                        from2TotalDifference: 0,
+                                        from3TotalDifference: 0,
+                                        monthlyDifferences: {},
+                                        isOpen: false,
+                                    };
+                                }
+
+                                const yearlyData = acc[customerId].yearlyDifferences[transactionYear];
+
+                                if (!yearlyData.monthlyDifferences[transactionMonth]) {
+                                    yearlyData.monthlyDifferences[transactionMonth] = {
+                                        from1TotalDifference: 0,
+                                        from2TotalDifference: 0,
+                                        from3TotalDifference: 0,
+                                    };
+                                }
+
+                                if (group.from_id === 1) {
+                                    yearlyData.from1TotalDifference += totalDifference;
+                                    yearlyData.monthlyDifferences[transactionMonth].from1TotalDifference += totalDifference;
+                                } else if (group.from_id === 2) {
+                                    yearlyData.from2TotalDifference += totalDifference;
+                                    yearlyData.monthlyDifferences[transactionMonth].from2TotalDifference += totalDifference;
+                                } else if (group.from_id === 3) {
+                                    yearlyData.from3TotalDifference += totalDifference;
+                                    yearlyData.monthlyDifferences[transactionMonth].from3TotalDifference += totalDifference;
+                                }
+                            });
+
+                            acc[customerId].stocks.push({
+                                ...detail,
+                                Buy: Buy,
+                                Sale: Sale,
+                                Total: Total,
+                                isOpen: false,
+                                groupedTransactions: stockGroupedByFromId,
+                                updated_date: latestDate.format('YYYY-MM-DD HH:mm:ss'),
+                            });
                         }
-                    }
 
-                    this.details = detailsWithTransactions;
+                        return acc;
+                    }, {});
+
+
+                    this.details = Object.values(groupedDetails).map(group => ({
+                        ...group,
+                        updated_date: group.updated_date ? group.updated_date.format('YYYY-MM-DD HH:mm:ss') : null,
+                    }));
 
                     if (this.details.length === 0) {
-                        console.warn("No details with transactions found.");
+                        console.warn("ไม่มี detail ที่มี transaction");
                     }
                 } else {
-                    console.error("ข้อมูล details ไม่มีข้อมูลหรือไม่ใช่อาร์เรย์");
+                    console.error("ไม่มีข้อมูลใน details หรือข้อมูลไม่ใช่อาร์เรย์");
                 }
-            } catch (warning) {
+            } catch (error) {
+                console.error("Error fetching detail data:", error);
                 this.modal.warning.message = 'ไม่สามารถดึงข้อมูลได้';
                 this.modal.warning.open = true;
             }
+        },
+
+        formatMonthName(month) {
+            const months = [
+                'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
+            ];
+
+            const colors = [
+                '#FF5733',
+                '#33FF57',
+                '#3357FF',
+                '#FF33A5',
+                '#FFD133',
+                '#33FFF5',
+                '#7D33FF',
+                '#FF8C33',
+                '#33FFA5',
+                '#FF3333',
+                '#333FFF',
+                '#33FF33',
+            ];
+
+            const [year, monthIndex] = month.split('-');
+            const monthName = months[parseInt(monthIndex, 10) - 1];
+            const color = colors[parseInt(monthIndex, 10) - 1];
+
+            return { name: `${monthName}`, color };
+        },
+
+        formatMonthYearName(month) {
+            const months = [
+                'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
+            ];
+
+            const colors = [
+                '#FF5733',
+                '#33FF57',
+                '#3357FF',
+                '#FF33A5',
+                '#FFD133',
+                '#33FFF5',
+                '#7D33FF',
+                '#FF8C33',
+                '#33FFA5',
+                '#FF3333',
+                '#333FFF',
+                '#33FF33',
+            ];
+
+            const [year, monthIndex] = month.split('-');
+            const monthName = months[parseInt(monthIndex, 10) - 1];
+            const color = colors[parseInt(monthIndex, 10) - 1];
+
+            return { name: `${monthName}, ${year}`, color };
         },
 
         getDetailsByNo(detailNo) {
@@ -693,24 +844,6 @@ export default {
             }
         },
 
-        getPortText(total_percent) {
-            let port, color;
-            if (total_percent >= 0) {
-                port = 'กำไร';
-                color = '#c1ff72';
-            } else if (total_percent >= -10 && total_percent < 0) {
-                port = 'ระวัง';
-                color = '#ffde59';
-            } else if (total_percent >= -19.99 && total_percent <= -10.01) {
-                port = 'แก้เกมได้';
-                color = '#85d7df';
-            } else {
-                port = 'ถือ';
-                color = '#ff5757';
-            }
-            return { text: port, color: color };
-        },
-
         getColorForNumber(value) {
             const numericValue = parseFloat(value);
             if (numericValue < 0) {
@@ -722,37 +855,11 @@ export default {
             }
         },
 
-        getColorForPercent(value) {
-            const numericValue = parseFloat(value);
-            if (numericValue >= 0) {
-                return '#24b224';
-            } else if (numericValue >= -10 && value < 0) {
-                return '#ffc800';
-            } else if (numericValue >= -19.99 && value <= -10.01) {
-                return '#38b6ff';
-            } else {
-                return '#e50211';
-            }
-        },
-
         formatDateTime(date) {
             if (moment(date).isValid()) {
-                return moment(date).format('YYYY-MM-DD HH:mm');
+                return moment(date).format('YYYY/MM/DD HH:mm');
             }
             return 'ยังไม่ระบุวัน';
-        },
-
-        formatDate(date) {
-            if (moment(date).isValid()) {
-                return moment(date).format('YYYY-MM-DD');
-            }
-            return 'ยังไม่ระบุวัน';
-        },
-        getDateColor(date) {
-            if (moment(date).isValid()) {
-                return '#ffcc64';
-            }
-            return '#f5464c';
         },
 
         openDetail(item) {
@@ -882,8 +989,8 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
 
+            const worksheet = workbook.addWorksheet('สรุปโดยรวม');
             const headers = this.filteredHeaders
                 .filter(header => header.value !== 'detail' && header.value !== 'action')
                 .map(header => ({
@@ -894,45 +1001,151 @@ export default {
 
             worksheet.columns = headers;
 
-            this.filtered.forEach((item, index) => {
+            this.filtered.forEach((group) => {
                 const rowData = {};
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'updated_date') {
-                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value === 'created_date') {
-                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD');
-                    } else if (header.value === 'price') {
-                        rowData[header.value] = item.price.toLocaleString(2);
-                    } else if (header.value === 'amount') {
-                        rowData[header.value] = item.amount.toLocaleString(2);
-                    } else if (header.value === 'money') {
-                        rowData[header.value] = item.money;
+                        rowData[header.value] = moment(group.updated_date).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
                     } else if (header.value === 'from_id') {
-                        rowData[header.value] = this.getFromByNo(item.from_id).from;
+                        rowData[header.value] = this.getFromByNo(group.from_id)?.from || '';
                     } else if (header.value === 'stock_id') {
-                        rowData[header.value] = this.getStockByNo(item.stock_id).name;
+                        rowData[header.value] = this.getStockByNo(group.stock_id)?.name || '';
                     } else if (header.value === 'customer_id') {
-                        rowData[header.value] = this.getCustomerByNo(item.customer_id).id;
+                        rowData[header.value] = this.getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ';
                     } else if (header.value === 'customer_name') {
-                        rowData[header.value] = this.getCustomerByNo(item.customer_id).nickname;
-                    } else if (header.value === 'port') {
-                        rowData[header.value] = this.getPortText(item.total_percent).text;
-                    } else if (header.value === 'emp_id') {
-                        rowData[header.value] = this.getEmployeeByNo(item.emp_id).fname + ' ' + this.getEmployeeByNo(item.emp_id).lname;
+                        rowData[header.value] = this.getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ';
+                    } else if (header.value === 'base_stock') {
+                        rowData[header.value] = (group.from1TotalDifference || 0).toLocaleString();
+                    } else if (header.value === 'new_stock') {
+                        rowData[header.value] = (group.from2TotalDifference || 0).toLocaleString();
+                    } else if (header.value === 'tactic_stock') {
+                        rowData[header.value] = (group.from3TotalDifference || 0).toLocaleString();
+                    } else if (header.value === 'total') {
+                        rowData[header.value] = ((group.from1TotalDifference + group.from2TotalDifference + group.from3TotalDifference) || 0).toLocaleString();
                     } else if (header.value !== 'detail' && header.value !== 'action') {
-                        rowData[header.value] = item[header.value];
+                        rowData[header.value] = group[header.value] || '';
                     }
                 });
+
                 worksheet.addRow(rowData);
             });
 
-            worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell) => {
-                cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                cell.font = { bold: true, name: 'Angsana New', size: 18 };
+            const yearlyWorksheet = workbook.addWorksheet('สรุปรายปี');
+            yearlyWorksheet.columns = [
+                { header: 'ปี', key: 'year', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'รหัสสมาชิก', key: 'customer_id', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'หุ้นแก้เกม', key: 'from3TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'รวม', key: 'total', style: { font: { name: 'Angsana New', size: 16 } } }
+            ];
+
+            this.filtered.forEach((group) => {
+                if (group.yearlyDifferences && Object.keys(group.yearlyDifferences).length > 0) {
+                    Object.keys(group.yearlyDifferences).forEach((year) => {
+                        const yearlyData = group.yearlyDifferences[year];
+                        const customer = this.getCustomerByNo(group.customer_id);
+                        const rowData = {
+                            year: year,
+                            customer_id: customer ? customer.id : 'ยังไม่ระบุ',
+                            customer_name: customer ? customer.nickname : 'ยังไม่ระบุ',
+                            from1TotalDifference: (yearlyData.from1TotalDifference || 0).toLocaleString(),
+                            from2TotalDifference: (yearlyData.from2TotalDifference || 0).toLocaleString(),
+                            from3TotalDifference: (yearlyData.from3TotalDifference || 0).toLocaleString(),
+                            total: ((yearlyData.from1TotalDifference + yearlyData.from2TotalDifference + yearlyData.from3TotalDifference) || 0).toLocaleString()
+                        };
+                        yearlyWorksheet.addRow(rowData);
+                    });
+                } else {
+                    console.log(`No yearlyDifferences data found for group: ${JSON.stringify(group)}`);
+                }
             });
 
-            worksheet.eachRow((row) => {
-                row.eachCell({ includeEmpty: true }, (cell) => {
+            const monthlyWorksheet = workbook.addWorksheet('สรุปรายเดือน');
+            monthlyWorksheet.columns = [
+                { header: 'เดือน', key: 'month', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'รหัสสมาชิก', key: 'customer_id', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'หุ้นแก้เกม', key: 'from3TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
+                { header: 'รวม', key: 'total', style: { font: { name: 'Angsana New', size: 16 } } }
+            ];
+
+            this.filtered.forEach((year) => {
+                if (year.yearlyDifferences && Object.keys(year.yearlyDifferences).length > 0) {
+                    Object.keys(year.yearlyDifferences).forEach((yearKey) => {
+                        const yearlyData = year.yearlyDifferences[yearKey];
+
+                        // Check if monthlyDifferences exist within the yearly data
+                        if (yearlyData.monthlyDifferences && Object.keys(yearlyData.monthlyDifferences).length > 0) {
+                            Object.keys(yearlyData.monthlyDifferences).forEach((month) => {
+                                const monthlyData = yearlyData.monthlyDifferences[month];
+                                const customer = this.getCustomerByNo(year.customer_id);
+                                const months = this.formatMonthYearName(month).name;
+
+                                const rowData = {
+                                    month: months,
+                                    customer_id: customer ? customer.id : 'ยังไม่ระบุ',
+                                    customer_name: customer ? customer.nickname : 'ยังไม่ระบุ',
+                                    from1TotalDifference: (monthlyData.from1TotalDifference || 0).toLocaleString(),
+                                    from2TotalDifference: (monthlyData.from2TotalDifference || 0).toLocaleString(),
+                                    from3TotalDifference: (monthlyData.from3TotalDifference || 0).toLocaleString(),
+                                    total: ((monthlyData.from1TotalDifference + monthlyData.from2TotalDifference + monthlyData.from3TotalDifference) || 0).toLocaleString()
+                                };
+                                monthlyWorksheet.addRow(rowData);
+                            });
+                        } else {
+                            console.log(`No monthlyDifferences data found for year: ${yearKey}`);
+                        }
+                    });
+                } else {
+                    console.log(`No yearlyDifferences data found for group: ${JSON.stringify(year)}`);
+                }
+            });
+
+            const styleWorksheet = (worksheet) => {
+                worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell) => {
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.font = { bold: true, name: 'Angsana New', size: 18 };
+                });
+
+                worksheet.eachRow((row) => {
+                    row.eachCell({ includeEmpty: true }, (cell) => {
+                        cell.border = {
+                            top: { style: 'thin' },
+                            left: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            right: { style: 'thin' },
+                        };
+                    });
+                });
+            };
+
+            styleWorksheet(worksheet);
+            styleWorksheet(yearlyWorksheet);
+            styleWorksheet(monthlyWorksheet);
+
+            const currentDate = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
+            workbook.xlsx.writeBuffer().then(buffer => {
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute('download', `สรุปการซื้อขายหุ้นของลูกค้า-${currentDate}.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        },
+
+        exportForPerson(customerId, level, date = null) {
+            const workbook = new ExcelJS.Workbook();
+
+            const styleWorksheet = (worksheet) => {
+                worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell) => {
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.font = { bold: true, name: 'Angsana New', size: 18 };
                     cell.border = {
                         top: { style: 'thin' },
                         left: { style: 'thin' },
@@ -940,47 +1153,260 @@ export default {
                         right: { style: 'thin' },
                     };
                 });
-            });
+
+                worksheet.eachRow((row, rowIndex) => {
+                    if (rowIndex !== 1 && rowIndex !== 4) {
+                        row.eachCell({ includeEmpty: true }, (cell) => {
+                            cell.font = { name: 'Angsana New', size: 16 };
+                            cell.border = {
+                                top: { style: 'thin' },
+                                left: { style: 'thin' },
+                                bottom: { style: 'thin' },
+                                right: { style: 'thin' },
+                            };
+                        });
+                    }
+                });
+            };
+
+            const createOverallSheet = () => {
+                const worksheet = workbook.addWorksheet('สรุปโดยรวม');
+
+                const headers = this.filteredHeaders
+                    .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'export')
+                    .map(header => ({
+                        header: header.text,
+                        key: header.value,
+                        style: { font: { name: 'Angsana New', size: 16 } }
+                    }));
+
+                worksheet.columns = headers;
+
+                let filteredData = this.filtered.filter(group => group.customer_id === customerId);
+
+                filteredData.forEach(group => {
+                    const rowData = {};
+                    this.filteredHeaders.forEach(header => {
+                        if (header.value === 'updated_date') {
+                            rowData[header.value] = this.formatDateTime(group.updated_date);
+                        } else if (header.value === 'customer_id') {
+                            rowData[header.value] = this.getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ';
+                        } else if (header.value === 'customer_name') {
+                            rowData[header.value] = this.getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ';
+                        } else if (header.value === 'base_stock') {
+                            rowData[header.value] = (group.from1TotalDifference || 0).toLocaleString();
+                        } else if (header.value === 'new_stock') {
+                            rowData[header.value] = (group.from2TotalDifference || 0).toLocaleString();
+                        } else if (header.value === 'tactic_stock') {
+                            rowData[header.value] = (group.from3TotalDifference || 0).toLocaleString();
+                        } else if (header.value === 'total') {
+                            rowData[header.value] = ((group.from1TotalDifference + group.from2TotalDifference + group.from3TotalDifference) || 0).toLocaleString();
+                        } else {
+                            rowData[header.value] = group[header.value] || '';
+                        }
+                    });
+                    worksheet.addRow(rowData);
+                });
+
+                styleWorksheet(worksheet);
+
+                worksheet.addRow([]);
+
+                const newHeaders = [
+                    { header: 'ข้อมูลวันที่', key: 'updated_date' },
+                    { header: 'รหัสลูกค้า', key: 'customer_id' },
+                    { header: 'ชื่อหุ้น', key: 'customer_name' },
+                    { header: 'มูลค่าซื้อ', key: 'base_stock' },
+                    { header: 'มูลค่าขาย', key: 'new_stock' },
+                    { header: 'กำไร/ขาดทุน', key: 'tactic_stock' },
+                    { header: 'ที่มาที่ไป', key: 'total' }
+                ];
+                const headerRow = worksheet.addRow(newHeaders.map(h => h.header));
+
+                headerRow.eachCell((cell) => {
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.font = { bold: true, name: 'Angsana New', size: 18 };
+                    cell.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' },
+                    };
+                });
+
+                filteredData.forEach((group) => {
+                    if (group.stocks && Array.isArray(group.stocks)) {  // ตรวจสอบว่า stocks เป็น array
+                        group.stocks.forEach((stock) => {  // ใช้ forEach เพื่อวนลูปผ่านแต่ละ stock
+                            const rowData = {
+                                updated_date: this.formatDateTime(stock.updated_date),  // ฟังก์ชันนี้แปลงเวลา
+                                customer_id: this.getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ',
+                                customer_name: this.getStockByNo(stock.stock_id)?.name || 'ยังไม่ระบุ',
+                                base_stock: (stock.Buy || 0).toLocaleString(),  // ใช้ toLocaleString แสดงผลตัวเลขในรูปแบบที่ต้องการ
+                                new_stock: (stock.Sale || 0).toLocaleString(),
+                                tactic_stock: (stock.Total || 0).toLocaleString(),
+                                total: this.getFromByNo(stock.from_id)?.from || 'ยังไม่ระบุ',  // แสดง 'ยังไม่ระบุ' ถ้าไม่มีข้อมูล
+                            };
+                            worksheet.addRow(rowData);  // เพิ่ม rowData ลงใน worksheet
+                        });
+                    }
+                });
+
+                styleWorksheet(worksheet);
+            };
+
+            const createYearlySheet = () => {
+                const yearlyWorksheet = workbook.addWorksheet('สรุปรายปี');
+                yearlyWorksheet.columns = [
+                    { header: 'ปี', key: 'year', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'รหัสสมาชิก', key: 'customer_id', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'หุ้นแก้เกม', key: 'from3TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'รวม', key: 'total', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } }
+                ];
+
+                let filteredData = this.filtered.filter(group => {
+                    if (!date) {
+                        return false;
+                    }
+
+                    return group.customer_id === customerId &&
+                        Object.keys(group.yearlyDifferences).some(year => {
+                            return parseInt(year) === parseInt(date);
+                        });
+                }).map(group => {
+                    let filteredYearlyDifferences = {};
+                    if (typeof group.yearlyDifferences === 'object') {
+                        Object.keys(group.yearlyDifferences).forEach(year => {
+                            if (parseInt(year) === parseInt(date)) {
+                                filteredYearlyDifferences[year] = group.yearlyDifferences[year];
+                            }
+                        });
+                    }
+
+                    return {
+                        ...group,
+                        yearlyDifferences: filteredYearlyDifferences
+                    };
+                });
+
+                filteredData.forEach((group) => {
+                    if (group.yearlyDifferences) {
+                        Object.values(group.yearlyDifferences).forEach((yearlyData) => {
+                            const rowData = {
+                                year: date,
+                                customer_id: this.getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ',
+                                customer_name: this.getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ',
+                                from1TotalDifference: (yearlyData.from1TotalDifference || 0).toLocaleString(),
+                                from2TotalDifference: (yearlyData.from2TotalDifference || 0).toLocaleString(),
+                                from3TotalDifference: (yearlyData.from3TotalDifference || 0).toLocaleString(),
+                                total: ((yearlyData.from1TotalDifference + yearlyData.from2TotalDifference + yearlyData.from3TotalDifference) || 0).toLocaleString()
+                            };
+                            yearlyWorksheet.addRow(rowData);
+                        });
+                    }
+                });
+            };
+
+            const createMonthlySheet = () => {
+                const monthlyWorksheet = workbook.addWorksheet('สรุปรายเดือน');
+                monthlyWorksheet.columns = [
+                    { header: 'เดือน', key: 'month', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'รหัสสมาชิก', key: 'customer_id', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'หุ้นแก้เกม', key: 'from3TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
+                    { header: 'รวม', key: 'total', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } }
+                ];
+
+                let filteredData = this.filtered.filter(group => {
+                    if (!date) {
+                        return false;
+                    }
+
+                    return group.customer_id === customerId &&
+                        Object.keys(group.yearlyDifferences).some(year => {
+                            return parseInt(year) === parseInt(date);
+                        });
+                }).map(group => {
+                    let filteredYearlyDifferences = {};
+
+                    if (typeof group.yearlyDifferences === 'object') {
+                        Object.entries(group.yearlyDifferences).forEach(([year, yearlyData]) => {
+                            if (parseInt(year) === parseInt(date)) {
+                                let filteredMonthlyDifferences = {};
+
+                                Object.keys(yearlyData.monthlyDifferences).forEach(month => {
+                                    if (month === date) {
+                                        filteredMonthlyDifferences[month] = yearlyData.monthlyDifferences[month];
+                                    }
+                                });
+
+                                if (Object.keys(filteredMonthlyDifferences).length > 0) {
+                                    filteredYearlyDifferences[year] = {
+                                        ...yearlyData,
+                                        monthlyDifferences: filteredMonthlyDifferences
+                                    };
+                                }
+                            }
+                        });
+                    }
+
+                    return {
+                        ...group,
+                        yearlyDifferences: filteredYearlyDifferences
+                    };
+                });
+
+                filteredData.forEach((group) => {
+                    if (group.yearlyDifferences) {
+                        Object.keys(group.yearlyDifferences).forEach((year) => {
+                            const yearlyData = group.yearlyDifferences[year];
+                            if (yearlyData.monthlyDifferences) {
+                                Object.keys(yearlyData.monthlyDifferences).forEach((month) => {
+                                    const monthlyData = yearlyData.monthlyDifferences[month];
+                                    const rowData = {
+                                        month: this.formatMonthYearName(month).name,
+                                        customer_id: this.getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ',
+                                        customer_name: this.getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ',
+                                        from1TotalDifference: (monthlyData.from1TotalDifference || 0).toLocaleString(),
+                                        from2TotalDifference: (monthlyData.from2TotalDifference || 0).toLocaleString(),
+                                        from3TotalDifference: (monthlyData.from3TotalDifference || 0).toLocaleString(),
+                                        total: ((monthlyData.from1TotalDifference + monthlyData.from2TotalDifference + monthlyData.from3TotalDifference) || 0).toLocaleString()
+                                    };
+                                    monthlyWorksheet.addRow(rowData);
+                                });
+                            }
+                        });
+                    }
+                });
+            };
+
+            if (level === 'group') {
+                createOverallSheet();
+            } else if (level === 'year') {
+                createYearlySheet();
+            } else if (level === 'month') {
+                createMonthlySheet();
+            }
 
             const currentDate = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
             workbook.xlsx.writeBuffer().then(buffer => {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ข้อมูลลูกค้า-${currentDate}.xlsx`);
+                link.setAttribute('download', `Export-${level}-Customer-${customerId}-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             });
         },
 
-        goBack() {
-            window.location.reload();
-        },
 
-        recordLog() {
-            const stock = this.getStockByNo(this.currentItem.stock_id);
-            const from = this.getFromByNo(this.currentItem.from_id);
-            const customer = this.getCustomerByNo(this.currentItem.customer_id)
-            const log = {
-                customer_id: `${customer ? customer.id : 'ไม่พบรหัสลูกค้า'}`,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
-                detail: this.currentAction === 'delete'
-                    ? `ชื่อหุ้น : ${stock ? stock.name : 'ไม่พบชื่อหุ้น'}\nที่มาที่ไป : ${from ? from.from : 'ไม่พบที่มาที่ไป'}\nราคาที่ติด : ${this.currentItem.price}\nจำนวนที่ติด : ${this.currentItem.amount}`
-                    : `ชื่อหุ้น : ${stock ? stock.name : 'ไม่พบชื่อหุ้น'}\nที่มาที่ไป : ${from ? from.from : 'ไม่พบที่มาที่ไป'}\nราคาที่ติด : ${this.currentItem.price}\nจำนวนที่ติด : ${this.currentItem.amount}`,
-                type: 1,
-                picture: this.$auth.user.picture || 'Unknown',
-                action: this.currentAction === 'delete'
-                    ? 'ลบข้อมูลหุ้นของลูกค้า'
-                    : 'ไม่ลบข้อมูลหุ้นของลูกค้า',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLogs', log);
-        },
-
-        goToAddStock() {
-            this.$router.push('/app/transaction/add_stock');
+        goToIndexStock() {
+            this.$router.push('/app/transaction/index_stock');
         },
     },
 };

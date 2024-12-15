@@ -15,7 +15,7 @@
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
               <v-col cols="12" class="pa-0">
-                <v-text-field v-model="formData.set" :rules="[(v) => !!v || 'โปรดกรอกค่าธรรมเนียม']"
+                <v-text-field v-model="formData.commission" :rules="[(v) => !!v || 'โปรดกรอกค่าธรรมเนียม']"
                   label="ค่าธรรมเนียม" outlined required maxlength="12" class="text-center" />
               </v-col>
             </v-row>
@@ -23,7 +23,7 @@
         </v-card-text>
 
         <v-card-actions class="card-title-center pa-0">
-          <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.set" depressed color="#24b224"
+          <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.commission" depressed color="#24b224"
             class="font-weight-medium mr-2 mb-5">
             บันทึก
           </v-btn>
@@ -159,11 +159,11 @@ export default {
 
     recordLogUpdate() {
       const changes = [];
-      if (this.formData.set !== this.originalData.set) {
-        changes.push('ชื่อ : ' + this.formData.set + '\n');
+      if (this.formData.commission !== this.originalData.commission) {
+        changes.push('ชื่อ : ' + this.formData.commission + '\n');
       }
       const log = {
-        stock_id: this.originalData.set,
+        stock_id: this.originalData.commission,
         emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
         emp_email: this.$auth.user.email,
         detail: changes.join(''),

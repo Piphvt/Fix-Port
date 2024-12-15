@@ -136,42 +136,60 @@
                 item-key="no" :items-per-page="5" style="overflow-x: auto; white-space: nowrap;">
 
                 <template v-slot:item="{ item }">
-
                     <tr>
                         <td class="text-center">
                             <v-icon style="color:#85d7df" @click="toggleOpen(item)">
                                 {{ item.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
                             </v-icon>
                         </td>
-                        <td class="text-center">{{ formatDateTime(item.updated_date) }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.id || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.nickname || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center" :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
+                        <td v-if="visibleColumns.includes('updated_date')" class="text-center">
+                            {{ formatDateTime(item.updated_date) }}</td>
+                        <td v-if="visibleColumns.includes('customer_id')" class="text-center">
+                            {{ getCustomerByNo(item.customer_id)?.id || 'ยังไม่ระบุ' }}</td>
+                        <td v-if="visibleColumns.includes('customer_name')" class="text-center">
+                            {{ getCustomerByNo(item.customer_id)?.nickname || 'ยังไม่ระบุ' }}</td>
+                        <td v-if="visibleColumns.includes('stock_id')" class="text-center">
+                            {{ getStockByNo(item.stock_id)?.name || 'ยังไม่ระบุ' }}</td>
+                        <td v-if="visibleColumns.includes('from_id')" class="text-center"
+                            :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
                             {{ getFromByNo(item.from_id)?.from || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center" :style="{ color: getDateColor(item.created_date) }">{{
-                            formatDate(item.created_date) }}</td>
-                        <td class="text-center" style="color:#00bf63">{{ item.price.toLocaleString(2) }}</td>
-                        <td class="text-center" style="color:#ff66c4">{{ item.amount.toLocaleString(2) }}</td>
-                        <td class="text-center">{{ item.money }}</td>
-                        <td class="text-center" style="color:#8c52ff">{{ item.dividend_amount }}</td>
-                        <td class="text-center">{{ item.balance_dividend }}</td>
-                        <td class="text-center" style="color:#ff914d">{{ item.closing_price }}</td>
-                        <td class="text-center">{{ item.present_price }}</td>
-                        <td class="text-center">{{ item.total }}</td>
-                        <td class="text-center" :style="{ color: getColorForNumber(item.present_profit) }">{{
-                            item.present_profit }}</td>
-                        <td class="text-center" :style="{ color: getColorForPercent(item.total_percent) }">{{
-                            item.total_percent }}%</td>
-                        <td class="text-center" :style="{ color: getPortText(item.total_percent).color }">{{
-                            getPortText(item.total_percent).text }}</td>
-                        <td class="text-center">{{ getEmployeeByNo(item.emp_id)?.fname + ' ' +
-                            getEmployeeByNo(item.emp_id)?.lname || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ getTypeByNo(getCustomerByNo(item.customer_id)?.type_id)?.type ||
-                            'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ getBaseByNo(getCustomerByNo(item.customer_id)?.base_id)?.base ||
-                            'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ item.comment }}</td>
+                        <td v-if="visibleColumns.includes('created_date')" class="text-center"
+                            :style="{ color: getDateColor(item.created_date) }">
+                            {{ formatDate(item.created_date) }}</td>
+                        <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
+                            {{ item.price.toLocaleString(2) }}</td>
+                        <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
+                            {{ item.amount.toLocaleString(2) }}</td>
+                        <td v-if="visibleColumns.includes('money')" class="text-center">
+                            {{ item.money }}</td>
+                        <td v-if="visibleColumns.includes('dividend_amount')" class="text-center" style="color:#8c52ff">
+                            {{ item.dividend_amount }}</td>
+                        <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
+                            {{ item.balance_dividend }}</td>
+                        <td v-if="visibleColumns.includes('closing_price')" class="text-center" style="color:#ff914d">
+                            {{ item.closing_price }}</td>
+                        <td v-if="visibleColumns.includes('present_price')" class="text-center">
+                            {{ item.present_price }}</td>
+                        <td v-if="visibleColumns.includes('total')" class="text-center">
+                            {{ item.total }}</td>
+                        <td v-if="visibleColumns.includes('present_profit')" class="text-center"
+                            :style="{ color: getColorForNumber(item.present_profit) }">
+                            {{ item.present_profit }}</td>
+                        <td v-if="visibleColumns.includes('total_percent')" class="text-center"
+                            :style="{ color: getColorForPercent(item.total_percent) }">
+                            {{ item.total_percent }}%</td>
+                        <td v-if="visibleColumns.includes('port')" class="text-center"
+                            :style="{ color: getPortText(item.total_percent).color }">
+                            {{ getPortText(item.total_percent).text }}</td>
+                        <td v-if="visibleColumns.includes('emp_id')" class="text-center">
+                            {{ getEmployeeByNo(item.emp_id)?.fname + ' ' + getEmployeeByNo(item.emp_id)?.lname ||
+                                'ยังไม่ระบุ' }}</td>
+                        <td v-if="visibleColumns.includes('comment')" class="text-center">
+                            {{ item.comment || '-' }}</td>
+                        <td v-if="visibleColumns.includes('type_id')" class="text-center">
+                            {{ getTypeByNo(getCustomerByNo(item.customer_id)?.type_id)?.type || 'ยังไม่ระบุ' }}</td>
+                        <td v-if="visibleColumns.includes('base_id')" class="text-center">
+                            {{ getBaseByNo(getCustomerByNo(item.customer_id)?.base_id)?.base || 'ยังไม่ระบุ' }}</td>
                         <td class="text-center">
                             <v-menu offset-y>
                                 <template v-slot:activator="{ on, attrs }">
@@ -196,112 +214,112 @@
                     </tr>
 
                     <tr v-if="item.isOpen">
-                        <td></td>
-                        <td class="text-center">{{ formatDateTime(item.detailupdated_date) }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
-                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
-                        <td class="text-center" :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
+                        <td class="text-center" style="color:#e6c56c">หุ้นเดิม</td>
+                        <td v-if="visibleColumns.includes('updated_date')" class="text-center">
+                            {{ formatDateTime(item.detailupdated_date) }}</td>
+                        <td v-if="visibleColumns.includes('customer_id')" class="text-center">
+                            {{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('customer_name')" class="text-center">
+                            {{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('stock_id')" class="text-center">
+                            {{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('from_id')" class="text-center"
+                            :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
                             {{ getFromByNo(item.from_id)?.from || 'N/A' }}</td>
-                        <td class="text-center" :style="{ color: getDateColor(item.created_date) }">{{
-                            formatDate(item.created_date) }}</td>
-                        <td class="text-center" style="color:#00bf63">{{ item.detailprice.toLocaleString(2) }}</td>
-                        <td class="text-center" style="color:#ff66c4">{{ item.detailamount.toLocaleString(2) }}</td>
-                        <td class="text-center">{{ item.detailmoney }}</td>
-                        <td class="text-center" style="color:#8c52ff">{{ item.detaildividend_amount }}</td>
-                        <td class="text-center">{{ item.detailbalance_dividend }}</td>
-                        <td class="text-center" style="color:#ff914d">{{ item.closing_price }}</td>
-                        <td class="text-center">{{ item.detailpresent_price }}</td>
-                        <td class="text-center">{{ item.detailtotal }}</td>
-                        <td class="text-center" :style="{ color: getColorForNumber(item.detailpresent_profit) }">{{
-                            item.detailpresent_profit }}</td>
-                        <td class="text-center" :style="{ color: getColorForPercent(item.detailtotal_percent) }">{{
-                            item.detailtotal_percent }}%</td>
-                        <td class="text-center" :style="{ color: getPortText(item.detailtotal_percent).color }">{{
-                            getPortText(item.detailtotal_percent).text }}</td>
-                        <td class="text-center">{{ getEmployeeByNo(item.detailemp_id)?.fname + ' ' +
-                            getEmployeeByNo(item.detailemp_id)?.lname || 'ไม่ทราบ' }}</td>
-                        <td class="text-center">{{ getTypeByNo(getCustomerByNo(item.customer_id)?.type_id)?.type ||
-                            'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ getBaseByNo(getCustomerByNo(item.customer_id)?.base_id)?.base ||
-                            'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ item.comment }}</td>
+                        <td v-if="visibleColumns.includes('created_date')" class="text-center"
+                            :style="{ color: getDateColor(item.created_date) }">
+                            {{ formatDate(item.created_date) }}</td>
+                        <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
+                            {{ item.detailprice.toLocaleString(2) }}</td>
+                        <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
+                            {{ item.detailamount.toLocaleString(2) }}</td>
+                        <td v-if="visibleColumns.includes('money')" class="text-center">
+                            {{ item.detailmoney }}</td>
+                        <td v-if="visibleColumns.includes('dividend_amount')" class="text-center" style="color:#8c52ff">
+                            {{ item.detaildividend_amount }}</td>
+                        <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
+                            {{ item.detailbalance_dividend }}</td>
+                        <td v-if="visibleColumns.includes('closing_price')" class="text-center" style="color:#ff914d">
+                            {{ item.closing_price }}</td>
+                        <td v-if="visibleColumns.includes('present_price')" class="text-center">
+                            {{ item.detailpresent_price }}</td>
+                        <td v-if="visibleColumns.includes('total')" class="text-center">
+                            {{ item.detailtotal }}</td>
+                        <td v-if="visibleColumns.includes('present_profit')" class="text-center"
+                            :style="{ color: getColorForNumber(item.detailpresent_profit) }">
+                            {{ item.detailpresent_profit }}</td>
+                        <td v-if="visibleColumns.includes('total_percent')" class="text-center"
+                            :style="{ color: getColorForPercent(item.detailtotal_percent) }">
+                            {{ item.detailtotal_percent }}%</td>
+                        <td v-if="visibleColumns.includes('port')" class="text-center"
+                            :style="{ color: getPortText(item.detailtotal_percent).color }">
+                            {{ getPortText(item.detailtotal_percent).text }}</td>
+                        <td v-if="visibleColumns.includes('emp_id')" class="text-center">
+                            {{ getEmployeeByNo(item.detailemp_id)?.fname + ' ' +
+                                getEmployeeByNo(item.detailemp_id)?.lname || 'ไม่ทราบ'
+                            }}</td>
+                        <td v-if="visibleColumns.includes('comment')" class="text-center">
+                            {{ item.comment || '-' }}</td>
+                        <td v-if="visibleColumns.includes('type_id')" class="text-center"></td>
+                        <td v-if="visibleColumns.includes('base_id')" class="text-center"></td>
                         <td class="text-center"></td>
                     </tr>
 
                     <tr v-if="item.transactions && item.isOpen" v-for="transaction in item.transactions"
                         :key="transaction.id">
-                        <td></td>
-                        <td class="text-center">{{ formatDateTime(transaction.updated_date) }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
-                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
-                        <td class="text-center"
+                        <td class="text-center" style="color:#6ce69f">ซื้อเพิ่ม</td>
+                        <td v-if="visibleColumns.includes('updated_date')" class="text-center">
+                            {{ formatDateTime(transaction.updated_date) }}</td>
+                        <td v-if="visibleColumns.includes('customer_id')" class="text-center">
+                            {{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('customer_name')" class="text-center">
+                            {{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('stock_id')" class="text-center">
+                            {{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
+                        <td v-if="visibleColumns.includes('from_id')" class="text-center"
                             :style="{ color: getFromText(getFromByNo(transaction.from_id)?.from).color }">
                             {{ getFromByNo(transaction.from_id)?.from || 'N/A' }}</td>
-                        <td class="text-center" :style="{ color: getDateColor(transaction.created_date) }">{{
-                            formatDate(transaction.created_date) }}</td>
-                        <td class="text-center" style="color:#00bf63">{{ transaction.price.toLocaleString(2) }}</td>
-                        <td class="text-center" style="color:#ff66c4">{{ transaction.amount.toLocaleString(2) }}</td>
-                        <td class="text-center">{{ transaction.money }}</td>
-                        <td class="text-center" style="color:#8c52ff">{{ transaction.dividend_amount }}</td>
-                        <td class="text-center">{{ transaction.balance_dividend }}</td>
-                        <td class="text-center" style="color:#ff914d">{{ item.closing_price }}</td>
-                        <td class="text-center">{{ transaction.present_price }}</td>
-                        <td class="text-center">{{ transaction.total }}</td>
-                        <td class="text-center" :style="{ color: getColorForNumber(transaction.present_profit) }">{{
-                            transaction.present_profit }}</td>
-                        <td class="text-center" :style="{ color: getColorForPercent(transaction.total_percent) }">{{
-                            transaction.total_percent }}%</td>
-                        <td class="text-center" :style="{ color: getPortText(transaction.total_percent).color }">{{
-                            getPortText(transaction.total_percent).text }}</td>
-                        <td class="text-center">{{ getEmployeeByNo(transaction.emp_id)?.fname + ' ' +
-                            getEmployeeByNo(transaction.emp_id)?.lname || 'ไม่ทราบ' }}</td>
-                        <td class="text-center">{{ getTypeByNo(getCustomerByNo(item.customer_id)?.type_id)?.type ||
-                            'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ getBaseByNo(getCustomerByNo(item.customer_id)?.base_id)?.base ||
-                            'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ item.comment }}</td>
-                        <td class="text-center"></td>
-                    </tr>
-
-                    <tr v-if="item.isOpen">
-                        <td class="text-center" style="color:#cb6ce6">หักปันผล</td>
-                        <td class="text-center">{{ formatDateTime(item.updated_date) }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}</td>
-                        <td class="text-center">{{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}</td>
-                        <td class="text-center">{{ getStockByNo(item.stock_id)?.name || 'N/A' }}</td>
-                        <td class="text-center" :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
-                            {{ getFromByNo(item.from_id)?.from || 'N/A' }}</td>
-                        <td class="text-center" :style="{ color: getDateColor(item.created_date) }">{{
-                            formatDate(item.created_date) }}</td>
-                        <td class="text-center" style="color:#00bf63">{{ item.dividendprice.toLocaleString(2) }}</td>
-                        <td class="text-center" style="color:#ff66c4">{{ item.amount.toLocaleString(2) }}</td>
-                        <td class="text-center">{{ item.dividendmoney }}</td>
-                        <td class="text-center" style="color:#8c52ff">{{ item.dividend_amount }}</td>
-                        <td class="text-center">{{ item.balance_dividend }}</td>
-                        <td class="text-center" style="color:#ff914d">{{ item.closing_price }}</td>
-                        <td class="text-center">{{ item.present_price }}</td>
-                        <td class="text-center">{{ item.total }}</td>
-                        <td class="text-center" :style="{ color: getColorForNumber(item.present_profit) }">{{
-                            item.present_profit }}</td>
-                        <td class="text-center" :style="{ color: getColorForPercent(item.total_percent) }">{{
-                            item.total_percent }}%</td>
-                        <td class="text-center" :style="{ color: getPortText(item.total_percent).color }">{{
-                            getPortText(item.total_percent).text }}</td>
-                        <td class="text-center">{{ getEmployeeByNo(item.emp_id)?.fname + ' ' +
-                            getEmployeeByNo(item.emp_id)?.lname || 'ไม่ทราบ' }}</td>
-                        <td class="text-center">{{ getTypeByNo(getCustomerByNo(item.customer_id)?.type_id)?.type ||
-                            'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ getBaseByNo(getCustomerByNo(item.customer_id)?.base_id)?.base ||
-                            'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">{{ item.comment }}</td>
+                        <td v-if="visibleColumns.includes('created_date')" class="text-center"
+                            :style="{ color: getDateColor(transaction.created_date) }">
+                            {{ formatDate(transaction.created_date) }}</td>
+                        <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
+                            {{ transaction.price.toLocaleString(2) }}</td>
+                        <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
+                            {{ transaction.amount.toLocaleString(2) }}</td>
+                        <td v-if="visibleColumns.includes('money')" class="text-center">
+                            {{ transaction.money }}</td>
+                        <td v-if="visibleColumns.includes('dividend_amount')" class="text-center" style="color:#8c52ff">
+                            {{ transaction.dividend_amount }}</td>
+                        <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
+                            {{ transaction.balance_dividend }}</td>
+                        <td v-if="visibleColumns.includes('closing_price')" class="text-center" style="color:#ff914d">
+                            {{ item.closing_price }}</td>
+                        <td v-if="visibleColumns.includes('present_price')" class="text-center">
+                            {{ transaction.present_price }}</td>
+                        <td v-if="visibleColumns.includes('total')" class="text-center">
+                            {{ transaction.total }}</td>
+                        <td v-if="visibleColumns.includes('present_profit')" class="text-center"
+                            :style="{ color: getColorForNumber(transaction.present_profit) }">
+                            {{ transaction.present_profit }}</td>
+                        <td v-if="visibleColumns.includes('total_percent')" class="text-center"
+                            :style="{ color: getColorForPercent(transaction.total_percent) }">
+                            {{ transaction.total_percent }}%</td>
+                        <td v-if="visibleColumns.includes('port')" class="text-center"
+                            :style="{ color: getPortText(transaction.total_percent).color }">
+                            {{ getPortText(transaction.total_percent).text }}</td>
+                        <td v-if="visibleColumns.includes('emp_id')" class="text-center">
+                            {{ getEmployeeByNo(transaction.emp_id)?.fname + ' ' +
+                                getEmployeeByNo(transaction.emp_id)?.lname ||
+                                'ไม่ทราบ' }}</td>
+                        <td v-if="visibleColumns.includes('comment')" class="text-center">
+                            {{ item.comment || '-' }}</td>
+                        <td v-if="visibleColumns.includes('type_id')" class="text-center"></td>
+                        <td v-if="visibleColumns.includes('base_id')" class="text-center"></td>
                         <td class="text-center"></td>
                     </tr>
                 </template>
 
             </v-data-table>
-
 
             <div class="text-center">
                 <v-btn class="mb-4" color="#e50211" @click="goToHome">
@@ -622,8 +640,6 @@ export default {
                 });
             });
 
-            filteredDetails = filteredDetails.filter(detail => detail.amount == 0);
-
             return filteredDetails;
         },
 
@@ -747,7 +763,14 @@ export default {
                 this.details = await this.$store.dispatch('api/detail/getDetails');
 
                 if (Array.isArray(this.details) && this.details.length > 0) {
+                    // เก็บค่าของ details ที่คำนวณแล้ว
+                    const detailsBeforeFiltering = [];
+                    const detailsAfterFiltering = [];
+
                     for (const detail of this.details) {
+                        const originalDetail = { ...detail }; // เก็บข้อมูลต้นฉบับ
+                        detailsBeforeFiltering.push(originalDetail); // เก็บไว้ในตัวแปรสำรอง
+
                         detail.isOpen = false;
                         if (detail.stock_id) {
                             const stock = this.stocks.find(s => s.no === detail.stock_id);
@@ -762,6 +785,7 @@ export default {
                             let transactionAmountSum = 0;
                             let transactionnumberOfDividends = 0;
 
+                            // ดึงข้อมูล dividend ที่เกี่ยวข้อง
                             if (detail.created_date) {
                                 const dividendData = await this.$store.dispatch('api/dividend/getDividends', {
                                     stock_id: detail.stock_id,
@@ -779,6 +803,7 @@ export default {
                                 balance_dividend = detail.amount * detail_total_Dividend.toNumber();
                             }
 
+                            // ดึงข้อมูล transaction ที่เกี่ยวข้อง
                             const transactions = await this.$store.dispatch('api/transaction/getTransactions', { stock_detail_id: detail.no });
 
                             const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_id === detail.no);
@@ -898,7 +923,6 @@ export default {
                                     .pop()
                                 : detail.emp_id;
 
-
                             const money = (detail.price * detail.amount) + transactionTotalSum;
                             const amount = detail.amount + transactionAmountSum;
                             const price = money / amount;
@@ -927,7 +951,16 @@ export default {
                             detail.dividendprice = dividendprice;
                             detail.dividendmoney = dividendmoney.toLocaleString(2);
                         }
+
+                        // ถ้า amount เป็น 0 ให้เก็บค่าไว้ใน detailsAfterFiltering
+                        if (detail.amount === 0) {
+                            detailsAfterFiltering.push(detail);
+                        }
                     }
+
+                    // กรองข้อมูลที่เหลือและคืนค่าที่คำนวณไปแล้ว
+                    this.details = detailsAfterFiltering;
+
                 } else {
                     console.error("ข้อมูล details ไม่มีข้อมูลหรือไม่ใช่อาร์เรย์");
                 }
@@ -936,7 +969,8 @@ export default {
                 this.modal.warning.message = 'ไม่สามารถดึงข้อมูลได้';
                 this.modal.warning.open = true;
             }
-        },
+        }
+        ,
 
         getDetailsByNo(detailNo) {
             return this.details.find(detail => detail.no === detailNo);

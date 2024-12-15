@@ -35,12 +35,12 @@ export default {
         return {
             showModalResult: this.open,
             headers: [
-                { text: 'รหัสลูกค้า', value: 'customer_name' },
-                { text: 'ชื่อหุ้น', value: 'stock_name' },
-                { text: 'จำนวนที่ติด', value: 'price' },
-                { text: 'ราคาที่ติด', value: 'amount' },
-                { text: 'วันที่ซื้อหุ้น', value: 'created_date' },
-                { text: 'ที่มาที่ไป', value: 'from_name' },
+                { text: 'รหัสลูกค้า', value: 'customer_name', sortable: false, align: 'center' },
+                { text: 'ชื่อหุ้น', value: 'stock_name', sortable: false, align: 'center' },
+                { text: 'จำนวนที่ติด', value: 'price', sortable: false, align: 'center' },
+                { text: 'ราคาที่ติด', value: 'amount', sortable: false, align: 'center' },
+                { text: 'วันที่ซื้อหุ้น', value: 'created_date', sortable: false, align: 'center' },
+                { text: 'ที่มาที่ไป', value: 'from_name', sortable: false, align: 'center' },
             ],
         };
     },

@@ -384,14 +384,12 @@ export default {
       }
 
       const log = {
-        emp_id: this.originalData.fname + ' ' + this.originalData.lname,
-        emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-        emp_email: this.$auth.user.email,
+        employee_no: this.$auth.user.no,
+        type_no: this.originalData.no,
         detail: changes.join(''),
         type: 4,
-        picture: this.$auth.user.picture || 'ไม่รู้จัก',
         action: 'แก้ไขข้อมูลผู้ใช้งาน',
-        time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
       this.$store.dispatch('api/log/addLogs', log);
     },

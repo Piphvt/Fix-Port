@@ -228,13 +228,11 @@ export default {
       }
 
       const log = {
-        emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-        emp_email: this.$auth.user.email,
+        employee_no: this.$auth.user.no,
         detail: changes.join(''),
         type: 4,
-        picture: this.$auth.user.picture || 'Unknown',
         action: 'แก้ไขข้อมูลส่วนตัว',
-        time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       }
       this.$store.dispatch('api/log/addLogs', log);
     },

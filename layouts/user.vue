@@ -308,11 +308,6 @@ export default {
 
     async recordLog() {
       const empId = this.$auth.user.no;
-      const employee = this.employees.find(employee => employee.no === empId);
-      const employeeFName = employee ? employee.fname : 'Unknown';
-      const employeeSName = employee ? employee.lname : 'Unknown';
-      const employeeEmail = employee ? employee.email : 'Unknown';
-      const employeePicture = employee ? employee.picture : 'Unknown';
 
       let userLocation = 'Unknown';
       let userIP = 'Unknown';
@@ -326,13 +321,11 @@ export default {
       }
 
       const log = {
-        emp_name: employeeFName + ' ' + employeeSName,
-        emp_email: employeeEmail,
-        picture: employeePicture,
+        employee_no: empId,
         type: 4,
         action: 'ออกจากระบบ',
         detail: `ที่อยู่ : ${userLocation}\nไอพี : ${userIP}`,
-        time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
       this.$store.dispatch('api/log/addLogs', log);
     },

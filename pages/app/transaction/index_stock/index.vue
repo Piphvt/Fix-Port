@@ -12,8 +12,8 @@
                 <v-row justify="center" align="center">
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
-                            <v-icon class="little-icon" color="#85d7df">mdi-cash</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลการซื้อขายหุ้นของลูกค้า</h3>
+                            <v-icon class="little-icon" color="#85d7df">mdi-cash-register</v-icon>&nbsp;
+                            <h3 class="mb-0">สรุปผลการซื้อขายหุ้นของลูกค้า</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">
@@ -121,7 +121,8 @@
                             color="#85d7df">mdi-playlist-check</v-icon>
                     </template>
                     <v-list class="header-list">
-                        <v-list-item v-for="header in headers.filter(header => header.value !== 'detail')"
+                        <v-list-item
+                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'action')"
                             :key="header.value" class="header-item">
                             <v-list-item-content>
                                 <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
@@ -129,149 +130,81 @@
                         </v-list-item>
                     </v-list>
                 </v-menu>
-                <div>
-                    <v-btn @click="goToCommission" class="tab-icon-three"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-credit-card</v-icon> ค่าธรรมเนียม
-                    </v-btn>
-                    <v-btn @click="goToAddStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-cash-plus</v-icon> เพิ่มการซื้อขายหุ้น
-                    </v-btn>
-                </div>
             </div>
 
-            <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
-                item-key="no" :items-per-page="5" style="overflow-x: auto; white-space: nowrap;">
-                <template v-slot:item.emp_id="{ item }">
-                    <div class="text-center">
-                        <span v-if="getEmployeeByNo(item.emp_id)">
-                            {{ getEmployeeByNo(item.emp_id).fname }} {{ getEmployeeByNo(item.emp_id).lname }}
-                        </span>
-                        <span v-else>ไม่ทราบ</span>
-                    </div>
-                </template>
-                <template v-slot:item.customer_id="{ item }">
-                    <div class="text-center">
-                        {{ getCustomerByNo(item.customer_id)?.id || 'N/A' }}
-                    </div>
-                </template>
+            <v-data-table :headers="filteredHeaders" :items="details" :item-value="customer_id" item-key="customer_id">
+                <template v-slot:body="{ items }">
+                    <template v-for="(group, index) in items" :key="group.customer_id + '-' + index">
+                        <tr>
+                            <td class="text-center">
+                                <v-icon style="color:#85d7df" @click="group.isOpen = !group.isOpen">
+                                    {{ group.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                                </v-icon>
+                            </td>
+                            <td class="text-center">{{ formatDateTime(group.updated_date) }}</td>
+                            <td class="text-center">{{ getCustomerByNo(group.customer_id)?.id || 'ยังไม่ระบุ' }}</td>
+                            <td class="text-center">{{ getCustomerByNo(group.customer_id)?.nickname || 'ยังไม่ระบุ' }}
+                            </td>
+                            <td class="text-center" style="color:#ffc800">
+                                {{ (group.from1TotalDifference || 0).toLocaleString() }}</td>
+                            <td class="text-center" style="color:#38b6ff">
+                                {{ (group.from2TotalDifference || 0).toLocaleString() }}</td>
+                            <td class="text-center" style="color:#ff914d">
+                                {{ (group.from3TotalDifference || 0).toLocaleString() }}</td>
+                            <td class="text-center" :style="{ color: getColorForNumber((group.from1TotalDifference + group.from2TotalDifference +
+                                    group.from3TotalDifference) || 0) }">
+                                {{ ((group.from1TotalDifference + group.from2TotalDifference +
+                                    group.from3TotalDifference) || 0).toLocaleString() }}</td>
+                            <td colspan="5"></td>
+                        </tr>
 
+                        <template v-if="group.isOpen">
+                            <template v-for="(stock, index) in group.stocks" :key="stock.no + '-' + index">
+                                <tr>
+                                    <td></td>
+                                    <td class="text-center">
+                                        <v-icon style="color:#85d7df" @click="stock.isOpen = !stock.isOpen">
+                                            {{ stock.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                                        </v-icon>
+                                    </td>
+                                    <td class="text-center">{{ formatDateTime(stock.updated_date) || 'ยังไม่ระบุ' }}
+                                    </td>
+                                    <td class="text-center">{{ getStockByNo(stock.stock_id)?.name || 'ยังไม่ระบุ' }}
+                                    </td>
+                                    <td class="text-center" style="color:#00bf63">{{ stock.Buy.toLocaleString() }}</td>
+                                    <td class="text-center" style="color:#ff66c4">{{ stock.Sale.toLocaleString() }}</td>
+                                    <td class="text-center" :style="{ color: getColorForNumber(stock.Total) }">
+                                        {{ stock.Total.toLocaleString() }}</td>
+                                    <td colspan="3"></td>
+                                </tr>
 
-                <template v-slot:item.amount="{ item }">
-                    <div class="text-center">
-                        <span v-if="item.amount !== null && item.amount !== undefined">
-                            {{ item.amount.toLocaleString() }}
-                        </span>
-                        <span v-else>
-                        </span>
-                    </div>
-                </template>
-                <template v-slot:item.price="{ item }">
-                    <div class="text-center">
-                        <span v-if="item.price !== null && item.price !== undefined">
-                            {{ item.price.toLocaleString() }}
-                        </span>
-                        <span v-else>
-                        </span>
-                    </div>
-                </template>
-                <template v-slot:item.result="{ item }">
-                    <div class="text-center">
-                        <span v-if="item.result !== null && item.result !== undefined">
-                            {{ item.result.toLocaleString() }}
-                        </span>
-                        <span v-else>
-                        </span>
-                    </div>
-                </template>
-                <template v-slot:item.comfee="{ item }">
-                    <div class="text-center">
-                        <span v-if="item.comfee !== null && item.comfee !== undefined">
-                            {{ item.comfee.toLocaleString() }}
-                        </span>
-                        <span v-else>
-                        </span>
-                    </div>
-                </template>
-                <template v-slot:item.vat="{ item }">
-                    <div class="text-center">
-                        <span v-if="item.vat !== null && item.vat !== undefined">
-                            {{ item.vat.toLocaleString() }}
-                        </span>
-                        <span v-else>
-                        </span>
-                    </div>
-                </template>
-                <template v-slot:item.total="{ item }">
-                    <div class="text-center">
-                        <span v-if="item.total !== null && item.total !== undefined">
-                            {{ item.total.toLocaleString() }}
-                        </span>
-                        <span v-else>
-                        </span>
-                    </div>
-                </template>
-
-                <template v-slot:item.customer_name="{ item }">
-                    <div class="text-center">
-                        {{ getCustomerByNo(item.customer_id)?.nickname || 'N/A' }}
-                    </div>
-                </template>
-                <template v-slot:item.detail_amount="{ item }">
-                    <div class="text-center" style="color:#ff66c4">
-                        {{ getDetailByNo(item.stock_detail_id)?.amount || 'N/A' }}
-                    </div>
-                </template>
-                <template v-slot:item.stock_id="{ item }">
-                    <div class="text-center">
-                        {{ getStockByNo(item.stock_id)?.name || 'N/A' }}
-                    </div>
-                </template>
-                <template v-slot:item.commission="{ item }">
-                    <div class="text-center" style="color:#38b6ff">
-                        {{ item.commission || 'N/A' }}
-                    </div>
-                </template>
-                <template v-slot:item.from_id="{ item }">
-                    <div class="text-center">
-                        <span :style="{ color: getFromText(getFromByNo(item.from_id)?.from).color }">
-                            {{ getFromByNo(item.from_id)?.from || 'N/A' }}
-                        </span>
-                    </div>
-                </template>
-                <template v-slot:item.type="{ item }">
-                    <div class="text-center">
-                        <span :style="{ color: getTypeText(item.type).color }">
-                            {{ getTypeText(item.type).text }}
-                        </span>
-                    </div>
-                </template>
-                <template v-slot:item.updated_date="{ item }">
-                    <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
-                </template>
-                <template v-slot:item.detail="{ item }">
-                    <div class="text-center">
-                        <v-menu offset-y>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
+                                <tr v-if="stock.isOpen" v-for="(grouped, index) in stock.groupedTransactions"
+                                    :key="grouped.from_id + '-' + stock.no + '-' + index">
+                                    <td colspan="3"></td>
+                                    <td class="text-center"
+                                        :style="{ color: getFromText(getFromByNo(grouped.from_id)?.from).color }">
+                                        {{ getFromByNo(grouped.from_id)?.from || 'ยังไม่ระบุ' }}
+                                    </td>
+                                    <td class="text-center" style="color:#00bf63">
+                                        {{ grouped.transactions.reduce((sum, tx) => sum + (tx.buy || 0),
+                                            0).toLocaleString() }}
+                                    </td>
+                                    <td class="text-center" style="color:#ff66c4">
+                                        {{ grouped.transactions.reduce((sum, tx) => sum + (tx.sale || 0),
+                                            0).toLocaleString() }}
+                                    </td>
+                                    <td class="text-center" :style="{ color: getColorForFrom((grouped.transactions.reduce((sum, tx) => sum + (tx.sale || 0), 0) -
+                                            grouped.transactions.reduce((sum, tx) => sum + (tx.buy || 0),
+                                                0))) }">
+                                        {{ (grouped.transactions.reduce((sum, tx) => sum + (tx.sale || 0), 0) -
+                                            grouped.transactions.reduce((sum, tx) => sum + (tx.buy || 0),
+                                                0)).toLocaleString() }}
+                                    </td>
+                                    <td colspan="2"></td>
+                                </tr>
                             </template>
-                            <v-list class="custom-list">
-                                <v-list-item @click="openEditAllDialog(item)" class="custom-list-item">
-                                    <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#ffc800">mdi-pencil</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
-                                </v-list-item>
-
-                                <v-list-item @click="showConfirmDialog('delete', item)" class="custom-list-item">
-                                    <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
-                                </v-list-item>
-                            </v-list>
-                        </v-menu>
-                    </div>
+                        </template>
+                    </template>
                 </template>
             </v-data-table>
 
@@ -303,7 +236,6 @@ export default {
         await this.checkRank();
         await this.fetchEmployeeData();
         await this.fetchDetailData();
-        await this.fetchTransactionData();
         await this.fetchCustomerData();
         await this.fetchStockData();
         await this.fetchFromData();
@@ -331,13 +263,14 @@ export default {
             },
 
             employees: [],
-            transactions: [],
             details: [],
             customers: [],
             stocks: [],
             froms: [],
             commissions: [],
 
+            showModalResult: false,
+            ResultDetailData: {},
             sortBy: 'updated_date',
             currentAction: '',
             searchQuery: '',
@@ -362,7 +295,6 @@ export default {
             selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['updated_date', 'customer_id', 'customer_name', 'stock_id', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_id', 'emp_id', 'detail'],
 
             searchQueries: {
                 'customer_id': [],
@@ -375,9 +307,8 @@ export default {
                 { text: 'รหัสสมาชิก', value: 'customer_id' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
                 { text: 'ชื่อหุ้นที่ติด', value: 'stock_id' },
-                { text: 'ทำรายการโดย', value: 'emp_id' },
                 { text: 'ประเภทพอร์ต', value: 'port' },
-                { text: 'เวลา', value: 'updated_date' }
+                { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
             actionTopics: [
@@ -387,7 +318,17 @@ export default {
                 { text: 'กำไร', value: 'กำไร' },
             ],
 
+            visibleColumns: ['action', 'updated_date', 'customer_id', 'customer_name', 'price', 'amount', 'money', 'total'],
+
             headers: [
+
+                {
+                    text: '',
+                    value: 'action',
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
                 {
                     text: 'ข้อมูลวันที่',
                     value: 'updated_date',
@@ -412,39 +353,7 @@ export default {
                 },
 
                 {
-                    text: 'ชื่อหุ้น',
-                    value: 'stock_id',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'จำนวนคงเหลือ',
-                    value: 'detail_amount',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'การกระทำ',
-                    value: 'type',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'จำนวน',
-                    value: 'amount',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'ราคา',
+                    text: 'หุ้นเก่า',
                     value: 'price',
                     sortable: false,
                     align: 'center',
@@ -452,64 +361,24 @@ export default {
                 },
 
                 {
-                    text: 'มูลค่า',
-                    value: 'result',
+                    text: 'หุ้นใหม่',
+                    value: 'amount',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },
 
                 {
-                    text: 'ค่าธรรมเนียม',
-                    value: 'comfee',
+                    text: 'หุ้นแก้เกม',
+                    value: 'money',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },
 
                 {
-                    text: 'ภาษี',
-                    value: 'vat',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'รวมมูลค่า',
+                    text: 'รวม',
                     value: 'total',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'ตัวคูณค่าธรรมเนียม',
-                    value: 'commission',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'ที่มาที่ไป',
-                    value: 'from_id',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'ทำรายการโดย',
-                    value: 'emp_id',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: '',
-                    value: 'detail',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -520,17 +389,23 @@ export default {
 
     computed: {
         filtered() {
-            let filteredDetails = this.transactions;
+            let filteredDetails = this.details.map(detail => {
+                const transactions = detail.transactions || [];
+                const type1Transactions = transactions.filter(t => t.stock_detail_id === detail.no);
+
+                return {
+                    ...detail,
+                    type1Transactions: type1Transactions
+                };
+            });
+
             this.savedSearches.forEach(search => {
-                filteredDetails = filteredDetails.filter(transaction => {
-                    return this.applySearchFilter(transaction, search);
+                filteredDetails = filteredDetails.filter(detail => {
+                    return this.applySearchFilter(detail, search);
                 });
             });
-            return filteredDetails;
-        },
 
-        formattedDetailLines() {
-            return this.selectedItemDetail.split('\n');
+            return filteredDetails;
         },
 
         filteredHeaders() {
@@ -539,19 +414,8 @@ export default {
     },
 
     methods: {
-        async fetchDetailData() {
-            this.details = await this.$store.dispatch('api/detail/getDetails');
-            this.transactions.forEach(transaction => {
-                const detail = this.details.find(detail => detail.no === transaction.stock_detail_id);
-                if (detail) {
-                    transaction.customer_id = detail.customer_id;
-                    transaction.stock_id = detail.stock_id;
-                }
-            });
-        },
-
-        getDetailByNo(detailNo) {
-            return this.details.find(detail => detail.no === detailNo);
+        toggleOpen(item) {
+            item.isOpen = !item.isOpen;
         },
 
         goToHome() {
@@ -570,13 +434,13 @@ export default {
 
         getSearchItems(type) {
             if (type === 'stock_id') {
-                return this.stocks.map(stock => stock.name);
+                return this.details.map(detail => this.getStockByNo(detail.stock_id)?.name);
             } else if (type === 'customer_name') {
-                return this.customers.map(customer => customer.nickname);
+                return this.details.map(detail => this.getCustomerByNo(detail.customer_id)?.nickname);
             } else if (type === 'customer_id') {
-                return this.customers.map(customer => customer.id);
+                return this.details.map(detail => this.getCustomerByNo(detail.customer_id)?.id);
             } else if (type === 'emp_id') {
-                return this.employees.map(employee => employee.fname + ' ' + employee.lname);
+                return this.details.map(detail => this.getEmployeeByNo(detail.emp_id)?.fname + ' ' + this.getEmployeeByNo(detail.emp_id)?.lname);
             }
             return [];
         },
@@ -590,7 +454,7 @@ export default {
         async handleConfirm() {
             if (this.currentAction === 'delete') {
                 try {
-                    await this.$store.dispatch('api/transaction/deleteTransaction', this.currentItem.no);
+                    await this.$store.dispatch('api/detail/deleteDetail', this.currentItem.no);
                     this.modal.complete.message = 'ลบผู้ใช้งานนี้เรียบร้อยแล้ว';
                     this.recordLog();
                     this.modal.complete.open = true;
@@ -612,11 +476,11 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/transaction/customer_trade');
+                        this.$router.push('/app/transaction/index_stock');
                     } else if (RankID === '2') {
-                        this.$router.push('/app/transaction/customer_trade');
+                        this.$router.push('/app/transaction/index_stock');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/transaction/customer_trade');
+                        this.$router.push('/app/transaction/index_stock');
                     } else {
                         this.$router.push('/auth');
                     }
@@ -634,46 +498,154 @@ export default {
             return this.employees.find(employee => employee.no === empNo);
         },
 
-        async fetchTransactionData() {
-            this.transactions = await this.$store.dispatch('api/transaction/getTransactions');
+        async fetchCommissionData() {
+            this.commissions = await this.$store.dispatch('api/commission/getCommissions');
+        },
 
-            // ดึงข้อมูล commission
-            const commissionData = await this.fetchCommissionData();
+        async fetchDetailData() {
+            try {
+                await this.fetchStockData();
+                this.details = await this.$store.dispatch('api/detail/getDetails');
 
-            // ตรวจสอบว่า commissionData มีค่าเป็นอาเรย์
-            if (Array.isArray(commissionData)) {
-                this.transactions.forEach(transaction => {
-                    // หา commission ที่ตรงกับ transaction.commission_id
-                    const matchingCommission = commissionData.find(c => c.no === transaction.commission_id);
+                if (Array.isArray(this.details) && this.details.length > 0) {
+                    const transactions = await this.$store.dispatch('api/transaction/getTransactions');
+                    await this.fetchCommissionData();
 
-                    if (matchingCommission) {
-                        const result = transaction.price * transaction.amount;
-                        const comfee = result * matchingCommission.commission;
-                        const vat = comfee * 0.07;
+                    const groupedDetails = this.details.reduce((acc, detail) => {
+                        const stockTransactions = transactions.filter(t => t.stock_detail_id === detail.no);
 
-                        transaction.commission = matchingCommission.commission;
-                        transaction.result = result; // คำนวณ result
-                        transaction.comfee = comfee;
-                        transaction.vat = vat;
+                        if (stockTransactions.length > 0) {
+                            const customerId = detail.customer_id;
 
-                        // ตรวจสอบประเภทของ transaction
-                        if (transaction.type === 1) {
-                            transaction.total = result + comfee + vat;
-                        } else if (transaction.type === 2) {
-                            transaction.total = result - comfee - vat;
-                        } else {
-                            transaction.total = result; // หรือกำหนดค่าเริ่มต้นถ้า type ไม่ตรงกัน
+                            if (!acc[customerId]) {
+                                acc[customerId] = {
+                                    customer_id: customerId,
+                                    isOpen: false,
+                                    stocks: [],
+                                    updated_date: null,
+                                    Buy: 0,
+                                    Sale: 0,
+                                    Total: 0,
+                                    from1TotalDifference: 0,
+                                    from2TotalDifference: 0,
+                                    from3TotalDifference: 0,
+                                };
+                            }
+
+                            const detailUpdatedDate = moment.tz(detail.updated_date, 'Asia/Bangkok');
+                            const transactionUpdatedDates = stockTransactions.map(t =>
+                                moment.tz(t.updated_date, 'Asia/Bangkok')
+                            );
+                            const latestTransactionDate = transactionUpdatedDates.length > 0
+                                ? moment.max(transactionUpdatedDates)
+                                : null;
+
+                            const latestDate = latestTransactionDate
+                                ? moment.max(detailUpdatedDate, latestTransactionDate)
+                                : detailUpdatedDate;
+
+                            acc[customerId].updated_date = acc[customerId].updated_date
+                                ? moment.max(acc[customerId].updated_date, latestDate)
+                                : latestDate;
+
+                            const lastBuyValues = {};
+
+                            const groupedStockTransactions = stockTransactions.reduce((grouped, transaction) => {
+                                if (!grouped[transaction.from_id]) {
+                                    grouped[transaction.from_id] = {
+                                        from_id: transaction.from_id,
+                                        transactions: [],
+                                    };
+                                }
+
+                                const detail = this.details.find(d => d.no === transaction.stock_detail_id);
+
+                                if (detail && (transaction.from_id === 1 || transaction.from_id === 2) && !lastBuyValues[transaction.from_id]) {
+                                    const money = detail.amount * detail.price;
+                                    transaction.buy = money;
+                                    lastBuyValues[transaction.from_id] = money;
+                                } else if (transaction.type === 1 && !transaction.hasOwnProperty('buy')) {
+                                    const commission = this.commissions.find(c => c.no === transaction.commission_id);
+                                    const commission_id = commission ? commission.commission : 0;
+                                    const money = transaction.amount * transaction.price;
+                                    const comfee = money * commission_id;
+                                    const vat = comfee * 0.07;
+                                    const total = money + comfee + vat;
+                                    transaction.buy = total;
+                                }
+
+                                if (transaction.type === 2 && !transaction.hasOwnProperty('sale')) {
+                                    const commission = this.commissions.find(c => c.no === transaction.commission_id);
+                                    const commission_id = commission ? commission.commission : 0;
+                                    const money = transaction.amount * transaction.price;
+                                    const comfee = money * commission_id;
+                                    const vat = comfee * 0.07;
+                                    const total = money - (comfee + vat);
+                                    transaction.sale = total;
+                                }
+
+                                grouped[transaction.from_id].transactions.push(transaction);
+
+                                return grouped;
+                            }, {});
+
+                            const stockGroupedByFromId = Object.values(groupedStockTransactions);
+
+                            const Buy = stockGroupedByFromId.reduce((sum, group) =>
+                                sum + group.transactions.reduce((subSum, tx) => subSum + (tx.buy || 0), 0), 0);
+                            const Sale = stockGroupedByFromId.reduce((sum, group) =>
+                                sum + group.transactions.reduce((subSum, tx) => subSum + (tx.sale || 0), 0), 0);
+                            const Total = Sale - Buy;
+
+                            stockGroupedByFromId.forEach(group => {
+                                const totalBuy = group.transactions.reduce((sum, tx) => sum + (tx.buy || 0), 0);
+                                const totalSale = group.transactions.reduce((sum, tx) => sum + (tx.sale || 0), 0);
+                                const totalDifference = totalSale - totalBuy;
+
+                                if (group.from_id === 1) {
+                                    acc[customerId].from1TotalDifference += totalDifference;
+                                } else if (group.from_id === 2) {
+                                    acc[customerId].from2TotalDifference += totalDifference;
+                                } else if (group.from_id === 3) {
+                                    acc[customerId].from3TotalDifference += totalDifference;
+                                }
+                            });
+
+                            acc[customerId].stocks.push({
+                                ...detail,
+                                isOpen: false,
+                                groupedTransactions: stockGroupedByFromId,
+                                updated_date: latestDate.format('YYYY-MM-DD HH:mm:ss'),
+                                Buy: Buy,
+                                Sale: Sale,
+                                Total: Total
+                            });
                         }
 
-                    } else {
-                        transaction.comfee = 0; // หรือกำหนดค่าเริ่มต้นในกรณีที่ไม่มี commission ตรงกัน
-                    }
-                });
-            } else {
-                console.error("commissionData ไม่ได้เป็นอาเรย์", commissionData);
-            }
+                        return acc;
+                    }, {});
 
-            await this.fetchDetailData();
+
+                    this.details = Object.values(groupedDetails).map(group => ({
+                        ...group,
+                        updated_date: group.updated_date ? group.updated_date.format('YYYY-MM-DD HH:mm:ss') : null,
+                    }));
+
+                    if (this.details.length === 0) {
+                        console.warn("ไม่มี detail ที่มี transaction");
+                    }
+                } else {
+                    console.error("ไม่มีข้อมูลใน details หรือข้อมูลไม่ใช่อาร์เรย์");
+                }
+            } catch (error) {
+                console.error("Error fetching detail data:", error);
+                this.modal.warning.message = 'ไม่สามารถดึงข้อมูลได้';
+                this.modal.warning.open = true;
+            }
+        },
+
+        getDetailsByNo(detailNo) {
+            return this.details.find(detail => detail.no === detailNo);
         },
 
         async fetchCustomerData() {
@@ -686,7 +658,6 @@ export default {
 
         async fetchStockData() {
             this.stocks = await this.$store.dispatch('api/stock/getStocks');
-            await this.fetchDetailData();
         },
 
         getStockByNo(stockNo) {
@@ -701,16 +672,6 @@ export default {
             return this.froms.find(from => from.no === fromNo);
         },
 
-        async fetchCommissionData() {
-            try {
-                const data = await this.$store.dispatch('api/commission/getCommissions');
-                return data || [];
-            } catch (error) {
-                console.error("Error fetching commission data:", error);
-                return [];
-            }
-        },
-
         getFromText(from) {
             if (from === 'หุ้นเก่า') {
                 return { text: 'หุ้นเก่า', color: '#ffc800' };
@@ -723,13 +684,25 @@ export default {
             }
         },
 
-        getTypeText(value) {
-            if (value === 1) {
-                return { text: 'ซื้อ', color: '#24b224' };
-            } else if (value === 2) {
-                return { text: 'ขาย', color: '#e50211' };
+        getColorForNumber(value) {
+            const numericValue = parseFloat(value);
+            if (numericValue < 0) {
+                return '#e50211';
+            } else if (numericValue >= 0) {
+                return '#24b224';
             } else {
-                return { text: '', color: 'inherit' };
+                return 'inherit';
+            }
+        },
+
+        getColorForFrom(value) {
+            const numericValue = parseFloat(value);
+            if (numericValue < 0) {
+                return '#ff5757';
+            } else if (numericValue >= 0) {
+                return '#c1ff72';
+            } else {
+                return 'inherit';
             }
         },
 
@@ -737,11 +710,11 @@ export default {
             if (moment(date).isValid()) {
                 return moment(date).format('YYYY-MM-DD HH:mm');
             }
-            return 'Invalid Date';
+            return 'ยังไม่ระบุวัน';
         },
 
         openDetail(item) {
-            this.selectedItemDetail = item.transaction;
+            this.selectedItemDetail = item.detail;
             this.dialog = true;
         },
 
@@ -811,45 +784,45 @@ export default {
             this.endDateTime = '';
         },
 
-        applySearchFilter(transaction, search) {
-            const field = transaction[search.type];
+        applySearchFilter(detail, search) {
+            const field = detail[search.type];
             let queryMatched = true;
             const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
             if (search.type === 'customer_name') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(transaction.customer_id);
+                    const cust = this.getCustomerByNo(detail.customer_id);
                     return cust.nickname.toLowerCase().includes(query.toLowerCase());
                 });
             } else if (search.type === 'customer_id') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(transaction.customer_id);
+                    const cust = this.getCustomerByNo(detail.customer_id);
                     return cust.id.toLowerCase().includes(query.toLowerCase());
                 });
             } else if (search.type === 'stock_id') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const st = this.getStockByNo(transaction.stock_id);
+                    const st = this.getStockByNo(detail.stock_id);
                     return st.name.toLowerCase().includes(query.toLowerCase());
                 });
             } else if (search.type === 'emp_id') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const emp = this.getEmployeeByNo(transaction.emp_id);
+                    const emp = this.getEmployeeByNo(detail.emp_id);
                     return emp.fname.toLowerCase().includes(query.toLowerCase()) + ' ' + emp.lname.toLowerCase().includes(query.toLowerCase());
                 });
             } else {
                 const searchQuery = search.query.toLowerCase();
                 queryMatched = lowerCaseField.includes(searchQuery);
             }
-            const timeMatched = search.type === 'updated_date' ? this.checkTimeRange(transaction, search) : true;
-            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getTypeText(transaction.total_percent).text) : true;
+            const timeMatched = search.type === 'updated_date' ? this.checkTimeRange(detail, search) : true;
+            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getPortText(detail.total_percent).text) : true;
             return queryMatched && timeMatched && topicMatched;
         },
 
-        checkTimeRange(transaction, search) {
-            const transactionTime = moment(transaction.updated_date);
+        checkTimeRange(detail, search) {
+            const detailTime = moment(detail.updated_date);
             const startTime = moment(search.start);
             const endTime = moment(search.end);
-            return (!startTime.isValid() || transactionTime.isSameOrAfter(startTime)) &&
-                (!endTime.isValid() || transactionTime.isSameOrBefore(endTime));
+            return (!startTime.isValid() || detailTime.isSameOrAfter(startTime)) &&
+                (!endTime.isValid() || detailTime.isSameOrBefore(endTime));
         },
 
         toggleSavedSearchesDialog() {
@@ -892,8 +865,6 @@ export default {
                         rowData[header.value] = item.amount.toLocaleString(2);
                     } else if (header.value === 'money') {
                         rowData[header.value] = item.money;
-                    } else if (header.value === 'type') {
-                        rowData[header.value] = this.getTypeText(item.type).text;
                     } else if (header.value === 'from_id') {
                         rowData[header.value] = this.getFromByNo(item.from_id).from;
                     } else if (header.value === 'stock_id') {
@@ -902,6 +873,8 @@ export default {
                         rowData[header.value] = this.getCustomerByNo(item.customer_id).id;
                     } else if (header.value === 'customer_name') {
                         rowData[header.value] = this.getCustomerByNo(item.customer_id).nickname;
+                    } else if (header.value === 'port') {
+                        rowData[header.value] = this.getPortText(item.total_percent).text;
                     } else if (header.value === 'emp_id') {
                         rowData[header.value] = this.getEmployeeByNo(item.emp_id).fname + ' ' + this.getEmployeeByNo(item.emp_id).lname;
                     } else if (header.value !== 'detail' && header.value !== 'action') {
@@ -932,7 +905,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ข้อมูลการซื้อขายหุ้นของลูกค้า-${currentDate}.xlsx`);
+                link.setAttribute('download', `ข้อมูลลูกค้า-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -965,11 +938,7 @@ export default {
         },
 
         goToAddStock() {
-            this.$router.push('/app/transaction/add_transaction');
-        },
-
-        goToCommission() {
-            this.$router.push('/app/transaction/commission');
+            this.$router.push('/app/transaction/add_stock');
         },
     },
 };

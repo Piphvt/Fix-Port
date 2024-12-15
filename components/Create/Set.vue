@@ -15,13 +15,14 @@
                 <v-container>
                     <v-row>
                         <v-col cols="5" sm="11" class="pa-0 ml-3">
-                            <v-text-field v-model="newStockType" label="ชื่อประเภทหุ้น" required outlined>
+                            <v-text-field v-model="newStockType" label="ชื่อประเภทหุ้น" required outlined
+                                :rules="[value => !!value || 'กรุณากรอกชื่อประเภทหุ้น']">
                             </v-text-field>
                         </v-col>
                     </v-row>
                     <v-row>
                         <v-col cols="12" class="text-center pa-0">
-                            <v-btn @click="confirm" :disabled="!isFormValid" color="#24b224" class="mb-5">
+                            <v-btn @click="confirm" :disabled="!isFormValid || !newStockType" color="#24b224" class="mb-5">
                                 ยืนยัน
                             </v-btn>
                             <v-btn @click="cancel" color="#e50211" class="ml-2 mb-5">

@@ -84,7 +84,7 @@
                                 label="ค้นหาประเภท" dense outlined clearable multiple>
                             </v-autocomplete>
 
-                            <v-menu v-if="searchType === 'time'" v-model="datePickerMenu"
+                            <v-menu v-if="searchType === 'created_date'" v-model="datePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-bind="attrs" v-on="on" class="date-picker-activator">
@@ -95,7 +95,7 @@
                                 </template>
                             </v-menu>
 
-                            <v-menu v-if="searchType === 'time'" v-model="endDatePickerMenu"
+                            <v-menu v-if="searchType === 'created_date'" v-model="endDatePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
@@ -135,15 +135,21 @@
                 item-key="no" :items-per-page="5">
                 <template v-slot:item.picture="{ item }">
                     <v-avatar size="40">
-                        <img :src="`http://localhost:3001/file/profile/${item.picture}`"
-                            @error="onImageError($event, item)" alt="picture" />
+                        <img :src="`http://localhost:3001/file/profile/${getEmployeeByNo(item.employee_no)?.picture}`"
+                            alt="picture" />
                     </v-avatar>
                 </template>
                 <template v-slot:item.emp_email="{ item }">
-                    <div class="text-center">{{ item.emp_email }}</div>
+                    <div class="text-center">{{ getEmployeeByNo(item.employee_no)?.email }}</div>
                 </template>
                 <template v-slot:item.emp_name="{ item }">
-                    <div class="text-center">{{ item.emp_name }}</div>
+                    <div class="text-center">{{ getEmployeeByNo(item.employee_no)?.fname + ' ' +
+                        getEmployeeByNo(item.employee_no)?.lname }}</div>
+                </template>
+                <template v-slot:item.emp_id="{ item }">
+                    <div class="text-center">{{ (getEmployeeByNo(item.type_no)?.fname || '') + ' ' +
+                        (getEmployeeByNo(item.type_no)?.lname || '')
+                        }}</div>
                 </template>
                 <template v-slot:item.action="{ item }">
                     <div class="text-center" :style="{ color: getActionColor(item.action) }">
@@ -155,8 +161,8 @@
                         <v-icon @click="openDetail(item)" color="#85d7df">mdi-eye</v-icon>
                     </div>
                 </template>
-                <template v-slot:item.time="{ item }">
-                    <div class="text-center">{{ formatDateTime(item.time) }}</div>
+                <template v-slot:item.created_date="{ item }">
+                    <div class="text-center">{{ formatDateTime(item.created_date) }}</div>
                 </template>
             </v-data-table>
         </v-card>
@@ -246,6 +252,7 @@ export default {
     async mounted() {
         await this.checkRank();
         await this.fetchLogData();
+        await this.fetchEmployeeData();
     },
 
     components: {
@@ -262,6 +269,7 @@ export default {
             },
 
             logs: [],
+            employees: [],
 
             selectedName: [],
             selectedEmail: [],
@@ -272,7 +280,7 @@ export default {
             selectedItemDetail: '',
             searchQuery: '',
             searchType: 'emp_name',
-            sortBy: 'time',
+            sortBy: 'created_date',
             sortDesc: true,
             dialog: false,
             isSearchFieldVisible: false,
@@ -286,15 +294,15 @@ export default {
                 { text: 'ทำรายการโดย', value: 'emp_name' },
                 { text: 'อีเมล', value: 'emp_email' },
                 { text: 'การกระทำ', value: 'action' },
-                { text: 'เวลา', value: 'time' }
+                { text: 'เวลา', value: 'created_date' }
             ],
 
-            visibleColumns: ['time', 'picture', 'action', 'emp_email', 'emp_id', 'emp_name', 'detail'],
+            visibleColumns: ['created_date', 'picture', 'action', 'emp_email', 'emp_id', 'emp_name', 'detail'],
 
             headers: [
                 {
                     text: 'เวลา',
-                    value: 'time',
+                    value: 'created_date',
                     align: 'center',
                     cellClass: 'text-center',
                 },
@@ -387,10 +395,6 @@ export default {
             return 'ข้อมูลทั่วไป';
         },
 
-        onImageError(event, item) {
-            event.target.src = `http://localhost:3001/file/default/${item.picture}`;
-        },
-
         getSearchItems(type) {
             if (type === 'emp_name') {
                 return this.logs.map(log => log.emp_name);
@@ -428,6 +432,14 @@ export default {
 
         async fetchLogData() {
             this.logs = await this.$store.dispatch('api/log/getLogsType', '4');
+        },
+
+        async fetchEmployeeData() {
+            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+        },
+
+        getEmployeeByNo(empNo) {
+            return this.employees.find(employee => employee.no === empNo);
         },
 
         getActionColor(action) {
@@ -468,7 +480,7 @@ export default {
         },
 
         onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchType !== 'time' && this.searchType !== 'action';
+            this.isSearchFieldVisible = this.searchType !== 'created_date' && this.searchType !== 'action';
         },
 
         validateDateRange() {
@@ -545,7 +557,7 @@ export default {
                 queryMatched = false;
             }
 
-            const timeMatched = search.type === 'time'
+            const timeMatched = search.type === 'created_date'
                 ? this.checkTimeRange(log, search)
                 : true;
 
@@ -553,7 +565,7 @@ export default {
         },
 
         checkTimeRange(log, search) {
-            const logTime = moment(log.time);
+            const logTime = moment(log.created_date);
             const startTime = moment(search.start);
             const endTime = moment(search.end);
             return (!startTime.isValid() || logTime.isSameOrAfter(startTime)) &&
@@ -590,7 +602,7 @@ export default {
             this.filtered.forEach((item, index) => {
                 const rowData = {};
                 this.filteredHeaders.forEach(header => {
-                    if (header.value === 'time') {
+                    if (header.value === 'created_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
                     } else if (header.value !== 'picture') {
                         rowData[header.value] = item[header.value];

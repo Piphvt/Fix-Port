@@ -144,20 +144,12 @@ export default {
 
     recordLogUpdate() {
       const empId = this.$auth.user.no;
-      const employee = this.employees.find(employee => employee.no === empId);
-      const employeeFName = employee ? employee.fname : 'Unknown';
-      const employeeSName = employee ? employee.lname : 'Unknown';
-      const employeeEmail = employee ? employee.email : 'Unknown';
-      const employeePicture = employee ? employee.picture : 'Unknown';
-
       const log = {
-        emp_name: employeeFName + ' ' + employeeSName,
-        emp_email: employeeEmail,
+        employee_no: empId,
         detail: this.file.name,
         type: 4,
-        picture: employeePicture,
         action: 'อัพโหลดรูปภาพ',
-        time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       }
       this.$store.dispatch('api/log/addLogs', log)
     },

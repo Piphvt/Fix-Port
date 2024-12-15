@@ -124,7 +124,7 @@ export default {
 
         async submitForm() {
             if (this.newStockType.trim() === '') {
-                this.modal.error.message = 'กรุณากรอกชื่อประเภทหุ้น';
+                this.modal.error.message = 'กรุณากรอกข้อมูลให้ครบถ้วน';
                 this.modal.error.open = true;
                 return;
             }
@@ -139,7 +139,7 @@ export default {
                     updated_date,
                 });
 
-                this.modal.complete.message = 'เพิ่มประเภทหุ้นสำเร็จ';
+                this.modal.complete.message = 'เพิ่มจำนวนปันผลสำเร็จ';
                 this.modal.complete.open = true;
                 this.recordLog();
                 this.stock_id = '';
@@ -147,7 +147,7 @@ export default {
                 this.newStockType = '';
                 this.$emit('update:open', false);
             } catch (error) {
-                this.modal.error.message = 'มีชื่อประเภทหุ้นนี้แล้ว';
+                this.modal.error.message = 'มีบางอย่างผิดพลาด';
                 this.modal.error.open = true;
             }
         },
