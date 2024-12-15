@@ -1,6 +1,6 @@
 const { connection } = require('../database');
 
-exports.getRanks = (req, res) => {
+exports.getRank = (req, res) => {
     connection.query('SELECT * FROM `ranks`', 
         function(err, results, fields) {
             res.json(results);
@@ -8,45 +8,51 @@ exports.getRanks = (req, res) => {
     );
 }
 
-exports.getRank = (req, res) => {
-    const no = req.params.no;
-    connection.query('SELECT * FROM `ranks` WHERE `no` = ?', 
-        [no], function(err, results) {
-            res.json(results);
-        }
-    );
-}
-
-exports.addRank = (req, res) => {
+exports.addRank = async (req, res) => {
     try {
-        const { name } = req.body;
-        connection.query("INSERT INTO `ranks`(`name`) VALUES (?)", 
-            [name], function(err, results) {
-                res.json(results);
+        const { rank, employee_no, created_date } = req.body;
+        connection.query('SELECT * FROM `ranks` WHERE `rank` = ?',
+            [rank], function (err, results) {
+                if (results.length > 0) {
+                    return res.status(400).json({ message: "ตำแหน่งนี้มีอยู่แล้ว" });
+                } else {
+                    const rankData = {
+                        rank,
+                        employee_no,
+                        created_date,
+                    }
+                    connection.query('INSERT INTO `ranks` SET ?',
+                        [rankData], function (err, results) {
+                            if (err) {
+                                console.error(err);
+                                return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มตำแหน่ง" });
+                            }
+                            res.json({ message: "เพิ่มตำแหน่งใหม่สำเร็จ", results });
+                        }
+                    );
+                }
             }
         );
 
-        console.log("Rank added successfully");
-
     } catch (error) {
-        console.log("Add Rank error", error);
-        return res.status(500).json({ message: "Internal server error" });
+        console.error(error);
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
 
 exports.updateRank = (req, res) => {
     try {
-        const { name } = req.body;
-        connection.query("UPDATE `ranks` SET `name` = ? , `updated_date`= now() WHERE no = ?", 
-            [name, req.params.no], function(err, results) {
+        const { rank, employee_no } = req.body;
+        connection.query("UPDATE `ranks` SET `rank` = ? , `employee_no` = ? , `created_date`= now() WHERE no = ?", 
+            [rank, employee_no, req.params.no], function(err, results) {
             res.json(results);
         }
     );
-        console.log("Rank updated successfully");
+        console.log("อัปเดตตำแหน่งสำเร็จ");
 
     } catch (error) {
-        console.log("Update Rank error", error);
-        return res.status(500).json({ message: "Internal server error" });
+        console.log("เกิดข้อผิดพลาดในการอัปเดตตำแหน่ง", error);
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
 
@@ -58,10 +64,10 @@ exports.deleteRank = (req, res) => {
         }
     );
 
-        console.log("Rank deleted successfully");
+        console.log("ลบตำแหน่งสำเร็จ");
 
     } catch (error) {
-        console.log("Delete Rank error", error);
-        return res.status(500).json({ message: "Internal server error" });
+        console.log("เกิดข้อผิดพลาดในการลบตำแหน่ง", error);
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }

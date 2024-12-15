@@ -19,7 +19,7 @@ const profileStorage = multer.diskStorage({
 
         fs.readdir(path.join(__dirname, '../uploads/profile/'), (err, files) => {
             if (err) {
-                console.error('Error getting directory information:', err);
+                console.error('เกิดข้อผิดพลาดในการดึงข้อมูลจากไดเรกทอรี:', err);
                 callback(err);
             } else {
                 let count = 1;
@@ -32,13 +32,14 @@ const profileStorage = multer.diskStorage({
         });
     }
 });
+
 const uploadProfile = multer({ storage: profileStorage });
 
 exports.getProfile = (req, res) => {
     fs.readdir('./uploads/profile', (err, files) => {
         if (err) {
-            console.error('Error getting directory information:', err);
-            res.status(500).send('Internal server error');
+            console.error('เกิดข้อผิดพลาดในการดึงข้อมูลจากไดเรกทอรี:', err);
+            res.status(500).send('ข้อผิดพลาดภายในเซิร์ฟเวอร์');
         } else {
             res.json(files);
         }
@@ -48,8 +49,8 @@ exports.getProfile = (req, res) => {
 exports.getDefault = (req, res) => {
     fs.readdir('./uploads/default', (err, files) => {
         if (err) {
-            console.error('Error getting directory information:', err);
-            res.status(500).send('Internal server error');
+            console.error('เกิดข้อผิดพลาดในการดึงข้อมูลจากไดเรกทอรี:', err);
+            res.status(500).send('ข้อผิดพลาดภายในเซิร์ฟเวอร์');
         } else {
             res.json(files);
         }
@@ -74,65 +75,73 @@ exports.downloadProfile = (req, res) => {
 exports.uploadProfile = (req, res) => {
     uploadProfile.single('file')(req, res, (err) => {
         if (err) {
-            console.error('Error uploading file:', err);
-            res.status(500).send('Internal server error');
+            console.error('เกิดข้อผิดพลาดในการอัปโหลดไฟล์:', err);
+            res.status(500).send('ข้อผิดพลาดภายในเซิร์ฟเวอร์');
         } else {
             res.json({
-                message: 'File uploaded',
+                message: 'อัปโหลดไฟล์สำเร็จ',
                 file: req.file
             });
         }
     });
 }
 
-exports.updateProfile = async (req, res) => {
+exports.getPicture = (req, res) => {
+    connection.query('SELECT * FROM `pictures`', 
+        function(err, results, fields) {
+            res.json(results);
+        }
+    );
+}
+
+exports.updatePicture = async (req, res) => {
     try {
         const { no, picture } = req.body;
-        connection.query('UPDATE employees SET picture = ?, updated_date = now() WHERE no = ?',
+        connection.query('UPDATE pictures SET picture = ?, created_date = now() WHERE no = ?',
             [picture, no],function(err, results) {
                 if (err) {
-                    console.error('Error updating Profile:', err);
-                    return res.status(500).send('Internal server error');
+                    console.error('เกิดข้อผิดพลาดในการอัปเดตรูป:', err);
+                    return res.status(500).send('ข้อผิดพลาดภายในเซิร์ฟเวอร์');
                 }
 
                 if (results.affectedRows === 0) {
-                    return res.status(404).send('Profile not found or no changes made');
+                    return res.status(404).send('ไม่พบรูปหรือไม่มีการเปลี่ยนแปลง');
                 }
 
                 res.json({
-                    message: 'Profile updated successfully',
+                    message: 'อัปเดตรูปสำเร็จ',
                     results
                 });
             }
         );
     } catch (error) {
-        console.error('Error updating Profile:', error);
-        res.status(500).send('Internal server error');
+        console.error('เกิดข้อผิดพลาดในการอัปเดตรูป:', error);
+        res.status(500).send('ข้อผิดพลาดภายในเซิร์ฟเวอร์');
     }
 }
 
-exports.deleteProfile = async (req, res) => {
+exports.deletePicture = async (req, res) => {
     try {
         const { no } = req.params;
-        const [employee] = await connection.promise().query('SELECT picture FROM employees WHERE no = ?', [no]);
+        const [photo] = await connection.promise().query('SELECT picture FROM pictures WHERE no = ?', [no]);
 
-        if (employee.length === 0) {
-            return res.status(404).json({ message: 'Employee not found' });
+        if (photo.length === 0) {
+            return res.status(404).json({ message: 'ไม่พบรูปภาพ' });
         }
 
-        const ProfilePath = path.join(__dirname, '../uploads/profile', employee[0].picture);
+        const ProfilePath = path.join(__dirname, '../uploads/profile', photo[0].picture);
 
         if (fs.existsSync(ProfilePath)) {
             fs.unlinkSync(ProfilePath);
         } else {
-            return res.status(404).json({ message: 'Profile not found' });
+            return res.status(404).json({ message: 'ไม่พบรูป' });
         }
 
-        await connection.promise().query('UPDATE employees SET picture = NULL WHERE no = ?', [no]);
+        await connection.promise().query('UPDATE pictures SET picture = NULL WHERE no = ?', [no]);
 
-        res.json({ message: 'Profile deleted successfully' });
+        res.json({ message: 'ลบรูปสำเร็จ' });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: 'Failed to delete Profile', error });
+        res.status(500).json({ message: 'ไม่สามารถลบรูปภาพได้', error });
     }
-};
+}

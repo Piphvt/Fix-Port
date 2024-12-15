@@ -1,6 +1,6 @@
 const { connection } = require('../database');
 
-exports.getFollows = (req, res) => {
+exports.getFollow = (req, res) => {
     connection.query('SELECT * FROM `stocks_follow`',
         function (err, results, fields) {
             res.json(results);
@@ -8,16 +8,7 @@ exports.getFollows = (req, res) => {
     );
 }
 
-exports.getFollow = (req, res) => {
-    const no = req.params.no;
-    connection.query('SELECT * FROM `stocks_follow` WHERE `no` = ?',
-        [no], function (err, results) {
-            res.json(results);
-        }
-    );
-}
-
-exports.getFollowsByResult = (req, res) => {
+exports.getFollowByResult = (req, res) => {
     const result = req.params.no;
     connection.query('SELECT * FROM `stocks_follow` WHERE `result` = ?',
         [result], function (err, results) {
@@ -28,17 +19,16 @@ exports.getFollowsByResult = (req, res) => {
 
 exports.addFollow = async (req, res) => {
     try {
-        const { stock_id, low_price, up_price, type, remark, result, reach, emp_id, created_date, updated_date } = req.body;
+        const { stock_no, low_price, up_price, remark, result, reach, employee_no, created_date, updated_date } = req.body;
         
         const followData = {
-            stock_id,
+            stock_no,
             low_price,
             up_price,
-            type,
             remark,
             result,
             reach,
-            emp_id,
+            employee_no,
             created_date,
             updated_date,
         };
@@ -46,46 +36,57 @@ exports.addFollow = async (req, res) => {
         connection.query('INSERT INTO `stocks_follow` SET ?', [followData], function (err, results) {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ message: "Error adding stock" });
+                return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มข้อมูลการติดตามหุ้น" });
             }
-            res.json({ message: "New Follow added", results });
+            res.json({ message: "เพิ่มข้อมูลการติดตามหุ้นใหม่สำเร็จ", results });
         });
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 };
 
 exports.updateFollow = async (req, res) => {
     try {
-        const { name, set_id, dividend_amount, closing_price, comment, emp_id } = req.body;
+        const { stock_no, reach, up_price, closing_price, remark, employee_no } = req.body;
         const stockId = req.params.no;
-        const [existingFollows] = await connection.promise().query('SELECT * FROM `stocks_follow` WHERE `name` = ? AND `no` != ?', [name, stockId]);
-        if (existingFollows.length > 0) {
-            return res.status(400).json({ message: "Name already exists" });
-        }
         const updatedData = {
-            name,
-            set_id,
-            dividend_amount,
+            stock_no,
+            low_price,
+            up_price,
             closing_price,
-            comment,
-            emp_id,
-            updated_date: new Date()
+            remark,
+            employee_no,
+            created_date: new Date()
         };
 
         connection.query("UPDATE `stocks_follow` SET ? WHERE `no` = ?", [updatedData, stockId], (err, results) => {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ message: "Error updating stock" });
+                return res.status(500).json({ message: "เกิดข้อผิดพลาดในการอัปเดตหุ้น" });
             }
-            res.json({ message: "Follow updated successfully", results });
+            res.json({ message: "อัปเดตข้อมูลการติดตามหุ้นสำเร็จ", results });
         });
 
     } catch (error) {
-        console.log("Update Follow error", error);
-        return res.status(500).json({ message: "Internal server error" });
+        console.log("เกิดข้อผิดพลาดในการอัปเดตการติดตามหุ้น", error);
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
+    }
+}
+
+exports.updateFollowResult = async (req, res) => {
+    try {
+        const { result, reach, employee_no } = req.body;
+        connection.query('UPDATE `employees` SET `result` = ?, `reach` = ?, `employee_no` = ?, `updated_date` = now() WHERE `no` = ?',
+            [result, reach, employee_no, req.params.no], function (err, results) {
+                res.json(results);
+            }
+        );
+        console.log("อัปเดตข้อมูลการติดตามหุ้นสำเร็จ");
+    } catch (error) {
+        console.log("เกิดข้อผิดพลาดในการอัปเดตพนักงาน", error);
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
 
@@ -97,11 +98,10 @@ exports.deleteFollow = (req, res) => {
         }
         );
 
-        console.log("Follow deleted successfully");
+        console.log("ลบข้อมูลการติดตามหุ้นสำเร็จ");
 
     } catch (error) {
-        console.log("Delete Follow error", error);
-        return res.status(500).json({ message: "Internal server error" });
+        console.log("เกิดข้อผิดพลาดในการลบ Follow", error);
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
-

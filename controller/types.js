@@ -1,6 +1,6 @@
 const { connection } = require('../database');
 
-exports.getTypes = (req, res) => {
+exports.getType = (req, res) => {
     connection.query('SELECT * FROM `types`',
         function (err, results, fields) {
             res.json(results);
@@ -8,26 +8,17 @@ exports.getTypes = (req, res) => {
     );
 }
 
-exports.getType = (req, res) => {
-    const no = req.params.no;
-    connection.query('SELECT * FROM `types` WHERE `no` = ?',
-        [no], function (err, results) {
-            res.json(results);
-        }
-    );
-}
-
 exports.addType = async (req, res) => {
     try {
-        const { type, emp_id, created_date, updated_date } = req.body;
+        const { type, employee_no, created_date, updated_date } = req.body;
         connection.query('SELECT * FROM `types` WHERE `type` = ?',
             [type], function (err, results) {
                 if (results.length > 0) {
-                    return res.status(400).json({ message: "Type already exists" });
+                    return res.status(400).json({ message: "ประเภทนี้มีอยู่แล้ว" });
                 } else {
                     const typeData = {
                         type,
-                        emp_id,
+                        employee_no,
                         created_date,
                         updated_date,
                     }
@@ -35,9 +26,9 @@ exports.addType = async (req, res) => {
                         [typeData], function (err, results) {
                             if (err) {
                                 console.error(err);
-                                return res.status(500).json({ message: "Error adding type" });
+                                return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มประเภท" });
                             }
-                            res.json({ message: "New Type added", results });
+                            res.json({ message: "เพิ่มประเภทใหม่สำเร็จ", results });
                         }
                     );
                 }
@@ -46,35 +37,35 @@ exports.addType = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
 
 exports.updateType = async (req, res) => {
     try {
-        const { type, emp_id } = req.body;
+        const { type, employee_no } = req.body;
         const no = req.params.no;
         connection.query('SELECT * FROM `types` WHERE `type` = ? AND no != ?', [type, no], function (err, results) {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ message: "Internal server error" });
+                return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
             }
             if (results.length > 0) {
-                return res.status(400).json({ message: "Type already exists" });
+                return res.status(400).json({ message: "ประเภทนี้มีอยู่แล้ว" });
             }
-            connection.query('UPDATE `types` SET `type` = ?, `emp_id` = ?, `updated_date` = now() WHERE no = ?',
-                [type, emp_id, no], function (err, updateResults) {
+            connection.query('UPDATE `types` SET `type` = ?, `employee_no` = ?, `updated_date` = now() WHERE no = ?',
+                [type, employee_no, no], function (err, updateResults) {
                     if (err) {
                         console.error(err);
-                        return res.status(500).json({ message: "Internal server error" });
+                        return res.status(500).json({ message: "ข้อผิดพลาดในการอัปเดตประเภท" });
                     }
-                    res.json({ message: "Type updated", updateResults });
+                    res.json({ message: "อัปเดตประเภทสำเร็จ", updateResults });
                 }
             );
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
 
@@ -83,12 +74,12 @@ exports.deleteType = (req, res) => {
         const TypeNo = req.params.no;
         connection.query('DELETE FROM `types` WHERE no = ?',
             [TypeNo], function (err, results) {
-                res.json({ message: "Type deleted", results });
+                res.json({ message: "ลบประเภทสำเร็จ", results });
             }
         );
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }

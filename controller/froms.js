@@ -1,6 +1,6 @@
 const { connection } = require('../database');
 
-exports.getFroms = (req, res) => {
+exports.getFrom = (req, res) => {
     connection.query('SELECT * FROM `froms`',
         function (err, results, fields) {
             res.json(results);
@@ -8,26 +8,17 @@ exports.getFroms = (req, res) => {
     );
 }
 
-exports.getFrom = (req, res) => {
-    const no = req.params.no;
-    connection.query('SELECT * FROM `froms` WHERE `no` = ?',
-        [no], function (err, results) {
-            res.json(results);
-        }
-    );
-}
-
 exports.addFrom = async (req, res) => {
     try {
-        const { from, emp_id, created_date, updated_date } = req.body;
+        const { from, employee_no, created_date, updated_date } = req.body;
         connection.query('SELECT * FROM `froms` WHERE `from` = ?',
             [from], function (err, results) {
                 if (results.length > 0) {
-                    return res.status(400).json({ message: "From already exists" });
+                    return res.status(400).json({ message: "ที่มาที่ไปนี้มีอยู่แล้ว" });
                 } else {
                     const fromData = {
                         from,
-                        emp_id,
+                        employee_no,
                         created_date,
                         updated_date,
                     }
@@ -35,9 +26,9 @@ exports.addFrom = async (req, res) => {
                         [fromData], function (err, results) {
                             if (err) {
                                 console.error(err);
-                                return res.status(500).json({ message: "Error adding from" });
+                                return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มที่มาที่ไป" });
                             }
-                            res.json({ message: "New From added", results });
+                            res.json({ message: "เพิ่มข้อมูลที่มาที่ไปใหม่สำเร็จ", results });
                         }
                     );
                 }
@@ -46,35 +37,35 @@ exports.addFrom = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
 
 exports.updateFrom = async (req, res) => {
     try {
-        const { from, emp_id } = req.body;
+        const { from, employee_no } = req.body;
         const no = req.params.no;
         connection.query('SELECT * FROM `froms` WHERE `from` = ? AND no != ?', [from, no], function (err, results) {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ message: "Internal server error" });
+                return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
             }
             if (results.length > 0) {
-                return res.status(400).json({ message: "From already exists" });
+                return res.status(400).json({ message: "ที่มาที่ไปนี้มีอยู่แล้ว" });
             }
-            connection.query('UPDATE `froms` SET `from` = ?, `emp_id` = ?, `updated_date` = now() WHERE no = ?',
-                [from, emp_id, no], function (err, updateResults) {
+            connection.query('UPDATE `froms` SET `from` = ?, `employee_no` = ?, `updated_date` = now() WHERE no = ?',
+                [from, employee_no, no], function (err, updateResults) {
                     if (err) {
                         console.error(err);
-                        return res.status(500).json({ message: "Internal server error" });
+                        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
                     }
-                    res.json({ message: "From updated", updateResults });
+                    res.json({ message: "อัปเดตข้อมูลที่มาที่ไปสำเร็จ", updateResults });
                 }
             );
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
 
@@ -83,12 +74,12 @@ exports.deleteFrom = (req, res) => {
         const FromNo = req.params.no;
         connection.query('DELETE FROM `froms` WHERE no = ?',
             [FromNo], function (err, results) {
-                res.json({ message: "From deleted", results });
+                res.json({ message: "ลบข้อมูลที่มาที่ไปสำเร็จ", results });
             }
         );
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }

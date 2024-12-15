@@ -11,7 +11,7 @@ exports.addBase = async (req, res) => {
         const { base, employee_no, created_date, updated_date } = req.body;
         connection.query('SELECT * FROM `bases` WHERE `base` = ?', [base], function (err, results) {
             if (results.length > 0) {
-                return res.status(400).json({ message: "ฐานข้อมูลนี้มีอยู่แล้ว" });
+                return res.status(400).json({ message: "ฐานทุนนี้มีอยู่แล้ว" });
             } else {
                 const baseData = {
                     base,
@@ -22,9 +22,9 @@ exports.addBase = async (req, res) => {
                 connection.query('INSERT INTO `bases` SET ?', [baseData], function (err, results) {
                     if (err) {
                         console.error(err);
-                        return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มฐานข้อมูล" });
+                        return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มฐานทุน" });
                     }
-                    res.json({ message: "เพิ่มฐานข้อมูลใหม่สำเร็จ", results });
+                    res.json({ message: "เพิ่มฐานทุนใหม่สำเร็จ", results });
                 });
             }
         });
@@ -44,7 +44,7 @@ exports.updateBase = async (req, res) => {
                 return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
             }
             if (results.length > 0) {
-                return res.status(400).json({ message: "ฐานข้อมูลนี้มีอยู่แล้ว" });
+                return res.status(400).json({ message: "ฐานทุนนี้มีอยู่แล้ว" });
             }
             connection.query(
                 'UPDATE `bases` SET `base` = ?, `employee_no` = ?, `updated_date` = now() WHERE no = ?',
@@ -54,7 +54,7 @@ exports.updateBase = async (req, res) => {
                         console.error(err);
                         return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
                     }
-                    res.json({ message: "อัปเดตฐานข้อมูลสำเร็จ", updateResults });
+                    res.json({ message: "อัปเดตฐานทุนสำเร็จ", updateResults });
                 }
             );
         });
@@ -68,7 +68,7 @@ exports.deleteBase = (req, res) => {
     try {
         const BaseNo = req.params.no;
         connection.query('DELETE FROM `bases` WHERE no = ?', [BaseNo], function (err, results) {
-            res.json({ message: "ลบฐานข้อมูลสำเร็จ", results });
+            res.json({ message: "ลบฐานทุนสำเร็จ", results });
         });
     } catch (error) {
         console.error(error);
