@@ -215,11 +215,11 @@ export default {
     },
 
     async fetchDetailData() {
-      this.details = await this.$store.dispatch('api/detail/getDetails');
+      this.details = await this.$store.dispatch('api/detail/getDetail');
     },
 
     async fetchStockData() {
-      this.stocks = await this.$store.dispatch('api/stock/getStocks');
+      this.stocks = await this.$store.dispatch('api/stock/getStock');
     },
 
     getStockNameByNo(stockNo) {

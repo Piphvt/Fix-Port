@@ -496,13 +496,11 @@ export default {
                 });
             }
 
-            // เพิ่มค่า date ลงไปในแต่ละ entry
             this.selectedStockData = filteredData.map(entry => ({
                 ...entry,
-                date,  // เพิ่มค่า date ลงไป
+                date, 
             }));
 
-            // แสดงค่าผลลัพธ์ใน console
             console.log('selectedStockData:', this.selectedStockData);
 
             this.selectedDataType = type || '';
@@ -560,7 +558,7 @@ export default {
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
         },
 
         getEmployeeByNo(empNo) {
@@ -568,16 +566,16 @@ export default {
         },
 
         async fetchCommissionData() {
-            this.commissions = await this.$store.dispatch('api/commission/getCommissions');
+            this.commissions = await this.$store.dispatch('api/commission/getCommission');
         },
 
         async fetchDetailData() {
             try {
                 await this.fetchStockData();
-                this.details = await this.$store.dispatch('api/detail/getDetails');
+                this.details = await this.$store.dispatch('api/detail/getDetail');
 
                 if (Array.isArray(this.details) && this.details.length > 0) {
-                    const transactions = await this.$store.dispatch('api/transaction/getTransactions');
+                    const transactions = await this.$store.dispatch('api/transaction/getTransaction');
                     await this.fetchCommissionData();
 
                     const groupedDetails = this.details.reduce((acc, detail) => {
@@ -809,7 +807,7 @@ export default {
         },
 
         async fetchCustomerData() {
-            this.customers = await this.$store.dispatch('api/customer/getCustomers');
+            this.customers = await this.$store.dispatch('api/customer/getCustomer');
         },
 
         getCustomerByNo(custNo) {
@@ -817,7 +815,7 @@ export default {
         },
 
         async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStocks');
+            this.stocks = await this.$store.dispatch('api/stock/getStock');
         },
 
         getStockByNo(stockNo) {
@@ -825,7 +823,7 @@ export default {
         },
 
         async fetchFromData() {
-            this.froms = await this.$store.dispatch('api/from/getFroms');
+            this.froms = await this.$store.dispatch('api/from/getFrom');
         },
 
         getFromByNo(fromNo) {

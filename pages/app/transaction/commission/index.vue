@@ -221,7 +221,7 @@ export default {
         },
 
         async fetchCommissionData() {
-            this.commissions = await this.$store.dispatch('api/commission/getCommissions')
+            this.commissions = await this.$store.dispatch('api/commission/getCommission')
         },
 
         getSetName(commissionId) {
@@ -230,7 +230,7 @@ export default {
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
         },
 
         getEmployeeName(empId) {

@@ -718,18 +718,16 @@ export default {
 
         recordLog() {
             const log = {
-                employee_no: this.currentItem.fname + ' ' + this.currentItem.lname,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
+                type_no: this.currentItem.no,
+                employee_no: this.$auth.user.no,
                 detail: this.currentAction === 'delete'
                     ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`
                     : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`,
                 type: 4,
-                picture: this.$auth.user.picture || 'Unknown',
                 action: this.currentAction === 'delete'
                     ? 'ลบผู้ใช้งาน'
                     : 'ไม่ลบผู้ใช้งาน',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLogs', log);
         },

@@ -785,7 +785,7 @@ export default {
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
         },
 
         getEmployeeByNo(empNo) {
@@ -793,7 +793,7 @@ export default {
         },
 
         async fetchBaseData() {
-            this.bases = await this.$store.dispatch('api/base/getBases');
+            this.bases = await this.$store.dispatch('api/base/getBase');
         },
 
         getBaseByNo(baseNo) {
@@ -801,7 +801,7 @@ export default {
         },
 
         async fetchTypeData() {
-            this.types = await this.$store.dispatch('api/type/getTypes');
+            this.types = await this.$store.dispatch('api/type/getType');
         },
 
         getTypeByNo(typeNo) {
@@ -811,7 +811,7 @@ export default {
         async fetchDetailData() {
             try {
                 await this.fetchStockData();
-                this.details = await this.$store.dispatch('api/detail/getDetails');
+                this.details = await this.$store.dispatch('api/detail/getDetail');
 
                 if (Array.isArray(this.details) && this.details.length > 0) {
                     for (const detail of this.details) {
@@ -830,7 +830,7 @@ export default {
                             let transactionnumberOfDividends = 0;
 
                             if (detail.created_date) {
-                                const dividendData = await this.$store.dispatch('api/dividend/getDividends', {
+                                const dividendData = await this.$store.dispatch('api/dividend/getDividend', {
                                     stock_id: detail.stock_id,
                                     created_date: detail.created_date
                                 });
@@ -846,7 +846,7 @@ export default {
                                 balance_dividend = detail.amount * detail_total_Dividend.toNumber();
                             }
 
-                            const transactions = await this.$store.dispatch('api/transaction/getTransactions', { stock_detail_id: detail.no });
+                            const transactions = await this.$store.dispatch('api/transaction/getTransaction', { stock_detail_id: detail.no });
 
                             const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_id === detail.no);
                             const type2Transactions = transactions.filter(t => t.type === 2 && t.stock_detail_id === detail.no);
@@ -884,12 +884,12 @@ export default {
 
                             for (const transaction of [...sortedType1Transactions]) {
                                 if (transaction.amount > 0) {
-                                    const commissionData = await this.$store.dispatch('api/commission/getCommissions', { no: transaction.commission_id });
+                                    const commissionData = await this.$store.dispatch('api/commission/getCommission', { no: transaction.commission_id });
                                     const commission = commissionData.length > 0 ? commissionData[0] : null;
                                     let transactiontotalDividend = new Decimal(0);
 
                                     if (commission && transaction.created_date) {
-                                        const dividendData = await this.$store.dispatch('api/dividend/getDividends', {
+                                        const dividendData = await this.$store.dispatch('api/dividend/getDividend', {
                                             stock_id: detail.stock_id,
                                             created_date: transaction.created_date
                                         });
@@ -1011,7 +1011,7 @@ export default {
         },
 
         async fetchCustomerData() {
-            this.customers = await this.$store.dispatch('api/customer/getCustomers');
+            this.customers = await this.$store.dispatch('api/customer/getCustomer');
         },
 
         getCustomerByNo(custNo) {
@@ -1019,7 +1019,7 @@ export default {
         },
 
         async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStocks');
+            this.stocks = await this.$store.dispatch('api/stock/getStock');
         },
 
         getStockByNo(stockNo) {
@@ -1027,7 +1027,7 @@ export default {
         },
 
         async fetchFromData() {
-            this.froms = await this.$store.dispatch('api/from/getFroms');
+            this.froms = await this.$store.dispatch('api/from/getFrom');
         },
 
         getFromByNo(fromNo) {

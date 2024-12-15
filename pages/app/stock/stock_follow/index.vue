@@ -388,7 +388,7 @@ export default {
 
     methods: {
         async fetchSetData() {
-            this.sets = await this.$store.dispatch('api/set/getSets')
+            this.sets = await this.$store.dispatch('api/set/getSet')
         },
 
         getSetName(setId) {
@@ -397,7 +397,7 @@ export default {
         },
 
         async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStocks');
+            this.stocks = await this.$store.dispatch('api/stock/getStock');
         },
 
         getStockName(stockId) {
@@ -406,11 +406,11 @@ export default {
         },
 
         async fetchFollowData() {
-            this.follows = await this.$store.dispatch('api/follow/getFollowsResult', '1');
+            this.follows = await this.$store.dispatch('api/follow/getFollowByResult', '1');
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
         },
 
         getEmployeeName(empId) {

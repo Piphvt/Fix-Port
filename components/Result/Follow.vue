@@ -69,7 +69,7 @@ export default {
     },
     methods: {
         async fetchStockData() {
-            this.fetchstocks = await this.$store.dispatch('api/stock/getStocks');
+            this.fetchstocks = await this.$store.dispatch('api/stock/getStock');
         },
         getStockName(stockId) {
             const stock = this.fetchstocks.find(s => s.no === stockId);

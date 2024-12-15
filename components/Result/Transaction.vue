@@ -85,7 +85,7 @@ export default {
 
     methods: {
         async fetchStockData() {
-            this.fetchstocks = await this.$store.dispatch('api/stock/getStocks');
+            this.fetchstocks = await this.$store.dispatch('api/stock/getStock');
         },
 
         getStockName(stockId) {
@@ -94,7 +94,7 @@ export default {
         },
 
         async fetchCommissionData() {
-            this.fetchcommissions = await this.$store.dispatch('api/commission/getCommissions');
+            this.fetchcommissions = await this.$store.dispatch('api/commission/getCommission');
         },
 
         getCommissionAmount(commissionId) {
@@ -103,7 +103,7 @@ export default {
         },
 
         async fetchDetailData() {
-            this.fetchdetails = await this.$store.dispatch('api/detail/getDetails');
+            this.fetchdetails = await this.$store.dispatch('api/detail/getDetail');
         },
 
         getStockByDetail(DetailId) {

@@ -540,7 +540,7 @@ export default {
 
     methods: {
         async fetchDetailData() {
-            this.details = await this.$store.dispatch('api/detail/getDetails');
+            this.details = await this.$store.dispatch('api/detail/getDetail');
             this.transactions.forEach(transaction => {
                 const detail = this.details.find(detail => detail.no === transaction.stock_detail_id);
                 if (detail) {
@@ -627,7 +627,7 @@ export default {
         },
 
         async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployees');
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
         },
 
         getEmployeeByNo(empNo) {
@@ -635,15 +635,12 @@ export default {
         },
 
         async fetchTransactionData() {
-            this.transactions = await this.$store.dispatch('api/transaction/getTransactions');
+            this.transactions = await this.$store.dispatch('api/transaction/getTransaction');
 
-            // ดึงข้อมูล commission
             const commissionData = await this.fetchCommissionData();
 
-            // ตรวจสอบว่า commissionData มีค่าเป็นอาเรย์
             if (Array.isArray(commissionData)) {
                 this.transactions.forEach(transaction => {
-                    // หา commission ที่ตรงกับ transaction.commission_id
                     const matchingCommission = commissionData.find(c => c.no === transaction.commission_id);
 
                     if (matchingCommission) {
@@ -652,21 +649,20 @@ export default {
                         const vat = comfee * 0.07;
 
                         transaction.commission = matchingCommission.commission;
-                        transaction.result = result; // คำนวณ result
+                        transaction.result = result;
                         transaction.comfee = comfee;
                         transaction.vat = vat;
 
-                        // ตรวจสอบประเภทของ transaction
                         if (transaction.type === 1) {
                             transaction.total = result + comfee + vat;
                         } else if (transaction.type === 2) {
                             transaction.total = result - comfee - vat;
                         } else {
-                            transaction.total = result; // หรือกำหนดค่าเริ่มต้นถ้า type ไม่ตรงกัน
+                            transaction.total = result;
                         }
 
                     } else {
-                        transaction.comfee = 0; // หรือกำหนดค่าเริ่มต้นในกรณีที่ไม่มี commission ตรงกัน
+                        transaction.comfee = 0;
                     }
                 });
             } else {
@@ -677,7 +673,7 @@ export default {
         },
 
         async fetchCustomerData() {
-            this.customers = await this.$store.dispatch('api/customer/getCustomers');
+            this.customers = await this.$store.dispatch('api/customer/getCustomer');
         },
 
         getCustomerByNo(custNo) {
@@ -685,7 +681,7 @@ export default {
         },
 
         async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStocks');
+            this.stocks = await this.$store.dispatch('api/stock/getStock');
             await this.fetchDetailData();
         },
 
@@ -694,7 +690,7 @@ export default {
         },
 
         async fetchFromData() {
-            this.froms = await this.$store.dispatch('api/from/getFroms');
+            this.froms = await this.$store.dispatch('api/from/getFrom');
         },
 
         getFromByNo(fromNo) {
@@ -703,7 +699,7 @@ export default {
 
         async fetchCommissionData() {
             try {
-                const data = await this.$store.dispatch('api/commission/getCommissions');
+                const data = await this.$store.dispatch('api/commission/getCommission');
                 return data || [];
             } catch (error) {
                 console.error("Error fetching commission data:", error);

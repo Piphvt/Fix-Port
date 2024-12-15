@@ -204,7 +204,7 @@ export default {
         },
 
         async fetchCustomerData() {
-            this.customers = await this.$store.dispatch('api/customer/getCustomers');
+            this.customers = await this.$store.dispatch('api/customer/getCustomer');
         },
 
         getCustomerByNo(custNo) {
@@ -212,7 +212,7 @@ export default {
         },
 
         async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStocks');
+            this.stocks = await this.$store.dispatch('api/stock/getStock');
         },
 
         getStockByNo(stockNo) {
@@ -231,7 +231,7 @@ export default {
         },
 
         async fetchFromData() {
-            this.froms = await this.$store.dispatch('api/from/getFroms');
+            this.froms = await this.$store.dispatch('api/from/getFrom');
         },
 
         getFromByNo(fromNo) {

@@ -186,7 +186,7 @@ export default {
 
         async fetchStocksData() {
             try {
-                const response = await this.$store.dispatch('api/stock/getStocks');
+                const response = await this.$store.dispatch('api/stock/getStock');
                 if (response) {
                     this.stocks = response.map(item => ({ no: item.no, name: item.name }));
                 }

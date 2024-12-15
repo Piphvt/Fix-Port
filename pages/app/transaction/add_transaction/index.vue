@@ -181,15 +181,15 @@ export default {
 
     methods: {
         async fetchTransactionData() {
-            this.transactions = await this.$store.dispatch('api/transaction/getTransactions');
+            this.transactions = await this.$store.dispatch('api/transaction/getTransaction');
         },
 
         async fetchDetailData() {
-            this.details = await this.$store.dispatch('api/detail/getDetails');
+            this.details = await this.$store.dispatch('api/detail/getDetail');
         },
 
         async fetchStockData() {
-            const stockData = await this.$store.dispatch('api/stock/getStocks');
+            const stockData = await this.$store.dispatch('api/stock/getStock');
             this.stocks = stockData;
 
             this.withdrawalItems.forEach((item) => {
@@ -212,7 +212,7 @@ export default {
             if (!customerIdentifier) return;
 
             try {
-                const response = await this.$store.dispatch('api/detail/getDetails', { customer_id: customerIdentifier });
+                const response = await this.$store.dispatch('api/detail/getDetail', { customer_id: customerIdentifier });
                 this.detail_amount = response.filter(detail =>
                     detail.customer_id === customerIdentifier || detail.customer_name === customerIdentifier
                 );
@@ -375,7 +375,7 @@ export default {
 
         async fetchCustomerData() {
             try {
-                const response = await this.$store.dispatch('api/customer/getCustomers');
+                const response = await this.$store.dispatch('api/customer/getCustomer');
                 if (response) {
                     this.customers = response.map(item => ({ no: item.no, id: item.id, name: item.nickname }));
                 }
@@ -385,7 +385,7 @@ export default {
 
         async fetchCommissionData() {
             try {
-                const response = await this.$store.dispatch('api/commission/getCommissions');
+                const response = await this.$store.dispatch('api/commission/getCommission');
                 if (response) {
                     this.commissions = response.map(item => ({ no: item.no, name: item.commission }));
                 }

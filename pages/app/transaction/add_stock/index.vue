@@ -134,7 +134,7 @@ export default {
             customer_id: null,
             customer_name: null,
             valid: false,
-            created_date: '', // ตัวแปรเก็บวันที่ที่เลือก
+            created_date: '',
             datePickerMenu: false,
             showModalResult: false,
             withdrawalItems: [{
@@ -168,7 +168,7 @@ export default {
 
     methods: {
         async fetchStockData() {
-            const stockData = await this.$store.dispatch('api/stock/getStocks');
+            const stockData = await this.$store.dispatch('api/stock/getStock');
             this.stocks = stockData;
 
             this.withdrawalItems.forEach((item) => {
@@ -199,7 +199,7 @@ export default {
 
         async fetchFromData() {
             try {
-                const response = await this.$store.dispatch('api/from/getFroms');
+                const response = await this.$store.dispatch('api/from/getFrom');
                 if (response) {
                     this.froms = response.map(item => ({ no: item.no, name: item.from }));
                 }
@@ -289,7 +289,7 @@ export default {
 
         async fetchCustomerData() {
             try {
-                const response = await this.$store.dispatch('api/customer/getCustomers');
+                const response = await this.$store.dispatch('api/customer/getCustomer');
                 if (response) {
                     this.customers = response.map(item => ({ no: item.no, id: item.id, name: item.nickname }));
                 }

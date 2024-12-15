@@ -198,7 +198,7 @@ export default {
 
     async fetchCustomerData() {
       try {
-        this.customers = await this.$store.dispatch('api/customer/getCustomers');
+        this.customers = await this.$store.dispatch('api/customer/getCustomer');
         this.customers = this.customers.map(customer => ({
           value: customer.no,
           text: customer.id,
@@ -217,7 +217,7 @@ export default {
 
     async fetchStockData() {
       try {
-        const fetchedStocks = await this.$store.dispatch('api/stock/getStocks');
+        const fetchedStocks = await this.$store.dispatch('api/stock/getStock');
         this.stocks = fetchedStocks.map(stock => ({
           value: stock.no,
           text: stock.name,
@@ -240,7 +240,7 @@ export default {
 
     async setFromOptions() {
       try {
-        this.froms = await this.$store.dispatch('api/from/getFroms');
+        this.froms = await this.$store.dispatch('api/from/getFrom');
 
         const fromIcons = {
           'หุ้นเก่า': 'mdi-numeric-1',

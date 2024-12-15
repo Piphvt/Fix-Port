@@ -75,7 +75,7 @@ export default {
     },
     methods: {
         async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStocks');
+            this.stocks = await this.$store.dispatch('api/stock/getStock');
         },
 
         getStockByName(stockName) {

@@ -4,7 +4,7 @@ export const actions = {
             .get('follow', data)
             .then((res) => res.data)
     },
-    async getFollowResult({ getters }, no) {
+    async getFollowByResult({ getters }, no) {
         return await this.$axios
             .get(`follow/result/${no}`)
             .then((res) => res.data)
