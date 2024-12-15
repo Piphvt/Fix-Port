@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { getDividend, getDividend, addDividend, updateDividend, deleteDividend } = require('../controller/dividends');
+const { getDividend, addDividend, updateDividend, deleteDividend } = require('../controller/dividends');
 
 router.get('/', getDividend);
 router.post('/', addDividend);
