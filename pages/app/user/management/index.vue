@@ -173,8 +173,8 @@
                         {{ getBaseName(item.base_no) }}
                     </div>
                 </template>
-                <template v-slot:item.emp_id="{ item }">
-                    <div class="text-center">{{ getEmployeeName(item.emp_id) }}</div>
+                <template v-slot:item.employee_no="{ item }">
+                    <div class="text-center">{{ getEmployeeName(item.employee_no) }}</div>
                 </template>
                 <template v-slot:item.updated_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
@@ -200,7 +200,6 @@
                                     <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
                                 </v-list-item>
                             </v-list>
-
                         </v-menu>
                     </div>
                 </template>
@@ -260,14 +259,14 @@ export default {
             modal: {
                 warning: {
                     open: false,
-                    message: 'การป้อนข้อมูลเวลาไม่ถูกต้อง',
+                    message: '',
                 },
                 confirm: {
                     open: false,
                 },
                 complete: {
                     open: false,
-                    message: 'สำเร็จ',
+                    message: '',
                 },
             },
 
@@ -283,6 +282,7 @@ export default {
             selectedItems: [],
             handleConfirm: null,
             isSelectingItems: false,
+            modalConfirmOpen: false,
 
             sortBy: 'updated_date',
             currentAction: '',
@@ -297,7 +297,6 @@ export default {
             endDatePickerMenu: false,
             showSavedSearchesDialog: false,
             showColumnSelector: false,
-            modalConfirmOpen: false,
             editCustomer: false,
             dialog: false,
             sortDesc: true,
@@ -315,7 +314,7 @@ export default {
                 { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
-            visibleColumns: ['updated_date', 'id', 'nickname', 'type_no', 'base_no', 'emp_id', 'detail', 'select'],
+            visibleColumns: ['updated_date', 'id', 'nickname', 'type_no', 'base_no', 'employee_no', 'detail', 'select'],
 
             headers: [
                 {
@@ -367,7 +366,7 @@ export default {
 
                 {
                     text: 'ทำรายการโดย',
-                    value: 'emp_id',
+                    value: 'employee_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -406,32 +405,27 @@ export default {
         },
 
         async deleteSelectedItems() {
-            // ตั้งฟังก์ชันที่จะทำการลบ
+            
             this.handleConfirm = async () => {
                 const selectedIds = this.selectedItems;
 
-                // ลบรายการที่เลือก
                 for (let i = 0; i < selectedIds.length; i++) {
                     try {
-                        // ใช้ API เดิมในการลบ
                         await this.$store.dispatch('api/customer/deleteCustomer', selectedIds[i]);
                     } catch (error) {
                         console.error(`Error deleting customer with id ${selectedIds[i]}:`, error);
                     }
                 }
 
-                // รีเฟรชรายการหลังจากลบ
                 this.$emit('updateItems');
                 this.selectedItems = [];
                 this.isSelectingItems = false;
 
-                // แสดงข้อความและเปิด ModalComplete
                 this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
-                this.modal.complete.open = true; // เปิด ModalComplete
-                this.modalConfirmOpen = false; // ปิด ModalConfirm
+                this.modal.complete.open = true;
+                this.modalConfirmOpen = false;
             };
 
-            // เปิด ModalConfirm
             this.modalConfirmOpen = true;
         },
 
@@ -682,8 +676,8 @@ export default {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
                     } else if (header.value === 'type_no') {
                         rowData[header.value] = this.getTypeName(item.type_no);
-                    } else if (header.value === 'emp_id') {
-                        rowData[header.value] = this.getEmployeeName(item.emp_id);
+                    } else if (header.value === 'employee_no') {
+                        rowData[header.value] = this.getEmployeeName(item.employee_no);
                     } else if (header.value === 'base_no') {
                         rowData[header.value] = this.getBaseName(item.base_no);
                     } else if (header.value !== 'picture' && header.value !== 'detail' && header.value !== 'select') {

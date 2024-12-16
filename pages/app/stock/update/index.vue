@@ -79,7 +79,7 @@ export default {
         },
 
         getStockByName(stockName) {
-            return this.stocks.find(stock => stock.name === stockName);
+            return this.stocks.find(stock => stock.stock === stockName);
         },
 
         goBack() {
@@ -301,6 +301,7 @@ export default {
                 for (const stock of this.csvData) {
                     const stockData = JSON.parse(JSON.stringify(stock));
                     const symbol = stockData.symbol;
+                    
 
                     // ตรวจสอบให้แน่ใจว่ามีค่าที่ถูกต้องก่อนส่งคำขอ
                     if (!symbol) {
@@ -313,10 +314,13 @@ export default {
                     // ตรวจสอบว่าเป็นข้อมูล ClosePrice หรือ DividendYield
                     if (stockData.close !== undefined) {
                         const closePrice = stockData.close;
-                        await this.$store.dispatch('api/stock/updateClosePriceByName', {
-                            emp_id: this.$auth.user.no,
-                            name: symbol,
-                            closing_price: closePrice
+                        const price_created_date = stockData.datetime
+                        await this.$store.dispatch('api/price/addPrice', {
+                            updated_date: moment.tz(new Date(), 'Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
+                            created_date: moment(price_created_date).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
+                            employee_no: this.$auth.user.no,
+                            stock_no: stockId,
+                            price: closePrice,
                         });
                     }
 
@@ -346,19 +350,10 @@ export default {
                             continue; // ข้ามการเพิ่มข้อมูล
                         }
 
-                        // ถ้าไม่มีข้อมูลซ้ำให้เพิ่มข้อมูลใหม่
-                        console.log('Adding new dividend with data:', {
-                            updated_date: moment.tz(new Date(), 'Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
-                            created_date: moment(created_date).tz('Asia/Bangkok').format('YYYY-MM-DD'),
-                            emp_id: this.$auth.user.no,
-                            stock_id: stockId,
-                            dividend: dividend,
-                        });
-
                         await this.$store.dispatch('api/dividend/addDividend', {
                             updated_date: moment.tz(new Date(), 'Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
                             created_date: moment(created_date).tz('Asia/Bangkok').format('YYYY-MM-DD'),
-                            emp_id: this.$auth.user.no,
+                            employee_no: this.$auth.user.no,
                             stock_id: stockId,
                             dividend: dividend,
                         });

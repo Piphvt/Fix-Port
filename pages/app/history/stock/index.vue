@@ -135,15 +135,19 @@
                 item-key="no" :items-per-page="5">
                 <template v-slot:item.picture="{ item }">
                     <v-avatar size="40">
-                        <img :src="`http://localhost:3001/file/profile/${item.picture}`"
-                            @error="onImageError($event, item)" alt="picture" />
+                        <img :src="`http://localhost:3001/file/profile/${getEmployeeByNo(item.employee_no)?.picture}`"
+                            alt="picture" />
                     </v-avatar>
                 </template>
+                <template v-slot:item.type_no="{ item }">
+                    <div class="text-center">{{ getStockByNo(item.type_no)?.stock  }}</div>
+                </template>
                 <template v-slot:item.emp_email="{ item }">
-                    <div class="text-center">{{ item.emp_email }}</div>
+                    <div class="text-center">{{ getEmployeeByNo(item.employee_no)?.email  }}</div>
                 </template>
                 <template v-slot:item.emp_name="{ item }">
-                    <div class="text-center">{{ item.emp_name }}</div>
+                    <div class="text-center">{{ getEmployeeByNo(item.employee_no)?.fname + ' ' +
+                        getEmployeeByNo(item.employee_no)?.lname }}</div>
                 </template>
                 <template v-slot:item.action="{ item }">
                     <div class="text-center" :style="{ color: getActionColor(item.action) }">
@@ -239,6 +243,8 @@ export default {
     async mounted() {
         await this.checkRank();
         await this.fetchLogData();
+        await this.fetchEmployeeData();
+        await this.fetchStockData()
     },
 
     components: {
@@ -255,6 +261,8 @@ export default {
             },
 
             logs: [],
+            employees: [],
+            stocks: [],
 
             selectedName: [],
             selectedEmail: [],
@@ -274,7 +282,7 @@ export default {
             showSavedSearchesDialog: false,
             showColumnSelector: false,
             savedSearches: [],
-            visibleColumns: ['time', 'picture', 'action', 'emp_email', 'stock_id', 'emp_name', 'detail'],
+            visibleColumns: ['time', 'picture', 'action', 'emp_email', 'type_no', 'emp_name', 'detail'],
 
             searchTypes: [
                 { text: 'ทำรายการโดย', value: 'emp_name' },
@@ -325,7 +333,7 @@ export default {
 
                 {
                     text: 'หุ้น/ประเภทหุ้น',
-                    value: 'stock_id',
+                    value: 'type_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -429,6 +437,22 @@ export default {
 
         async fetchLogData() {
             this.logs = await this.$store.dispatch('api/log/getLogByType', '2');
+        },
+
+        async fetchEmployeeData() {
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
+        },
+
+        getEmployeeByNo(empNo) {
+            return this.employees.find(employee => employee.no === empNo);
+        },
+
+        async fetchStockData() {
+            this.stocks = await this.$store.dispatch('api/stock/getStock');
+        },
+
+        getStockByNo(StockNo) {
+            return this.stocks.find(stock => stock.no === StockNo);
         },
 
         getActionColor(action) {

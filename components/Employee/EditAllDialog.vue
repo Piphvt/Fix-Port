@@ -39,7 +39,7 @@
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-select v-model="formData.ranks_id" :items="rankOptions" :item-text="item => item.text"
+                <v-select v-model="formData.rank_no" :items="rankOptions" :item-text="item => item.text"
                   :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกตำแหน่ง']" label="ตำแหน่ง" outlined
                   required>
                   <template v-slot:item="data">
@@ -81,7 +81,7 @@
 
         <v-card-actions class="card-title-center pa-0">
           <v-btn @click="confirm"
-            :disabled="!valid || !hasChanges || !formData.fname || !formData.lname || !formData.phone || !formData.email || !formData.ranks_id || !formData.status"
+            :disabled="!valid || !hasChanges || !formData.fname || !formData.lname || !formData.phone || !formData.email || !formData.rank_no || !formData.status"
             depressed color="#24b224" class="font-weight-medium mr-2 mb-5">
             บันทึก
           </v-btn>
@@ -172,7 +172,7 @@ export default {
   methods: {
     async setRankOptions() {
       try {
-        this.ranks = await this.$store.dispatch('api/rank/getRanks');
+        this.ranks = await this.$store.dispatch('api/rank/getRank');
 
         const rankIcons = {
           'ผู้พัฒนา': 'mdi-account-tie',
@@ -182,8 +182,8 @@ export default {
 
         const allRanks = this.ranks.map(rank => ({
           value: rank.no,
-          text: rank.name,
-          icon: rankIcons[rank.name] || 'mdi-account'
+          text: rank.rank,
+          icon: rankIcons[rank.rank] || 'mdi-account'
         }));
 
         const prioritizedRanks = ['ผู้พัฒนา', 'แอดมิน', 'พนักงานทั่วไป'];
@@ -193,10 +193,10 @@ export default {
           return acc;
         }, []).concat(allRanks.filter(r => !prioritizedRanks.includes(r.text)));
 
-        if (this.data && this.data.ranks_id) {
-          const selectedRank = this.rankOptions.find(r => r.value === this.data.ranks_id);
+        if (this.data && this.data.rank_no) {
+          const selectedRank = this.rankOptions.find(r => r.value === this.data.rank_no);
           this.rankOptions = selectedRank
-            ? [selectedRank, ...this.rankOptions.filter(r => r.value !== this.data.ranks_id)]
+            ? [selectedRank, ...this.rankOptions.filter(r => r.value !== this.data.rank_no)]
             : this.rankOptions;
         }
       } catch (warning) {
@@ -204,8 +204,8 @@ export default {
     },
 
     async confirm() {
-      const currentRank = this.getRankName(this.$auth.user.ranks_id);
-      const targetRank = this.getRankName(this.originalData.ranks_id);
+      const currentRank = this.getRankName(this.$auth.user.rank_no);
+      const targetRank = this.getRankName(this.originalData.rank_no);
       const isSelfEdit = this.$auth.user.email === this.formData.email;
 
       const openWarning = (message) => {
@@ -220,7 +220,7 @@ export default {
         }
       }
 
-      if (isSelfEdit && this.originalData.ranks_id !== this.formData.ranks_id) {
+      if (isSelfEdit && this.originalData.rank_no !== this.formData.rank_no) {
         openWarning('ไม่สามารถเปลี่ยนตำแหน่งของตัวเองได้');
         return;
       }
@@ -239,7 +239,7 @@ export default {
           }
 
           if (targetRank === 'พนักงานทั่วไป') {
-            if (this.originalData.ranks_id !== this.formData.ranks_id) {
+            if (this.originalData.rank_no !== this.formData.rank_no) {
               openWarning('ไม่สามารถเปลี่ยนตำแหน่งของพนักงานทั่วไปได้');
               return;
             }
@@ -306,7 +306,7 @@ export default {
 
     getRankName(rankId) {
       const rank = this.ranks.find(r => r.no === rankId);
-      return rank ? rank.name : 'ไม่ทราบ';
+      return rank ? rank.rank : 'ไม่ทราบ';
     },
 
     setStatusOptions() {
@@ -371,8 +371,8 @@ export default {
         changes.push('อีเมล : ' + this.formData.email + '\n');
       }
 
-      const rankText = this.getRankName(this.formData.ranks_id);
-      const originalRankText = this.getRankName(this.originalData.ranks_id);
+      const rankText = this.getRankName(this.formData.rank_no);
+      const originalRankText = this.getRankName(this.originalData.rank_no);
       if (rankText !== originalRankText) {
         changes.push('ตำแหน่ง : ' + rankText + '\n');
       }
@@ -391,7 +391,7 @@ export default {
         action: 'แก้ไขข้อมูลผู้ใช้งาน',
         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
-      this.$store.dispatch('api/log/addLogs', log);
+      this.$store.dispatch('api/log/addLog', log);
     },
   },
 };

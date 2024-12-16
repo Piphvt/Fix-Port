@@ -152,11 +152,11 @@
                         {{ getTypeText(item.type).text }}
                     </div>
                 </template>
-                <template v-slot:item.stock_id="{ item }">
-                    <div class="text-center">{{ getStockName(item.stock_id) }}</div>
+                <template v-slot:item.stock_no="{ item }">
+                    <div class="text-center">{{ getStockName(item.stock_no) }}</div>
                 </template>
-                <template v-slot:item.emp_id="{ item }">
-                    <div class="text-center">{{ getEmployeeName(item.emp_id) }}</div>
+                <template v-slot:item.employee_no="{ item }">
+                    <div class="text-center">{{ getEmployeeName(item.employee_no) }}</div>
                 </template>
                 <template v-slot:item.created_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.created_date) }}</div>
@@ -255,7 +255,7 @@ export default {
             sortBy: 'created_date',
             currentAction: '',
             searchQuery: '',
-            searchType: 'stock_id',
+            searchType: 'stock_no',
             selectedItemDetail: '',
             startDateTime: '',
             endDateTime: '',
@@ -276,16 +276,16 @@ export default {
             selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['created_date', 'stock_id', 'low_price', 'up_price', 'type', 'remark', 'emp_id', 'detail'],
+            visibleColumns: ['created_date', 'stock_no', 'low_price', 'up_price', 'type', 'remark', 'employee_no', 'detail'],
 
             searchQueries: {
-                'stock_id': [],
-                'emp_id': [],
+                'stock_no': [],
+                'employee_no': [],
             },
 
             searchTypes: [
-                { text: 'ชื่อหุ้น', value: 'stock_id' },
-                { text: 'ทำรายการโดย', value: 'emp_id' },
+                { text: 'ชื่อหุ้น', value: 'stock_no' },
+                { text: 'ทำรายการโดย', value: 'employee_no' },
                 { text: 'เวลา', value: 'created_date' }
             ],
 
@@ -309,7 +309,7 @@ export default {
 
                 {
                     text: 'ชื่อหุ้น',
-                    value: 'stock_id',
+                    value: 'stock_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -332,14 +332,6 @@ export default {
                 },
 
                 {
-                    text: 'ประเภท',
-                    value: 'type',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
                     text: 'หมายเหตุ',
                     value: 'remark',
                     sortable: false,
@@ -349,7 +341,7 @@ export default {
 
                 {
                     text: 'ทำรายการโดย',
-                    value: 'emp_id',
+                    value: 'employee_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -402,7 +394,7 @@ export default {
 
         getStockName(stockId) {
             const stock = this.stocks.find(s => s.no === stockId);
-            return stock ? stock.name : '';
+            return stock ? stock.stock : '';
         },
 
         async fetchFollowData() {
@@ -429,10 +421,10 @@ export default {
         },
 
         getSearchItems(type) {
-            if (type === 'stock_id') {
-                return this.follows.map(follow => this.getStockName(follow.stock_id));
-            } else if (type === 'emp_id') {
-                return this.follows.map(emp => this.getEmployeeName(emp.emp_id));
+            if (type === 'stock_no') {
+                return this.follows.map(follow => this.getStockName(follow.stock_no));
+            } else if (type === 'employee_no') {
+                return this.follows.map(emp => this.getEmployeeName(emp.employee_no));
             }
             return [];
         }
@@ -526,7 +518,7 @@ export default {
             }
             if (this.searchType === 'set_id') {
                 this.addTopicToSearch();
-            } else if (this.searchType === 'stock_id' || this.searchType === 'emp_id') {
+            } else if (this.searchType === 'stock_no' || this.searchType === 'employee_no') {
                 this.addTextToSearch();
             } else {
                 this.savedSearches.push({
@@ -578,15 +570,15 @@ export default {
             const field = follow[search.type];
             let queryMatched = true;
             const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
-            if (search.type === 'emp_id') {
+            if (search.type === 'employee_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const empName = this.getEmployeeName(follow.emp_id);
+                    const empName = this.getEmployeeName(follow.employee_no);
                     return empName.toLowerCase().includes(query.toLowerCase());
                 });
             }
-            else if (search.type === 'stock_id') {
+            else if (search.type === 'stock_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const stockName = this.getStockName(follow.stock_id);
+                    const stockName = this.getStockName(follow.stock_no);
                     return stockName.toLowerCase().includes(query.toLowerCase());
                 });
             } else {
@@ -627,8 +619,8 @@ export default {
                         dataItem['เวลา'] = this.formatDateTime(item.created_date);
                     } else if (header.value === 'set_id') {
                         dataItem['ประเภท'] = this.getSetName(item.set_id);
-                    } else if (header.value === 'emp_id') {
-                        dataItem['ทำรายการโดย'] = this.getEmployeeName(item.emp_id);
+                    } else if (header.value === 'employee_no') {
+                        dataItem['ทำรายการโดย'] = this.getEmployeeName(item.employee_no);
                     } else {
                         dataItem[header.text] = item[header.value];
                     }
@@ -655,23 +647,13 @@ export default {
             }).join('\n');
         },
 
-        maskNewData(data) {
-            if (!data) return '';
-            const length = data.length;
-            if (length <= 4) return data;
-            const firstPart = data.slice(0, 1);
-            const lastPart = data.slice(-1);
-            const maskedPart = '*'.repeat(length - 4)
-            return `${firstPart}${maskedPart}${lastPart}`;
-        },
-
         goBack() {
             window.location.reload();
         },
 
         recordLog() {
             const log = {
-                stock_id: this.currentItem.name,
+                stock_no: this.currentItem.name,
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
                 detail: this.currentAction === 'delete'

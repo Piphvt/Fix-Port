@@ -142,10 +142,10 @@
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
                 item-key="no" :items-per-page="5" style="overflow-x: auto; white-space: nowrap;">
-                <template v-slot:item.emp_id="{ item }">
+                <template v-slot:item.employee_no="{ item }">
                     <div class="text-center">
-                        <span v-if="getEmployeeByNo(item.emp_id)">
-                            {{ getEmployeeByNo(item.emp_id).fname }} {{ getEmployeeByNo(item.emp_id).lname }}
+                        <span v-if="getEmployeeByNo(item.employee_no)">
+                            {{ getEmployeeByNo(item.employee_no).fname }} {{ getEmployeeByNo(item.employee_no).lname }}
                         </span>
                         <span v-else>ไม่ทราบ</span>
                     </div>
@@ -219,7 +219,7 @@
                 </template>
                 <template v-slot:item.detail_amount="{ item }">
                     <div class="text-center" style="color:#ff66c4">
-                        {{ getDetailByNo(item.stock_detail_no)?.amount || 'N/A' }}
+                        {{ (item.resultamount || 0).toLocaleString() }}
                     </div>
                 </template>
                 <template v-slot:item.stock_no="{ item }">
@@ -362,20 +362,20 @@ export default {
             selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['updated_date', 'customer_no', 'customer_name', 'stock_no', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_no', 'emp_id', 'detail'],
+            visibleColumns: ['updated_date', 'customer_no', 'customer_name', 'stock_no', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_no', 'employee_no', 'detail'],
 
             searchQueries: {
                 'customer_no': [],
                 'customer_name': [],
                 'stock_no': [],
-                'emp_id': [],
+                'employee_no': [],
             },
 
             searchTypes: [
                 { text: 'รหัสสมาชิก', value: 'customer_no' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
                 { text: 'ชื่อหุ้นที่ติด', value: 'stock_no' },
-                { text: 'ทำรายการโดย', value: 'emp_id' },
+                { text: 'ทำรายการโดย', value: 'employee_no' },
                 { text: 'ประเภทพอร์ต', value: 'port' },
                 { text: 'เวลา', value: 'updated_date' }
             ],
@@ -501,7 +501,7 @@ export default {
 
                 {
                     text: 'ทำรายการโดย',
-                    value: 'emp_id',
+                    value: 'employee_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -541,11 +541,32 @@ export default {
     methods: {
         async fetchDetailData() {
             this.details = await this.$store.dispatch('api/detail/getDetail');
+
             this.transactions.forEach(transaction => {
                 const detail = this.details.find(detail => detail.no === transaction.stock_detail_no);
+
                 if (detail) {
                     transaction.customer_no = detail.customer_no;
                     transaction.stock_no = detail.stock_no;
+
+                    let amountType1 = 0;
+                    let amountType2 = 0;
+
+                    this.transactions.forEach(t => {
+                        if (t.stock_detail_no === transaction.stock_detail_no && t.type === 1) {
+                            amountType1 += t.amount || 0;
+                        }
+                    });
+
+                    this.transactions.forEach(t => {
+                        if (t.stock_detail_no === transaction.stock_detail_no && t.type === 2) {
+                            amountType2 += t.amount || 0;
+                        }
+                    });
+                    
+                    transaction.resultamount = (detail.amount || 0) + amountType1 - amountType2;
+                } else {
+                    transaction.resultamount = 0;
                 }
             });
         },
@@ -575,7 +596,7 @@ export default {
                 return this.customers.map(customer => customer.nickname);
             } else if (type === 'customer_no') {
                 return this.customers.map(customer => customer.id);
-            } else if (type === 'emp_id') {
+            } else if (type === 'employee_no') {
                 return this.employees.map(employee => employee.fname + ' ' + employee.lname);
             }
             return [];
@@ -763,7 +784,7 @@ export default {
 
             if (this.searchType === 'port') {
                 this.addTopicToSearch();
-            } else if (this.searchType === 'stock_no' || this.searchType === 'customer_name' || this.searchType === 'customer_no' || this.searchType === 'emp_id') {
+            } else if (this.searchType === 'stock_no' || this.searchType === 'customer_name' || this.searchType === 'customer_no' || this.searchType === 'employee_no') {
                 this.addTextToSearch();
             } else {
                 this.savedSearches.push({
@@ -826,9 +847,9 @@ export default {
                     const st = this.getStockByNo(transaction.stock_no);
                     return st.name.toLowerCase().includes(query.toLowerCase());
                 });
-            } else if (search.type === 'emp_id') {
+            } else if (search.type === 'employee_no') {
                 queryMatched = this.searchQueries[search.type].some(query => {
-                    const emp = this.getEmployeeByNo(transaction.emp_id);
+                    const emp = this.getEmployeeByNo(transaction.employee_no);
                     return emp.fname.toLowerCase().includes(query.toLowerCase()) + ' ' + emp.lname.toLowerCase().includes(query.toLowerCase());
                 });
             } else {
@@ -898,8 +919,8 @@ export default {
                         rowData[header.value] = this.getCustomerByNo(item.customer_no).id;
                     } else if (header.value === 'customer_name') {
                         rowData[header.value] = this.getCustomerByNo(item.customer_no).nickname;
-                    } else if (header.value === 'emp_id') {
-                        rowData[header.value] = this.getEmployeeByNo(item.emp_id).fname + ' ' + this.getEmployeeByNo(item.emp_id).lname;
+                    } else if (header.value === 'employee_no') {
+                        rowData[header.value] = this.getEmployeeByNo(item.employee_no).fname + ' ' + this.getEmployeeByNo(item.employee_no).lname;
                     } else if (header.value !== 'detail' && header.value !== 'action') {
                         rowData[header.value] = item[header.value];
                     }

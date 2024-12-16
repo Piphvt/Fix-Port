@@ -27,6 +27,7 @@ const detailRoutes = require('./routes/detail');
 const transactionRoutes = require('./routes/transaction');
 const commissionRoutes = require('./routes/commission');
 const dividendRoutes = require('./routes/dividend');
+const priceRoutes = require('./routes/price');
 const followRoutes = require('./routes/follow');
 
 app.use(cors({
@@ -57,6 +58,7 @@ app.use('/detail', detailRoutes);
 app.use('/transaction', transactionRoutes);
 app.use('/commission', commissionRoutes);
 app.use('/dividend', dividendRoutes);
+app.use('/price', priceRoutes);
 app.use('/follow', followRoutes);
 
 app.get('/', (req, res) => {

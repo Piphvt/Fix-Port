@@ -2,6 +2,10 @@
 
     <div>
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
+        <ModalWarning :open="modal.warning.open" :message="modal.warning.message" :warning.sync="modal.warning.open" />
+        <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
+        <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
+            :complete.sync="modal.complete.open" :method="goBack" />
 
         <v-card flat>
             <v-container>
@@ -139,6 +143,13 @@
                             alt="picture" />
                     </v-avatar>
                 </template>
+                <template v-slot:item.select="{ item }">
+                    <div class="text-center"
+                        style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                        <v-checkbox v-if="isSelectingItems" v-model="selectedItems" :value="item.no"
+                            style="transform: scale(1);" />
+                    </div>
+                </template>
                 <template v-slot:item.emp_email="{ item }">
                     <div class="text-center">{{ getEmployeeByNo(item.employee_no)?.email }}</div>
                 </template>
@@ -164,7 +175,30 @@
                 <template v-slot:item.created_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.created_date) }}</div>
                 </template>
+                <template v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" v-slot:item.edit="{ item }">
+                    <div class="text-center">
+                        <v-menu offset-y>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
+                            </template>
+                            <v-list class="custom-list">
+                                <v-list-item @click="toggleSelectItems" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </div>
+                </template>
             </v-data-table>
+            <div class="text-center">
+                <v-btn v-if="isSelectingItems && selectedItems.length > 0" color="red" @click="deleteSelectedItems"
+                    class="mb-4" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-icon left color="white">mdi-delete</v-icon> ลบ
+                </v-btn>
+            </div>
         </v-card>
 
         <v-dialog v-model="dialog" max-width="300px">
@@ -264,7 +298,18 @@ export default {
             modal: {
                 error: {
                     open: false,
-                    message: 'การป้อนข้อมูลเวลาไม่ถูกต้อง',
+                    message: '',
+                },
+                warning: {
+                    open: false,
+                    message: '',
+                },
+                confirm: {
+                    open: false,
+                },
+                complete: {
+                    open: false,
+                    message: '',
                 },
             },
 
@@ -274,6 +319,11 @@ export default {
             selectedName: [],
             selectedEmail: [],
             selectedAction: [],
+
+            selectedItems: [],
+            handleConfirm: null,
+            isSelectingItems: false,
+            modalConfirmOpen: false,
 
             startDateTime: '',
             endDateTime: '',
@@ -297,9 +347,16 @@ export default {
                 { text: 'เวลา', value: 'created_date' }
             ],
 
-            visibleColumns: ['created_date', 'picture', 'action', 'emp_email', 'emp_id', 'emp_name', 'detail'],
+            visibleColumns: ['select','created_date', 'picture', 'action', 'emp_email', 'emp_id', 'emp_name', 'detail','edit'],
 
             headers: [
+                {
+                    text: '',
+                    value: 'select',
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
                 {
                     text: 'เวลา',
                     value: 'created_date',
@@ -354,6 +411,14 @@ export default {
                     align: 'center',
                     cellClass: 'text-center',
                 },
+
+                {
+                    text: '',
+                    value: 'edit',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
             ],
         };
     },
@@ -385,6 +450,39 @@ export default {
     },
 
     methods: {
+        goBack() {
+            window.location.reload();
+        },
+
+        toggleSelectItems() {
+            this.isSelectingItems = !this.isSelectingItems;
+        },
+
+        async deleteSelectedItems() {
+
+            this.handleConfirm = async () => {
+                const selectedIds = this.selectedItems;
+
+                for (let i = 0; i < selectedIds.length; i++) {
+                    try {
+                        await this.$store.dispatch('api/log/deleteLog', selectedIds[i]);
+                    } catch (error) {
+                        console.error(`Error deleting customer with id ${selectedIds[i]}:`, error);
+                    }
+                }
+
+                this.$emit('updateItems');
+                this.selectedItems = [];
+                this.isSelectingItems = false;
+
+                this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
+                this.modal.complete.open = true;
+                this.modalConfirmOpen = false;
+            };
+
+            this.modalConfirmOpen = true;
+        },
+
         getDetailTitle(action) {
             // เพิ่มฟังก์ชันเพื่อคืนค่าชื่อหัวเรื่องตาม action
             if (['เข้าสู่ระบบ', 'ออกจากระบบ', 'อนุมัติผู้ใช้งาน', 'ไม่อนุมัติผู้ใช้งาน', 'ลบผู้ใช้งาน'].includes(action)) {
@@ -397,9 +495,9 @@ export default {
 
         getSearchItems(type) {
             if (type === 'emp_name') {
-                return this.logs.map(log => log.emp_name);
+                return this.logs.map(log => this.getEmployeeByNo(log.employee_no)?.fname + ' ' + this.getEmployeeByNo(log.employee_no)?.lname);
             } else if (type === 'emp_email') {
-                return this.logs.map(log => log.emp_email);
+                return this.logs.map(log => this.getEmployeeByNo(log.employee_no)?.email);
             } else if (type === 'action') {
                 return this.logs.map(log => log.action);
             }
@@ -543,21 +641,27 @@ export default {
 
         applySearchFilter(log, search) {
             let queryMatched = true;
-            const field = log[search.type];
 
-            if (Array.isArray(search.query)) {
-                queryMatched = search.query.some(query => {
-                    const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
-                    return lowerCaseField.includes(query.toLowerCase());
-                });
-            } else if (typeof search.query === 'string') {
-                const searchQuery = search.query.toLowerCase();
-                queryMatched = typeof field === 'string' && field.toLowerCase().includes(searchQuery);
+            let field;
+            if (search.type === 'emp_name') {
+                field = this.getEmployeeByNo(log.employee_no)?.fname + ' ' + this.getEmployeeByNo(log.employee_no)?.lname;
+            } else if (search.type === 'emp_email') {
+                field = this.getEmployeeByNo(log.employee_no)?.email;
             } else {
-                queryMatched = false;
+                field = log[search.type];
             }
 
-            const timeMatched = search.type === 'created_date'
+            if (search.type === 'emp_name' || search.type === 'emp_email' || search.type === 'action') {
+                queryMatched = search.query.some(query => {
+                    const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
+                    return lowerCaseField === query.toLowerCase();
+                });
+            } else {
+                const searchQuery = search.query.toLowerCase();
+                queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
+            }
+
+            const timeMatched = search.type === 'updated_date'
                 ? this.checkTimeRange(log, search)
                 : true;
 
@@ -749,7 +853,11 @@ export default {
 }
 
 .custom-list-item {
-    padding: 0 0;
+    padding: 0.1px 8px;
+}
+
+.custom-list {
+    padding: 0.4px 2px;
 }
 
 .v-list-item__content {

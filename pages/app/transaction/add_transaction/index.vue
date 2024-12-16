@@ -4,8 +4,8 @@
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
         <TransactionCreateResult :open="showModalResult" :detail_amount="withdrawalItems"
-            :stocks="withdrawalItems.map(item => ({ stock_id: item.stock_id }))" :customers="customers"
-            :customer_id="customer_id" :customer_name="customer_name" :type="type" @confirm="confirmAndAddDetails"
+            :stocks="withdrawalItems.map(item => ({ stock_no: item.stock_no }))" :customers="customers"
+            :customer_no="customer_no" :customer_name="customer_name" :type="type" @confirm="confirmAndAddDetails"
             @cancel="showModalResult = false" @update:open="showModalResult = $event" />
 
         <v-card class="custom-card" flat>
@@ -24,7 +24,7 @@
                         item-text="name" item-value="no" label="ชื่อลูกค้า" dense outlined clearable
                         :rules="[(v) => !!v || 'กรุณากรอกชื่อลูกค้า']">
                     </v-autocomplete>
-                    <v-autocomplete v-else-if="searchBy === 'customer_id'" v-model="customer_id" :items="customers"
+                    <v-autocomplete v-else-if="searchBy === 'customer_no'" v-model="customer_no" :items="customers"
                         item-text="id" item-value="no" label="รหัสลูกค้า" dense outlined clearable
                         :rules="[(v) => !!v || 'กรุณากรอกรหัสลูกค้า']">
                     </v-autocomplete>
@@ -36,7 +36,7 @@
                 <v-form>
                     <v-row class="mb-0 mt-0 pa-0" v-for="(item, index) in withdrawalItems" :key="index" align="center">
                         <v-col cols="2" class="ml-6">
-                            <v-autocomplete v-model="item.stock_id" :items="detail_amount" item-text="name"
+                            <v-autocomplete v-model="item.stock_no" :items="detail_amount" item-text="name"
                                 item-value="no" label="ชื่อหุ้น" dense outlined
                                 :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable @change="updateStockData(item)">
                             </v-autocomplete>
@@ -55,7 +55,7 @@
                         </v-col>
 
                         <v-col cols="2">
-                            <v-autocomplete v-model="item.commission_id" :items="commissions" item-text="name"
+                            <v-autocomplete v-model="item.commission_no" :items="commissions" item-text="name"
                                 item-value="no" label="ค่าธรรมเนียม" dense outlined clearable
                                 :rules="[(v) => !!v || 'กรุณากรอกค่าธรรมเนียม']">
                             </v-autocomplete>
@@ -114,7 +114,7 @@ export default {
     },
 
     watch: {
-        customer_id: {
+        customer_no: {
             handler: 'fetchDetailAmountData',
             immediate: true
         },
@@ -136,19 +136,19 @@ export default {
                     message: ''
                 },
             },
-            searchBy: 'customer_id',
+            searchBy: 'customer_no',
             searchOptions: [
-                { text: 'รหัสลูกค้า', value: 'customer_id' },
+                { text: 'รหัสลูกค้า', value: 'customer_no' },
                 { text: 'ชื่อลูกค้า', value: 'customer_name' }
             ],
-            customer_id: null,
+            customer_no: null,
             customer_name: null,
 
             valid: false,
             showModalResult: false,
             withdrawalItems: [{
-                stock_id: null, dividend_amount: null, price: null, amount: null,
-                closing_price: null, type: 2, commission_id: 2,
+                stock_no: null, dividend_amount: null, price: null, amount: null,
+                closing_price: null, type: 2, commission_no: 2,
             }],
 
             customers: [],
@@ -164,13 +164,13 @@ export default {
     computed: {
         isFormValid() {
             const isCustomerNameValid = this.searchBy === 'customer_name' ? this.customer_name : true;
-            const isCustomerIdValid = this.searchBy === 'customer_id' ? this.customer_id : true;
+            const isCustomerIdValid = this.searchBy === 'customer_no' ? this.customer_no : true;
 
             return (
                 isCustomerNameValid &&
                 isCustomerIdValid &&
                 this.withdrawalItems.every(item =>
-                    this.isStockValid(item.stock_id) &&
+                    this.isStockValid(item.stock_no) &&
                     this.isPriceValid(item.price) &&
                     this.isAmountValid(item.amount) &&
                     this.isAmountValid(item.type)
@@ -193,8 +193,8 @@ export default {
             this.stocks = stockData;
 
             this.withdrawalItems.forEach((item) => {
-                if (item.stock_id) {
-                    const stock = stockData.find(stock => stock.no === item.stock_id);
+                if (item.stock_no) {
+                    const stock = stockData.find(stock => stock.no === item.stock_no);
                     if (stock) {
                         item.dividend_amount = stock.dividend_amount;
                         item.closing_price = stock.closing_price;
@@ -208,23 +208,23 @@ export default {
 
         async fetchDetailAmountData() {
             this.detail_amount = [];
-            const customerIdentifier = this.customer_id || this.customer_name;
+            const customerIdentifier = this.customer_no || this.customer_name;
             if (!customerIdentifier) return;
 
             try {
-                const response = await this.$store.dispatch('api/detail/getDetail', { customer_id: customerIdentifier });
+                const response = await this.$store.dispatch('api/detail/getDetail', { customer_no: customerIdentifier });
                 this.detail_amount = response.filter(detail =>
-                    detail.customer_id === customerIdentifier || detail.customer_name === customerIdentifier
+                    detail.customer_no === customerIdentifier || detail.customer_name === customerIdentifier
                 );
 
                 await this.fetchStockData();
                 await this.fetchTransactionData();
 
                 this.detail_amount = this.detail_amount.map(detail => {
-                    const stock = this.stocks.find(stock => stock.no === detail.stock_id);
+                    const stock = this.stocks.find(stock => stock.no === detail.stock_no);
 
                     const relatedTransactions = this.transactions.filter(
-                        transaction => transaction.stock_detail_id === detail.no
+                        transaction => transaction.stock_detail_no === detail.no
                     );
 
                     const remainingAmount = relatedTransactions.reduce((total, transaction) => {
@@ -242,7 +242,7 @@ export default {
 
                     return {
                         ...detail,
-                        name: stock ? `${stock.name} (${remainingAmount.toLocaleString(2)})` : 'ไม่พบหุ้น',
+                        name: stock ? `${stock.stock} (${remainingAmount.toLocaleString(2)})` : 'ไม่พบหุ้น',
                         remainingAmount,
                     };
                 }).filter(detail => detail !== null);
@@ -254,16 +254,16 @@ export default {
 
 
         updateStockData(item) {
-            const stockDetail = this.detail_amount.find(d => d.no === item.stock_id);
+            const stockDetail = this.detail_amount.find(d => d.no === item.stock_no);
             if (stockDetail) {
-                item.stock_detail_id = stockDetail.no;
+                item.stock_detail_no = stockDetail.no;
             } else {
-                item.stock_detail_id = null;
+                item.stock_detail_no = null;
             }
         },
 
-        isStockValid(stock_id) {
-            return stock_id !== null && stock_id !== '';
+        isStockValid(stock_no) {
+            return stock_no !== null && stock_no !== '';
         },
 
         isPriceValid(price) {
@@ -309,13 +309,13 @@ export default {
             let isTransactionAdded = false;
 
             for (const transaction of this.withdrawalItems) {
-                const stock = this.stocks.find(stock => stock.no === transaction.stock_id);
-                const stockDetailId = transaction.stock_detail_id;
+                const stock = this.stocks.find(stock => stock.no === transaction.stock_no);
+                const stockDetailId = transaction.stock_detail_no;
 
                 let from_id = 3;
                 if (transaction.type === 2) {
                     const matchingDetail = this.details.find(d => d.no === stockDetailId);
-                    const matchingTransactions = this.transactions.filter(t => t.stock_detail_id === stockDetailId);
+                    const matchingTransactions = this.transactions.filter(t => t.stock_detail_no === stockDetailId);
 
                     const totalBuyAmount = matchingTransactions
                         .filter(t => t.type === 1)
@@ -338,11 +338,11 @@ export default {
 
                 try {
                     await this.$store.dispatch('api/transaction/addTransaction', {
-                        stock_detail_id: stockDetailId,
+                        stock_detail_no: stockDetailId,
                         type: transaction.type,
                         price: parseFloat(transaction.price),
                         amount: parseFloat(transaction.amount),
-                        commission_id: transaction.commission_id,
+                        commission_no: transaction.commission_no,
                         from_id: from_id,
                         emp_id: this.$auth.user.no,
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
@@ -395,9 +395,9 @@ export default {
 
         addProduct() {
             this.withdrawalItems.push({
-                stock_id: null,
+                stock_no: null,
                 name: '',
-                commission_id: 2,
+                commission_no: 2,
                 dividend_amount: null,
                 closing_price: null,
                 type: 2,
