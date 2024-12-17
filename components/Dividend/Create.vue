@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="isOpen" @close="updateOpen(false)" max-width="400" max-height="300">
+    <v-dialog v-model="isOpen" @close="updateOpen(false)" max-width="400">
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
@@ -7,14 +7,13 @@
 
         <v-card class="custom-card" flat>
             <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon class="little-icon" color="#24b224">mdi-basket-plus</v-icon>&nbsp;
-                <h3 class="mb-0">เพิ่มจำนวนปันผล</h3>
+                <v-icon color="#24b224">mdi-basket-plus</v-icon>&nbsp;
+                <h3 class="custom-title">เพิ่มเงินปันผล</h3>
             </v-card-title>
-
-            <v-form ref="form" v-model="isFormValid" lazy-validation>
-                <v-container>
+            <v-card-text>
+                <v-form ref="form" v-model="isFormValid" lazy-validation>
                     <v-row>
-                        <v-col cols="5" sm="11" class="ml-4 mr-4 mt-2 pa-0">
+                        <v-col cols="5" sm="11" class="pa-0 ml-4">
                             <v-menu ref="datePickerMenu" v-model="datePickerMenu" :close-on-content-click="false"
                                 transition="scale-transition" offset-y min-width="auto">
                                 <template v-slot:activator="{ on, attrs }">
@@ -26,29 +25,32 @@
                                     locale="th"></v-date-picker>
                             </v-menu>
                         </v-col>
-                        <v-col cols="5" sm="5" class="pa-0 ml-4">
+                        <v-col cols="6" sm="5" class="pa-0 ml-4 mr-8">
                             <v-autocomplete v-model="stock_no" :items="stocks" item-text="name" item-value="no"
                                 label="ชื่อหุ้น" dense outlined :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable>
                             </v-autocomplete>
                         </v-col>
-                        <v-col cols="5" sm="5" class="pa-0 mr-4 ml-8">
-                            <v-text-field v-model="newStockType" label="จำนวนปันผล" dense outlined
-                                :rules="[(v) => !!v || 'กรุณากรอกจำนวนปันผล']" required>
-                            </v-text-field>
+                        <v-col cols="6" sm="5" class="pa-0">
+                            <v-text-field v-model="dividend" :rules="[
+                                (v) => !!v || 'โปรดกรอกเงินปันผล',
+                                (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
+                            ]" label="เงินปันผล" outlined dense required />
                         </v-col>
+
                     </v-row>
-                    <v-row>
-                        <v-col cols="12" class="text-center pa-0">
-                            <v-btn @click="confirm" :disabled="!isFormValid" color="#24b224" class="mb-5">
-                                ยืนยัน
-                            </v-btn>
-                            <v-btn @click="cancel" color="#e50211" class="ml-2 mb-5">
-                                ยกเลิก
-                            </v-btn>
-                        </v-col>
-                    </v-row>
-                </v-container>
-            </v-form>
+                </v-form>
+                <v-card-actions class="card-title-center pa-0">
+                    <v-col cols="12" class="text-center pa-0">
+                        <v-btn @click="confirm" :disabled="!isFormValid || !selectedDate || !stock_no || !dividend"
+                            color="#24b224">
+                            ยืนยัน
+                        </v-btn>
+                        <v-btn @click="cancel" color="#e50211" class="ml-2">
+                            ยกเลิก
+                        </v-btn>
+                    </v-col>
+                </v-card-actions>
+            </v-card-text>
         </v-card>
     </v-dialog>
 </template>
@@ -72,7 +74,7 @@ export default {
         return {
             stock_no: '',
             stocks: [],
-            newStockType: '',
+            dividend: '',
             isOpen: this.open,
             isFormValid: false,
             selectedDate: '',
@@ -115,7 +117,7 @@ export default {
                 this.cancel();
             }
         },
-        
+
         updateOpen(val) {
             this.isOpen = val;
             this.$emit('update:open', val);
@@ -125,7 +127,7 @@ export default {
         },
 
         async submitForm() {
-            if (this.newStockType.trim() === '') {
+            if (this.dividend.trim() === '') {
                 this.modal.error.message = 'กรุณากรอกข้อมูลให้ครบถ้วน';
                 this.modal.error.open = true;
                 return;
@@ -135,7 +137,7 @@ export default {
                 const updated_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const response = await this.$store.dispatch('api/dividend/addDividend', {
                     stock_no: this.stock_no,
-                    dividend: this.newStockType,
+                    dividend: this.dividend,
                     employee_no,
                     created_date: this.selectedDate,
                     updated_date,
@@ -146,7 +148,7 @@ export default {
                 this.recordLog();
                 this.stock_no = '';
                 this.selectedDate = '';
-                this.newStockType = '';
+                this.dividend = '';
                 this.$emit('update:open', false);
             } catch (error) {
                 this.modal.error.message = 'มีบางอย่างผิดพลาด';
@@ -161,19 +163,23 @@ export default {
             }
         },
         cancel() {
-            this.newStockType = '';
+            this.dividend = '';
             this.$emit('update:open', false);
         },
         recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
+            const stockName = this.stocks.find(stock => stock.no === this.stock_no)?.name
             const log = {
-                stock_no: this.newStockType,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
-                detail: 'ไม่มีข้อมูลเพิ่มเติม',
+                action: 'เพิ่มเงินปันผลหุ้นใหม่',
+                name: stockName,
+                detail: 'วันที่จ่ายเงินปันผล : ' + this.selectedDate + '\nเงินปันผล : ' + this.dividend,
                 type: 2,
-                picture: this.$auth.user.picture || 'Unknown',
-                action: 'เพิ่มประเภทหุ้นใหม่',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLog', log);
         },
@@ -182,11 +188,14 @@ export default {
 </script>
 
 <style scoped>
-.custom-container {
-    overflow-y: hidden;
-    overflow-x: hidden;
-    padding-top: 6px;
-    /* หรือค่าที่ต้องการ */
-    padding-bottom: 6px;
+.custom-title {
+    font-size: 1rem;
+}
+
+.card-title-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 </style>

@@ -542,8 +542,11 @@ export default {
                 return '#ff5757';
             } else if (action === 'แก้ไขข้อมูลประเภทหุ้น') {
                 return '#ff66c4';
-            }
-            else {
+            } else if (action === 'ลบเงินปันผลหุ้น') {
+                return '#ff914d';
+            } else if (action === 'เพิ่มเงินปันผลหุ้นใหม่') {
+                return '#8c52ff';
+            } else {
                 return 'inherit';
             }
         },

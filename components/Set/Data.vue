@@ -6,6 +6,7 @@
                     @update:confirm="modalConfirmOpen = false" />
                 <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
                     :complete.sync="modal.complete.open" :method="goBack" />
+                <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
                 <SetCreate :open="createSetOpen" @update:open="createSetOpen = false" />
                 <SetEdit :open="editSet" :data="editAllData" @update:edit="editSet = false" />
             </div>
@@ -71,7 +72,7 @@ export default {
     data() {
         return {
             modal: {
-                warning: {
+                error: {
                     open: false,
                     message: '',
                 },
@@ -141,11 +142,12 @@ export default {
             if (this.currentAction === 'delete') {
                 try {
                     await this.$store.dispatch('api/set/deleteSet', this.currentItem.no);
-                    this.modal.complete.message = 'ลบเงินปันผลนี้เรียบร้อยแล้ว';
+                    this.modal.complete.message = 'ลบประเภทหุ้นนี้เรียบร้อยแล้ว';
                     this.modal.complete.open = true;
-                } catch (warning) {
-                    this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
-                    this.modal.complete.open = true;
+                    this.recordLog();
+                } catch (error) {
+                    this.modal.error.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
+                    this.modal.error.open = true;
                 }
             }
             this.modalConfirmOpen = false;
@@ -191,6 +193,22 @@ export default {
             } else {
                 return { text: '', color: 'inherit' };
             }
+        },
+        recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
+            const log = {
+                action: 'ลบประเภทหุ้น',
+                name: this.currentItem.set,
+                detail: 'ไม่มีข้อมูลเพิ่มเติม',
+                type: 2,
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+            };
+            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

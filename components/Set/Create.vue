@@ -5,9 +5,9 @@
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
         <ModalConfirm :open="modal.confirm.open" :confirm.sync="modal.confirm.open" :method="submitForm" />
 
-        <v-card class="custom-card" flat>
+        <v-card flat>
             <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon class="little-icon" color="#24b224">mdi-archive-plus</v-icon>&nbsp;
+                <v-icon color="#24b224">mdi-archive-plus</v-icon>&nbsp;
                 <h3 class="mb-0 custom-title">เพิ่มประเภทหุ้น</h3>
             </v-card-title>
             <v-card-text>

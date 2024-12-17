@@ -1,13 +1,12 @@
 <template>
-    <v-dialog v-model="dialog" max-width="500px">
+    <v-dialog v-model="dialog" max-width="600px">
         <v-card>
             <div>
                 <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen"
                     @update:confirm="modalConfirmOpen = false" />
-                <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen"
-                    @update:confirm="modalConfirmOpen = false" />
                 <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
                     :complete.sync="modal.complete.open" :method="goBack" />
+                <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
                 <DividendCreate :open="createDividendOpen" @update:open="createDividendOpen = false" />
                 <DividendEdit :open="editDividend" :data="editAllData" @update:edit="editDividend = false" />
             </div>
@@ -25,6 +24,9 @@
                     </template>
                     <template v-slot:item.created_date="{ item }">
                         <td class="text-center">{{ formatDateTime(item.created_date) }}</td>
+                    </template>
+                    <template v-slot:item.employee_no="{ item }">
+                        <td class="text-center">{{ getEmployeeName(item.employee_no) }}</td>
                     </template>
                     <template v-slot:item.detail="{ item }">
                         <div class="text-center">
@@ -75,7 +77,7 @@ export default {
     data() {
         return {
             modal: {
-                warning: {
+                error: {
                     open: false,
                     message: '',
                 },
@@ -90,6 +92,7 @@ export default {
 
             dividends: [],
             stocks: [],
+            employees: [],
             filteredDividends: [],
 
             currentAction: '',
@@ -126,6 +129,14 @@ export default {
                 },
 
                 {
+                    text: 'ทำรายการโดย',
+                    value: 'employee_no',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
                     text: '',
                     value: 'detail',
                     sortable: false,
@@ -152,6 +163,7 @@ export default {
     async mounted() {
         await this.fetchDividendData();
         await this.fetchStockData();
+        await this.fetchEmployeeData();
         this.filterDividends();
     },
 
@@ -175,12 +187,12 @@ export default {
             if (this.currentAction === 'delete') {
                 try {
                     await this.$store.dispatch('api/dividend/deleteDividend', this.currentItem.no);
-                    this.modal.complete.message = 'ลบเงินปันผลนี้เรียบร้อยแล้ว';
                     this.recordLog();
+                    this.modal.complete.message = 'ลบเงินปันผลนี้เรียบร้อยแล้ว';
                     this.modal.complete.open = true;
-                } catch (warning) {
-                    this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
-                    this.modal.complete.open = true;
+                } catch (error) {
+                    this.modal.error.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
+                    this.modal.error.open = true;
                 }
             }
             this.modalConfirmOpen = false;
@@ -197,7 +209,7 @@ export default {
 
         formatDateTime(date) {
             if (moment(date).isValid()) {
-                return moment(date).format('DD/MM/YYYY');
+                return moment(date).format('YYYY-MM-DD');
             }
             return 'Invalid Date';
         },
@@ -209,6 +221,32 @@ export default {
         getStockName(stockNo) {
             const stock = this.stocks.find(s => s.no === stockNo);
             return stock ? stock.stock : '';
+        },
+
+        async fetchEmployeeData() {
+            this.employees = await this.$store.dispatch('api/employee/getEmployee')
+        },
+
+        getEmployeeName(employeeNo) {
+            const employee = this.employees.find(e => e.no === employeeNo);
+            return employee ? employee.fname + ' ' + employee.lname : '';
+        },
+
+        recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
+            const log = {
+                action: 'ลบเงินปันผลหุ้น',
+                name: this.getStockName(this.currentItem.stock_no),
+                detail: 'วันที่จ่ายเงินปันผล : ' + this.formatDateTime(this.currentItem.created_date) + '\nเงินปันผล : ' + this.currentItem.dividend,
+                type: 2,
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+            };
+            this.$store.dispatch('api/log/addLog', log);
         },
     }
 };
