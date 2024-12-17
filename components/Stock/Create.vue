@@ -197,13 +197,10 @@ export default {
             const Employee_Picture = this.$auth.user.picture;
             const details = this.withdrawalItems.map((item, index) => {
                 const setName = this.sets.find(set => set.no === item.set_no)?.name || 'ยังไม่ระบุ';
-                return `หุ้นที่ ${index + 1}\n` +
-                    `ชื่อ : ${item.stock || 'ยังไม่ระบุ'}\n` +
-                    `ประเภท : ${setName}`;
+                return `หุ้นที่ ${index + 1}\n` +`ชื่อ : ${item.stock || 'ยังไม่ระบุ'}\n` +`ประเภท : ${setName}`;
             }).join('\n\n');
             const log = {
                 action: 'เพิ่มหุ้นใหม่',
-                name: this.newStockType,
                 detail: details.trim(),
                 type: 2,
                 employee_name: Employee_Name,

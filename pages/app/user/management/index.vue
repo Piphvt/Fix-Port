@@ -6,6 +6,7 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <CustomerEdit :open="editCustomer" :data="editAllData" @update:edit="editCustomer = false" />
+        <CustomerCreate :open="CustomerCreateOpen" @update:open="CustomerCreateOpen = false" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -137,7 +138,7 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="goToNewUser" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="CustomerCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#24b224">mdi-account-plus</v-icon> เพิ่มลูกค้า
                     </v-btn>
                 </div>
@@ -283,6 +284,8 @@ export default {
             handleConfirm: null,
             isSelectingItems: false,
             modalConfirmOpen: false,
+
+            CustomerCreateOpen: false,
 
             sortBy: 'updated_date',
             currentAction: '',

@@ -1,20 +1,20 @@
 <template>
-    <v-dialog v-model="showModalResult" max-width="600px">
+    <v-dialog v-model="showModalResult" max-width="500px">
         <v-card>
-            <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-text-box-check</v-icon>
-                <span class="headline">ตรวจสอบข้อมูลลูกค้า</span>
+            <v-card-title class="d-flex align-center justify-center mb-3">
+                <v-icon color="#24b224">mdi-text-box-check</v-icon>&nbsp;
+                <h3 class="custom-title">ตรวจสอบข้อมูลลูกค้า</h3>
             </v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="formattedCustomers" class="elevation-1" hide-default-footer>
                     <template v-slot:top>
                     </template>
                 </v-data-table>
+                <v-card-actions class="card-title-center pa-0">
+                    <v-btn color="#24b224" @click="confirm" class="mt-4 mr-2">ยืนยัน</v-btn>
+                    <v-btn color="#e50211" @click="cancel" class="mt-4">ยกเลิก</v-btn>
+                </v-card-actions>
             </v-card-text>
-            <v-card-actions class="d-flex justify-center">
-                <v-btn color="#24b224" @click="confirm" class="mb-4">ยืนยัน</v-btn>
-                <v-btn color="#e50211" @click="cancel" class="ml-2 mb-4">ยกเลิก</v-btn>
-            </v-card-actions>
         </v-card>
     </v-dialog>
 </template>
@@ -88,3 +88,16 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.card-title-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.custom-title {
+    font-size: 1rem;
+}
+</style>

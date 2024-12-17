@@ -1,20 +1,19 @@
 <template>
-    <div>
+    <v-dialog v-model="CustomerCreateOpen" @close="updateOpen(false)" max-width="800px">
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <CustomerCreateResult :open="showModalResult" :customers="withdrawalItems" :types="types" :bases="bases"
+        <CustomerResult :open="showModalResult" :customers="withdrawalItems" :types="types" :bases="bases"
             @confirm="confirmAndAddCustomers" @cancel="showModalResult = false"
             @update:open="showModalResult = $event" />
 
-        <v-card class="custom-card" flat>
-            <v-card-title class="d-flex align-center justify-center">
-                <v-icon class="little-icon" color="#24b224">mdi-account-plus</v-icon> &nbsp;
-                <h3 class="mb-0">ลูกค้าใหม่</h3>
+        <v-card flat>
+            <v-card-title class="d-flex align-center justify-center mb-3">
+                <v-icon color="#24b224">mdi-account-plus</v-icon>&nbsp;
+                <h2 class="custom-title">เพิ่มลูกค้าใหม่</h2>
             </v-card-title>
-
             <v-card-text>
-                <v-form>
+                <v-form ref="form" lazy-validation>
                     <v-row v-for="(item, index) in withdrawalItems" :key="index" align="center">
                         <v-col cols="3" class="ml-2">
                             <v-text-field v-model="item.numericId" @input="setFullId(item)" label="ไอดีลูกค้า"
@@ -40,82 +39,89 @@
                         </v-col>
 
                         <v-col cols="2" class="d-flex align-center">
-                            <v-btn icon color="#e50211" @click="removeProduct(index)" class="mb-6">
+                            <v-btn icon color="#e50211" @click="removeProduct(index)" class="mb-6"
+                                :disabled="withdrawalItems.length === 1">
                                 <v-icon>mdi-delete</v-icon>
                             </v-btn>
                             <v-btn color="#24b224" @click="addProduct" text class="mb-6 ml-2">
                                 <v-icon left>mdi-account-plus</v-icon> เพิ่ม
                             </v-btn>
                         </v-col>
-                    </v-row>
 
-                    <div class="text-center">
-                        <v-btn color="#24b224" @click="showModalResult = true" :disabled="!isFormValid" class="mr-2">
-                            บันทึก
-                        </v-btn>
-                        <v-btn color="#e50211" @click="goToManagement">
-                            ย้อนกลับ
-                        </v-btn>
-                    </div>
+                    </v-row>
                 </v-form>
+                <v-card-actions class="card-title-center pa-0">
+                    <v-btn color="#24b224" @click="showModalResult = true" :disabled="!isFormValid" class="mr-2">
+                        ยืนยัน
+                    </v-btn>
+                    <v-btn @click="cancel" color="#e50211">
+                        ยกเลิก
+                    </v-btn>
+                </v-card-actions>
             </v-card-text>
         </v-card>
-    </div>
+    </v-dialog>
 </template>
 
 <script>
-import moment from 'moment'
-moment.locale('th')
+import moment from 'moment';
 
 export default {
-    layout: 'user',
     middleware: 'auth',
-
     async mounted() {
-        await this.checkRank()
         await this.fetchTypesData()
         await this.fetchBasesData()
     },
 
+    props: {
+        open: {
+            type: Boolean,
+            required: true,
+        },
+    },
+
     data() {
         return {
+            CustomerCreateOpen: this.open,
             modal: {
-                complete: {
-                    open: false,
-                    message: ''
-                },
-                error: {
-                    open: false,
-                    message: ''
-                },
+                complete: { open: false, message: '' },
+                error: { open: false, message: '' },
             },
-            valid: false,
+
             showModalResult: false,
             withdrawalItems: [{ id: 'AQT', nickname: '', type_no: null, base_no: 3 }],
+
             types: [],
             bases: [],
+        };
+    },
 
+    watch: {
+        open(newVal) {
+            this.CustomerCreateOpen = newVal;
         }
     },
 
     computed: {
-
         isFormValid() {
-            return this.withdrawalItems.every(item =>
-                this.isIdValid(item.numericId) &&
-                this.isNicknameValid(item.nickname)
-            );
-        },
+        return this.withdrawalItems.every(item => 
+            (item.numericId && item.numericId.trim() !== '') && 
+            (item.nickname && item.nickname.trim() !== '')
+        );
+    }
+    },
+
+    mounted() {
+        this.fetchTypesData();
+        this.fetchBasesData();
+        window.addEventListener('keydown', this.handleKeydown);
+    },
+
+    beforeDestroy() {
+        window.removeEventListener('keydown', this.handleKeydown);
     },
 
     methods: {
-        isIdValid(numericId) {
-            return !!numericId && /^(AQT)?[0-9]{9}$/.test(numericId);
-        },
-
-        isNicknameValid(nickname) {
-            return !!nickname && /^[\u0E00-\u0E7F]+$/.test(nickname);
-        },
 
         setFullId(item) {
             if (!item.numericId.startsWith('AQT')) {
@@ -125,32 +131,23 @@ export default {
             }
         },
 
-        async checkRank() {
-            if (this.$auth.loggedIn) {
-                const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.rank_no.toString();
-                if (Status === '2') {
-                    this.$router.push('/');
-                    await this.$auth.logout();
-                }
-                else {
-                    if (RankID === '1') {
-                        this.$router.push('/app/user/new');
-                    } else if (RankID === '2') {
-                        this.$router.push('/app/user/new');
-                    } else if (RankID === '3') {
-                        this.$router.push('/app/user/new');
-                    } else {
-                        this.$router.push('/auth');
-                    }
-                }
-            } else {
-                this.$router.push('/');
+        openModal() {
+            this.showModalResult = true;
+        },
+
+        handleKeydown(event) {
+            if (event.key === 'Escape') {
+                this.cancel();
             }
         },
 
-        openModal() {
-            this.showModalResult = true;
+        updateOpen(val) {
+            this.CustomerCreateOpen = val;
+            this.$emit('update:open', val);
+        },
+
+        goBack() {
+            window.location.reload();
         },
 
         async confirmAndAddCustomers() {
@@ -220,7 +217,7 @@ export default {
                 id: null,
                 nickname: '',
                 type_no: null,
-                base_no: null,
+                base_no: 3,
             });
         },
 
@@ -228,47 +225,44 @@ export default {
             this.withdrawalItems.splice(index, 1);
         },
 
-        goBack() {
-            this.$router.push('/app/user/management');
+        cancel() {
+            this.newStockType = '';
+            this.$emit('update:open', false);
         },
 
         recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
             const details = this.withdrawalItems.map((item, index) => {
                 const typeName = this.types.find(type => type.id === item.type_no)?.name || 'ยังไม่ระบุ';
                 const baseName = this.bases.find(base => base.id === item.base_no)?.name || 'ยังไม่ระบุ';
                 return `ลูกค้าคนที่ ${index + 1}\nรหัส : ${item.id}\nชื่อเล่น : ${item.nickname}\nประเภท : ${typeName}\nฐานทุน : ${baseName}`;
             }).join('\n\n');
-
             const log = {
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
+                action: 'เพิ่มลูกค้าใหม่',
                 detail: details.trim(),
                 type: 3,
-                picture: this.$auth.user.picture || 'ไม่รู้จัก',
-                action: 'เพิ่มลูกค้าใหม่',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-
-            this.$store.dispatch('api/log/addLogs', log);
-        },
-
-        goToManagement() {
-            this.$router.push('/app/user/management');
+            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };
 </script>
 
 <style scoped>
-.little-icon {
-    font-size: 3rem;
-    margin-right: 8px;
-    margin-left: 8px;
+.card-title-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
-.custom-card {
-    max-width: 800px;
-    width: 100%;
-    margin: auto;
+.custom-title {
+    font-size: 1rem;
 }
 </style>
