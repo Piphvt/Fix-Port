@@ -5,8 +5,10 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
+        <StockCreate :open="StockCreateOpen" @update:open="StockCreateOpen = false" />
         <StockEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
-        <DividendData :stockNo="selectedStockNo" v-model="dialogOpen" />
+        <DividendData :stockNo="selectedStockNo" v-model="DividendDataOpen" />
+        <SetData v-model="SetDataOpen" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -139,10 +141,10 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="goToTypeStock" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="SetDataOpen = true" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-settings</v-icon> ประเภทหุ้น
                     </v-btn>
-                    <v-btn @click="goToNewStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="StockCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#24b224">mdi-archive-plus</v-icon> เพิ่มหุ้น
                     </v-btn>
                 </div>
@@ -176,7 +178,7 @@
                 <template v-slot:item.dividend_amount="{ item }">
                     <div class="text-center">
                         {{ item.dividend + ' ' }}
-                        <v-icon color="#85d7df" @click="sendStockNo(item.no)">mdi-eye</v-icon>
+                        <v-icon color="#85d7df" @click="OpenDividendData(item.no)">mdi-eye</v-icon>
                     </div>
                 </template>
                 <template v-slot:item.closing_price="{ item }">
@@ -283,7 +285,9 @@ export default {
             selectedSets: [],
 
             selectedStockNo: null,
-            dialogOpen: false,
+            DividendDataOpen: false,
+            SetDataOpen: false,
+            StockCreateOpen: false,
 
             selectedItems: [],
             handleConfirm: null,
@@ -418,9 +422,9 @@ export default {
     },
 
     methods: {
-        sendStockNo(stockNo) {
+        OpenDividendData(stockNo) {
             this.selectedStockNo = stockNo;
-            this.dialogOpen = true;
+            this.DividendDataOpen = true;
         },
 
         toggleSelectItems() {
@@ -809,10 +813,6 @@ export default {
 
         goToNewStock() {
             this.$router.push('/app/stock/new_stock');
-        },
-
-        goToTypeStock() {
-            this.$router.push('/app/stock/type');
         },
     },
 };

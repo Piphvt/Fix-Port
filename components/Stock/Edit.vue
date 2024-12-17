@@ -196,10 +196,9 @@ export default {
 
     async updateData() {
       try {
-        this.formData.emp_id = this.$auth.user.no;
+        this.formData.employee_no = this.$auth.user.no;
         const req = await this.$store.dispatch('api/stock/updateStock', this.formData);
         this.modal.complete.open = true;
-        this.data = { ...this.formData };
         this.recordLogUpdate();
       } catch (warning) {
         this.modal.warning.open = true;
@@ -240,6 +239,9 @@ export default {
     },
 
     recordLogUpdate() {
+      const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+      const Employee_Email = this.$auth.user.email;
+      const Employee_Picture = this.$auth.user.picture;
       const changes = [];
       if (this.formData.stock !== this.originalData.stock) {
         changes.push('ชื่อ : ' + this.formData.stock + '\n');
@@ -250,28 +252,20 @@ export default {
         changes.push('ประเภท : ' + setText + '\n');
       }
 
-      if (this.formData.closing_price !== this.originalData.closing_price) {
-        changes.push('ราคาปิด : ' + this.formData.closing_price + '\n');
-      }
-
-      if (this.formData.dividend_amount !== this.originalData.dividend_amount) {
-        changes.push('จำนวนปันผล : ' + this.formData.dividend_amount + '\n');
-      }
-
       if (this.formData.comment !== this.originalData.comment) {
         changes.push('หมายเหตุ : ' + this.formData.comment + '\n');
       }
       const log = {
-        stock_id: this.originalData.stock,
-        emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-        emp_email: this.$auth.user.email,
+        action: 'แก้ไขข้อมูลหุ้น',
+        name: this.originalData.stock,
         detail: changes.join(''),
         type: 2,
-        picture: this.$auth.user.picture || 'ไม่รู้จัก',
-        action: 'แก้ไขข้อมูลหุ้น',
-        time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        employee_name: Employee_Name,
+        employee_email: Employee_Email,
+        employee_picture: Employee_Picture,
+        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
-      this.$store.dispatch('api/log/addLogs', log);
+      this.$store.dispatch('api/log/addLog', log);
     },
   },
 };

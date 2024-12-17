@@ -8,7 +8,7 @@
         <v-card class="custom-card" flat>
             <v-card-title class="d-flex align-center justify-center mb-3">
                 <v-icon class="little-icon" color="#24b224">mdi-archive-plus</v-icon>&nbsp;
-                <h3 class="mb-0">เพิ่มประเภทหุ้น</h3>
+                <h3 class="mb-0 custom-title">เพิ่มประเภทหุ้น</h3>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" v-model="isFormValid" lazy-validation>
@@ -144,5 +144,8 @@ export default {
     justify-content: center;
     align-items: center;
     text-align: center;
+}
+.custom-title {
+    font-size: 1rem;
 }
 </style>
