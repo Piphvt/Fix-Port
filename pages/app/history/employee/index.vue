@@ -215,6 +215,10 @@
                             <span style="color: green">เบอร์โทรศัพท์ </span>{{ line.replace('เบอร์โทรศัพท์', '').trim()
                             }}
                         </template>
+                        <template v-else-if="line.includes('ผู้อนุมัติ')">
+                            <span style="color: white">ผู้อนุมัติ </span>{{ line.replace('ผู้อนุมัติ', '').trim()
+                            }}
+                        </template>
                         <template v-else-if="line.includes('รหัสผ่าน')">
                             <span style="color: white">รหัสผ่าน </span>{{ maskNewData(line.replace('รหัสผ่าน ',
                                 '').trim()) }}

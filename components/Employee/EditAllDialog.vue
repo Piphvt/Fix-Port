@@ -16,14 +16,14 @@
             <v-row>
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                 <v-text-field v-model="formData.fname"
-                  :rules="[(v) => !!v || 'โปรดกรอกชื่อ', (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'ชื่อต้องเป็นภาษาไทยเท่านั้น']"
-                  label="ชื่อ" dense outlined required />
+                  :rules="[(v) => !!v || 'โปรดกรอกชื่อเล่น', (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'ชื่อเล่นต้องเป็นภาษาไทยเท่านั้น']"
+                  label="ชื่อเล่น" dense outlined required />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-text-field v-model="formData.lname"
-                  :rules="[(v) => !!v || 'โปรดกรอกนามสกุล', (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'นามสกุลต้องเป็นภาษาไทยเท่านั้น']"
-                  label="นามสกุล" dense outlined required />
+                  :rules="[(v) => !!v || 'โปรดกรอกชื่อ', (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'ชื่อต้องเป็นภาษาไทยเท่านั้น']"
+                  label="ชื่อ" dense outlined required />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
@@ -128,7 +128,7 @@ export default {
         },
       },
 
-      formData: { ...this.data },
+      formData: {},
       valid: false,
       genderOptions: [],
       rankOptions: [],
@@ -266,8 +266,8 @@ export default {
       try {
         const req = await this.$store.dispatch('api/employee/updateEmployeeAll', this.formData);
         this.modal.complete.open = true;
-        this.data = { ...this.formData };
-        this.recordLogUpdate();
+        this.formData = { ...this.data }; 
+        this.recordLog();
       } catch (warning) {
         this.modal.warning.open = true;
       }
@@ -352,7 +352,10 @@ export default {
       return statuses[statusId] || 'ไม่ทราบ';
     },
 
-    recordLogUpdate() {
+    recordLog() {
+      const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+      const Employee_Email = this.$auth.user.email;
+      const Employee_Picture = this.$auth.user.picture;
       const changes = [];
       if (this.formData.fname !== this.originalData.fname) {
         changes.push('ชื่อเล่น : ' + this.formData.fname + '\n');
@@ -383,11 +386,13 @@ export default {
       }
 
       const log = {
-        employee_no: this.$auth.user.no,
-        type_no: this.originalData.no,
+        action: 'แก้ไขข้อมูลผู้ใช้งาน',
+        name: this.originalData.fname + ' '+this.originalData.lname,
         detail: changes.join(''),
         type: 4,
-        action: 'แก้ไขข้อมูลผู้ใช้งาน',
+        employee_name: Employee_Name,
+        employee_email: Employee_Email,
+        employee_picture: Employee_Picture,
         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
       this.$store.dispatch('api/log/addLog', log);

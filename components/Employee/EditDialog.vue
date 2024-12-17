@@ -154,8 +154,8 @@ export default {
     async updateData() {
       try {
         const req = await this.$store.dispatch('api/employee/updateEmployee', this.formData);
-        this.recordLogUpdate();
-        this.data = { ...this.formData };
+        this.recordLog();
+        this.formData = { ...this.data };
         this.modal.complete.open = true;
       } catch (error) {
         this.modal.error.open = true;
@@ -212,7 +212,10 @@ export default {
       this.updateData();
     },
 
-    recordLogUpdate() {
+    recordLog() {
+      const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+      const Employee_Email = this.$auth.user.email;
+      const Employee_Picture = this.$auth.user.picture;
       const changes = [];
       if (this.formData.fname !== this.originalData.fname) {
         changes.push('ชื่อเล่น : ' + this.formData.fname + '\n');
@@ -228,13 +231,15 @@ export default {
       }
 
       const log = {
-        employee_no: this.$auth.user.no,
+        action: 'แก้ไขข้อมูลส่วนตัว',
         detail: changes.join(''),
         type: 4,
-        action: 'แก้ไขข้อมูลส่วนตัว',
+        employee_name: Employee_Name,
+        employee_email: Employee_Email,
+        employee_picture: Employee_Picture,
         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       }
-      this.$store.dispatch('api/log/addLogs', log);
+      this.$store.dispatch('api/log/addLog', log);
     },
   },
 };

@@ -717,19 +717,26 @@ export default {
         },
 
         recordLog() {
+            const Employee_No = this.$auth.user.no;
+            const employee = this.employees.find(employee => employee.no === Employee_No);
+            const Employee_Name = employee ? employee.fname + ' ' + employee.lname : 'ไม่รู้จัก';
+            const Employee_Email = employee ? employee.email : 'ยังไม่ระบุ';
+            const Employee_Picture = employee ? employee.picture : 'ยังไม่ระบุ';
             const log = {
-                type_no: this.currentItem.no,
-                employee_no: this.$auth.user.no,
-                detail: this.currentAction === 'delete'
-                    ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`
-                    : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`,
-                type: 4,
                 action: this.currentAction === 'delete'
                     ? 'ลบผู้ใช้งาน'
                     : 'ไม่ลบผู้ใช้งาน',
+                name: this.currentItem.fname ,
+                detail: this.currentAction === 'delete'
+                    ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' '+this.getEmployeeById(this.currentItem.employee_no)?.lname}`
+                    : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' '+this.getEmployeeById(this.currentItem.employee_no)?.lname}`,
+                type: 4,
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
                 created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
 
         goToNewEmp() {

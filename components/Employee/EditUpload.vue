@@ -120,7 +120,7 @@ export default {
         };
         const updateResponse = await this.$store.dispatch('api/file/updateProfile', data);
         this.modal.complete.open = true;
-        this.recordLogUpdate(this.data.no);
+        this.recordLog(this.data.no);
       } catch (error) {
         this.modal.error.message = 'เกิดข้อผิดพลาดในการอัพโหลดรูปภาพ โปรดลองอีกครั้ง';
         this.modal.error.open = true;
@@ -141,16 +141,20 @@ export default {
       window.location.reload();
     },
 
-    recordLogUpdate() {
-      const empId = this.$auth.user.no;
+    recordLog() {
+      const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+      const Employee_Email = this.$auth.user.email;
+      const Employee_Picture = this.$auth.user.picture;
       const log = {
-        employee_no: empId,
+        action: 'อัพโหลดรูปภาพ',
         detail: this.file.name,
         type: 4,
-        action: 'อัพโหลดรูปภาพ',
+        employee_name: Employee_Name,
+        employee_email: Employee_Email,
+        employee_picture: Employee_Picture,
         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       }
-      this.$store.dispatch('api/log/addLogs', log)
+      this.$store.dispatch('api/log/addLog', log)
     },
   },
 }

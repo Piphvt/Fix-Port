@@ -34,15 +34,15 @@
             </v-row>
           </v-form>
           <v-card-actions class="card-title-center pa-0">
-          <v-btn color="#24b224" @click="confirm"
-            :disabled="!valid || data.new_password === null || data.new_password === undefined || data.confirm_password === null || data.confirm_password === undefined"
-            depressed class="font-weight-medium mr-2">
-            บันทึก
-          </v-btn>
-          <v-btn color="#e50211" @click="cancel" class="font-weight-medium">
-            ยกเลิก
-          </v-btn>
-        </v-card-actions>
+            <v-btn color="#24b224" @click="confirm"
+              :disabled="!valid || data.new_password === null || data.new_password === undefined || data.confirm_password === null || data.confirm_password === undefined"
+              depressed class="font-weight-medium mr-2">
+              บันทึก
+            </v-btn>
+            <v-btn color="#e50211" @click="cancel" class="font-weight-medium">
+              ยกเลิก
+            </v-btn>
+          </v-card-actions>
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -126,7 +126,7 @@ export default {
 
         const req = await this.$store.dispatch('api/employee/updatePassword', this.data);
         this.modal.complete.open = true;
-        this.recordLogUpdate(this.data.no);
+        this.recordLog(this.data.no);
       } catch (error) {
         this.modal.error.message = 'เปลี่ยนรหัสผ่านไม่สำเร็จ';
       }
@@ -150,17 +150,20 @@ export default {
       }
     },
 
-    recordLogUpdate(no) {
-      const empId = this.$auth.user.no;
-
+    recordLog() {
+      const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+      const Employee_Email = this.$auth.user.email;
+      const Employee_Picture = this.$auth.user.picture;
       const log = {
-        employee_no: empId,
+        action: 'เปลี่ยนรหัสผ่าน',
         detail: 'รหัสผ่าน : ' + this.data.new_password,
         type: 4,
-        action: 'เปลี่ยนรหัสผ่าน',
+        employee_name: Employee_Name,
+        employee_email: Employee_Email,
+        employee_picture: Employee_Picture,
         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
-      this.$store.dispatch('api/log/addLogs', log);
+      this.$store.dispatch('api/log/addLog', log);
     },
   },
 };
@@ -168,12 +171,10 @@ export default {
 </script>
 
 <style scoped>
-
 .card-title-center {
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
 }
-
 </style>

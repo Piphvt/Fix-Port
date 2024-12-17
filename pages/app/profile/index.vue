@@ -137,7 +137,7 @@ export default {
 
         getRankName(rankId) {
             const rank = this.ranks.find(r => r.no === rankId);
-            return rank ? rank.name : 'Unknown';
+            return rank ? rank.rank : 'ไม่รู้จัก';
         },
 
         formatDateTime(date) {

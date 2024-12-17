@@ -89,7 +89,7 @@
                 </template>
             </v-data-table>
             <div class="text-center">
-                <v-btn class = "mb-4" color="#e50211" @click="goToEmpManagement">
+                <v-btn class="mb-4" color="#e50211" @click="goToEmpManagement">
                     ย้อนกลับ
                 </v-btn>
             </div>
@@ -246,14 +246,14 @@ export default {
             this.currentItem = item;
             this.modalConfirmOpen = true;
         },
-        
+
         async handleConfirm() {
             try {
                 if (this.currentAction === 'approve') {
                     await this.$store.dispatch('api/employee/updateEmployeeStatus', {
                         no: this.currentItem.no,
                         status: 1,
-                        emp_id: this.$auth.user.no
+                        employee_no: this.$auth.user.no
                     });
                     this.recordLog();
                     this.modal.complete.message = 'อนุมัติผู้ใช้งานเรียบร้อยแล้ว';
@@ -332,21 +332,24 @@ export default {
         },
 
         recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
             const log = {
-                emp_id: this.currentItem.fname+' '+this.currentItem.lname,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
+                action: this.currentAction === 'approve'
+                    ? 'อนุมัติผู้ใช้งาน'
+                    : 'ไม่อนุมัติผู้ใช้งาน',
+                name: this.currentItem.fname,
                 detail: this.currentAction === 'approve'
                     ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`
                     : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`,
                 type: 4,
-                picture: this.$auth.user.picture || 'Unknown',
-                action: this.currentAction === 'approve'
-                    ? 'อนุมัติผู้ใช้งาน'
-                    : 'ไม่อนุมัติผู้ใช้งาน',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
 
         goToEmpManagement() {
