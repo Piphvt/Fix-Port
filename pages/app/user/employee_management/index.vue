@@ -726,7 +726,7 @@ export default {
                 action: this.currentAction === 'delete'
                     ? 'ลบผู้ใช้งาน'
                     : 'ไม่ลบผู้ใช้งาน',
-                name: this.currentItem.fname ,
+                name: this.currentItem.fname + ' ' + this.currentItem.lname,
                 detail: this.currentAction === 'delete'
                     ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' '+this.getEmployeeById(this.currentItem.employee_no)?.lname}`
                     : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' '+this.getEmployeeById(this.currentItem.employee_no)?.lname}`,

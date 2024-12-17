@@ -266,7 +266,6 @@ export default {
       try {
         const req = await this.$store.dispatch('api/employee/updateEmployeeAll', this.formData);
         this.modal.complete.open = true;
-        this.formData = { ...this.data }; 
         this.recordLog();
       } catch (warning) {
         this.modal.warning.open = true;

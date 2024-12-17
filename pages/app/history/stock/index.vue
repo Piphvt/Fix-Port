@@ -6,7 +6,6 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
-
         <v-card flat>
             <v-container>
                 <v-row justify="center" align="center">
@@ -127,7 +126,9 @@
                         color="#85d7df">mdi-playlist-check</v-icon>
                 </template>
                 <v-list class="header-list">
-                    <v-list-item v-for="header in headers" :key="header.value" class="header-item">
+                    <v-list-item
+                        v-for="header in headers.filter(header => header.value !== 'edit' && header.value !== 'select')"
+                        :key="header.value" class="header-item">
                         <v-list-item-content>
                             <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
                         </v-list-item-content>
@@ -275,7 +276,6 @@ export default {
     async mounted() {
         await this.checkRank();
         await this.fetchLogData();
-        await this.fetchEmployeeData();
     },
 
     components: {
@@ -303,7 +303,6 @@ export default {
             },
 
             logs: [],
-            employees: [],
 
             selectedName: [],
             selectedEmail: [],
@@ -491,10 +490,6 @@ export default {
             return 'ข้อมูลทั่วไป';
         },
 
-        onImageError(event, item) {
-            event.target.src = `http://localhost:3001/file/default/${item.picture}`;
-        },
-
         getSearchItems(type) {
             if (type === 'employee_name') {
                 return this.logs.map(log => log.employee_name);
@@ -532,14 +527,6 @@ export default {
 
         async fetchLogData() {
             this.logs = await this.$store.dispatch('api/log/getLogByType', '2');
-        },
-
-        async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployee');
-        },
-
-        getEmployeeByNo(empNo) {
-            return this.employees.find(employee => employee.no === empNo);
         },
 
         getActionColor(action) {
@@ -682,7 +669,7 @@ export default {
             const worksheet = workbook.addWorksheet('Sheet1');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'picture')
+                .filter(header => header.value !== 'employee_picture')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -696,7 +683,7 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'created_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value !== 'picture') {
+                    } else if (header.value !== 'employee_picture') {
                         rowData[header.value] = item[header.value];
                     }
                 });
@@ -729,19 +716,6 @@ export default {
                 link.click();
                 document.body.removeChild(link);
             });
-        },
-
-        maskNewData(data) {
-            if (!data) return '';
-
-            const length = data.length;
-            if (length <= 4) return data;
-
-            const firstPart = data.slice(0, 1);
-            const lastPart = data.slice(-1);
-            const maskedPart = '*'.repeat(length - 4)
-
-            return `${firstPart}${maskedPart}${lastPart}`;
         },
     },
 };
@@ -841,7 +815,11 @@ export default {
 }
 
 .custom-list-item {
-    padding: 0 0;
+    padding: 0.1px 8px;
+}
+
+.custom-list {
+    padding: 0.4px 2px;
 }
 
 .v-list-item__content {

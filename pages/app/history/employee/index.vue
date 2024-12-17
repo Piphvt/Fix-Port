@@ -93,8 +93,7 @@
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-bind="attrs" v-on="on" class="date-picker-activator">
                                         <v-icon class="small-label">mdi-calendar-start-outline</v-icon>
-                                        <date-picker v-model="startDateTime" format="YYYY-MM-DD HH:mm"
-                                            type="datetime" />
+                                        <date-picker v-model="startDateTime" format="YYYY/MM/DD HH:mm" type="datetime" />
                                     </div>
                                 </template>
                             </v-menu>
@@ -104,7 +103,7 @@
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
                                         <v-icon class="small-label">mdi-calendar-end-outline</v-icon>
-                                        <date-picker v-model="endDateTime" format="YYYY-MM-DD HH:mm" type="datetime" />
+                                        <date-picker v-model="endDateTime" format="YYYY/MM/DD HH:mm" type="datetime" />
                                     </div>
                                 </template>
                             </v-menu>
@@ -127,7 +126,9 @@
                         color="#85d7df">mdi-playlist-check</v-icon>
                 </template>
                 <v-list class="header-list">
-                    <v-list-item v-for="header in headers.filter(header => header.value !== 'edit' && header.value !== 'select')" :key="header.value" class="header-item">
+                    <v-list-item
+                        v-for="header in headers.filter(header => header.value !== 'edit' && header.value !== 'select')"
+                        :key="header.value" class="header-item">
                         <v-list-item-content>
                             <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
                         </v-list-item-content>
@@ -139,8 +140,7 @@
                 item-key="no" :items-per-page="5">
                 <template v-slot:item.employee_picture="{ item }">
                     <v-avatar size="40">
-                        <img :src="`http://localhost:3001/file/profile/${item.employee_picture}`"
-                            alt="picture" />
+                        <img :src="`http://localhost:3001/file/profile/${item.employee_picture}`" alt="picture" />
                     </v-avatar>
                 </template>
                 <template v-slot:item.select="{ item }">
@@ -157,7 +157,7 @@
                     <div class="text-center">{{ item.employee_name }}</div>
                 </template>
                 <template v-slot:item.name="{ item }">
-                    <div class="text-center">{{  item.name || ''}}</div>
+                    <div class="text-center">{{ item.name || '' }}</div>
                 </template>
                 <template v-slot:item.action="{ item }">
                     <div class="text-center" :style="{ color: getActionColor(item.action) }">
@@ -346,7 +346,7 @@ export default {
                 { text: 'เวลา', value: 'created_date' }
             ],
 
-            visibleColumns: ['select','created_date', 'employee_picture', 'action', 'employee_email', 'name', 'employee_name', 'detail','edit'],
+            visibleColumns: ['select', 'created_date', 'employee_picture', 'action', 'employee_email', 'name', 'employee_name', 'detail', 'edit'],
 
             headers: [
                 {
@@ -674,10 +674,10 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
+            const worksheet = workbook.addWorksheet('ประวัติพนักงาน');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'employee_picture')
+                .filter(header => header.value !== 'employee_picture' && header.value !== 'select' && header.value !== 'edit')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -691,7 +691,7 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'created_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value !== 'employee_picture') {
+                    } else if (header.value !== 'employee_picture' && header.value !== 'select' && header.value !== 'edit') {
                         rowData[header.value] = item[header.value];
                     }
                 });

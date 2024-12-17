@@ -2,7 +2,10 @@
 
     <div>
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-
+        <ModalWarning :open="modal.warning.open" :message="modal.warning.message" :warning.sync="modal.warning.open" />
+        <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
+        <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
+            :complete.sync="modal.complete.open" :method="goBack" />
         <v-card flat>
             <v-container>
                 <v-row justify="center" align="center">
@@ -69,13 +72,13 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType === 'emp_name'" v-model="selectedName"
-                                class="mx-2 search-size small-font" :items="getSearchItems('emp_name')"
+                            <v-autocomplete v-if="searchType === 'employee_name'" v-model="selectedName"
+                                class="mx-2 search-size small-font" :items="getSearchItems('employee_name')"
                                 label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
                             </v-autocomplete>
 
-                            <v-autocomplete v-if="searchType === 'emp_email'" v-model="selectedEmail"
-                                class="mx-2 search-size small-font" :items="getSearchItems('emp_email')"
+                            <v-autocomplete v-if="searchType === 'employee_email'" v-model="selectedEmail"
+                                class="mx-2 search-size small-font" :items="getSearchItems('employee_email')"
                                 label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
                             </v-autocomplete>
 
@@ -84,8 +87,7 @@
                                 label="ค้นหาประเภท" dense outlined clearable multiple>
                             </v-autocomplete>
 
-
-                            <v-menu v-if="searchType === 'time'" v-model="datePickerMenu"
+                            <v-menu v-if="searchType === 'created_date'" v-model="datePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-bind="attrs" v-on="on" class="date-picker-activator">
@@ -96,7 +98,7 @@
                                 </template>
                             </v-menu>
 
-                            <v-menu v-if="searchType === 'time'" v-model="endDatePickerMenu"
+                            <v-menu v-if="searchType === 'created_date'" v-model="endDatePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
@@ -124,7 +126,9 @@
                         color="#85d7df">mdi-playlist-check</v-icon>
                 </template>
                 <v-list class="header-list">
-                    <v-list-item v-for="header in headers" :key="header.value" class="header-item">
+                    <v-list-item
+                        v-for="header in headers.filter(header => header.value !== 'edit' && header.value !== 'select')"
+                        :key="header.value" class="header-item">
                         <v-list-item-content>
                             <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
                         </v-list-item-content>
@@ -134,17 +138,26 @@
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
                 item-key="no" :items-per-page="5">
-                <template v-slot:item.picture="{ item }">
+                <template v-slot:item.employee_picture="{ item }">
                     <v-avatar size="40">
-                        <img :src="`http://localhost:3001/file/profile/${item.picture}`"
-                            @error="onImageError($event, item)" alt="picture" />
+                        <img :src="`http://localhost:3001/file/profile/${item.employee_picture}`" alt="picture" />
                     </v-avatar>
                 </template>
-                <template v-slot:item.emp_email="{ item }">
-                    <div class="text-center">{{ item.emp_email }}</div>
+                <template v-slot:item.select="{ item }">
+                    <div class="text-center"
+                        style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                        <v-checkbox v-if="isSelectingItems" v-model="selectedItems" :value="item.no"
+                            style="transform: scale(1);" />
+                    </div>
                 </template>
-                <template v-slot:item.emp_name="{ item }">
-                    <div class="text-center">{{ item.emp_name }}</div>
+                <template v-slot:item.employee_email="{ item }">
+                    <div class="text-center">{{ item.employee_email }}</div>
+                </template>
+                <template v-slot:item.employee_name="{ item }">
+                    <div class="text-center">{{ item.employee_name }}</div>
+                </template>
+                <template v-slot:item.name="{ item }">
+                    <div class="text-center">{{ item.name || '' }}</div>
                 </template>
                 <template v-slot:item.action="{ item }">
                     <div class="text-center" :style="{ color: getActionColor(item.action) }">
@@ -156,10 +169,33 @@
                         <v-icon @click="openDetail(item)" color="#85d7df">mdi-eye</v-icon>
                     </div>
                 </template>
-                <template v-slot:item.time="{ item }">
-                    <div class="text-center">{{ formatDateTime(item.time) }}</div>
+                <template v-slot:item.created_date="{ item }">
+                    <div class="text-center">{{ formatDateTime(item.created_date) }}</div>
+                </template>
+                <template v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" v-slot:item.edit="{ item }">
+                    <div class="text-center">
+                        <v-menu offset-y>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
+                            </template>
+                            <v-list class="custom-list">
+                                <v-list-item @click="toggleSelectItems" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </div>
                 </template>
             </v-data-table>
+            <div class="text-center">
+                <v-btn v-if="isSelectingItems && selectedItems.length > 0" color="red" @click="deleteSelectedItems"
+                    class="mb-4" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-icon left color="white">mdi-delete</v-icon> ลบ
+                </v-btn>
+            </div>
         </v-card>
 
         <v-dialog v-model="dialog" max-width="300px">
@@ -259,12 +295,17 @@ export default {
             selectedEmail: [],
             selectedAction: [],
 
+            selectedItems: [],
+            handleConfirm: null,
+            isSelectingItems: false,
+            modalConfirmOpen: false,
+
             startDateTime: '',
             endDateTime: '',
             selectedItemDetail: '',
             searchQuery: '',
-            searchType: 'emp_name',
-            sortBy: 'time',
+            searchType: 'employee_name',
+            sortBy: 'created_date',
             sortDesc: true,
             dialog: false,
             isSearchFieldVisible: false,
@@ -273,26 +314,34 @@ export default {
             showSavedSearchesDialog: false,
             showColumnSelector: false,
             savedSearches: [],
-            visibleColumns: ['time', 'picture', 'action', 'emp_email', 'customer_id', 'emp_name', 'detail'],
 
             searchTypes: [
-                { text: 'ทำรายการโดย', value: 'emp_name' },
-                { text: 'อีเมล', value: 'emp_email' },
+                { text: 'ทำรายการโดย', value: 'employee_name' },
+                { text: 'อีเมล', value: 'employee_email' },
                 { text: 'การกระทำ', value: 'action' },
-                { text: 'เวลา', value: 'time' }
+                { text: 'เวลา', value: 'created_date' }
             ],
+
+            visibleColumns: ['select', 'created_date', 'employee_picture', 'action', 'employee_email', 'name', 'employee_name', 'detail', 'edit'],
 
             headers: [
                 {
+                    text: '',
+                    value: 'select',
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
                     text: 'เวลา',
-                    value: 'time',
+                    value: 'created_date',
                     align: 'center',
                     cellClass: 'text-center',
                 },
 
                 {
                     text: 'โปรไฟล์',
-                    value: 'picture',
+                    value: 'employee_picture',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -300,7 +349,7 @@ export default {
 
                 {
                     text: 'ทำรายการโดย',
-                    value: 'emp_name',
+                    value: 'employee_name',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -308,7 +357,7 @@ export default {
 
                 {
                     text: 'อีเมล',
-                    value: 'emp_email',
+                    value: 'employee_email',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -323,8 +372,8 @@ export default {
                 },
 
                 {
-                    text: 'รหัสลูกค้า',
-                    value: 'customer_id',
+                    text: 'ผู้ใช้งาน',
+                    value: 'name',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -333,6 +382,14 @@ export default {
                 {
                     text: 'รายละเอียด',
                     value: 'detail',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: '',
+                    value: 'edit',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -378,6 +435,39 @@ export default {
     },
 
     methods: {
+        goBack() {
+            window.location.reload();
+        },
+
+        toggleSelectItems() {
+            this.isSelectingItems = !this.isSelectingItems;
+        },
+
+        async deleteSelectedItems() {
+
+            this.handleConfirm = async () => {
+                const selectedIds = this.selectedItems;
+
+                for (let i = 0; i < selectedIds.length; i++) {
+                    try {
+                        await this.$store.dispatch('api/log/deleteLog', selectedIds[i]);
+                    } catch (error) {
+                        console.error(`Error deleting customer with id ${selectedIds[i]}:`, error);
+                    }
+                }
+
+                this.$emit('updateItems');
+                this.selectedItems = [];
+                this.isSelectingItems = false;
+
+                this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
+                this.modal.complete.open = true;
+                this.modalConfirmOpen = false;
+            };
+
+            this.modalConfirmOpen = true;
+        },
+
         getDetailTitle(action) {
             if (['เพิ่มหุ้นของลูกค้า', 'ลบข้อมูลหุ้นของลูกค้า', 'เพิ่มประเภทหุ้นใหม่', 'ลบประเภทหุ้น'].includes(action)) {
                 return 'ข้อมูลเพิ่มเติม';
@@ -387,15 +477,11 @@ export default {
             return 'ข้อมูลทั่วไป';
         },
 
-        onImageError(event, item) {
-            event.target.src = `http://localhost:3001/file/default/${item.picture}`;
-        },
-
         getSearchItems(type) {
-            if (type === 'emp_name') {
-                return this.logs.map(log => log.emp_name);
-            } else if (type === 'emp_email') {
-                return this.logs.map(log => log.emp_email);
+            if (type === 'employee_name') {
+                return this.logs.map(log => log.employee_name);
+            } else if (type === 'employee_email') {
+                return this.logs.map(log => log.employee_email);
             } else if (type === 'action') {
                 return this.logs.map(log => log.action);
             }
@@ -462,7 +548,7 @@ export default {
         },
 
         onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchType !== 'time' && this.searchType !== 'action';
+            this.isSearchFieldVisible = this.searchType !== 'created_date' && this.searchType !== 'action';
         },
 
         validateDateRange() {
@@ -481,7 +567,7 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'emp_name' || this.searchType === 'emp_email' || this.searchType === 'action') {
+            if (this.searchType === 'employee_name' || this.searchType === 'employee_email' || this.searchType === 'action') {
                 this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
@@ -498,8 +584,8 @@ export default {
 
         addSearchItemsToSearch() {
             const selectedItems =
-                this.searchType === 'emp_name' ? this.selectedName :
-                    this.searchType === 'emp_email' ? this.selectedEmail :
+                this.searchType === 'employee_name' ? this.selectedName :
+                    this.searchType === 'employee_email' ? this.selectedEmail :
                         this.searchType === 'action' ? this.selectedAction : [];
 
             if (selectedItems.length > 0) {
@@ -510,9 +596,9 @@ export default {
                     end: this.endDateTime
                 });
 
-                if (this.searchType === 'emp_name') {
+                if (this.searchType === 'employee_name') {
                     this.selectedName = [];
-                } else if (this.searchType === 'emp_email') {
+                } else if (this.searchType === 'employee_email') {
                     this.selectedEmail = [];
                 } else if (this.searchType === 'action') {
                     this.selectedAction = [];
@@ -525,21 +611,19 @@ export default {
 
         applySearchFilter(log, search) {
             let queryMatched = true;
-            const field = log[search.type];
+            let field = log[search.type];
 
-            if (Array.isArray(search.query)) {
+            if (search.type === 'employee_name' || search.type === 'employee_email' || search.type === 'action') {
                 queryMatched = search.query.some(query => {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
-                    return lowerCaseField.includes(query.toLowerCase());
+                    return lowerCaseField === query.toLowerCase();
                 });
-            } else if (typeof search.query === 'string') {
-                const searchQuery = search.query.toLowerCase();
-                queryMatched = typeof field === 'string' && field.toLowerCase().includes(searchQuery);
             } else {
-                queryMatched = false;
+                const searchQuery = search.query.toLowerCase();
+                queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
 
-            const timeMatched = search.type === 'time'
+            const timeMatched = search.type === 'created_date'
                 ? this.checkTimeRange(log, search)
                 : true;
 
@@ -547,7 +631,7 @@ export default {
         },
 
         checkTimeRange(log, search) {
-            const logTime = moment(log.time);
+            const logTime = moment(log.created_date);
             const startTime = moment(search.start);
             const endTime = moment(search.end);
             return (!startTime.isValid() || logTime.isSameOrAfter(startTime)) &&
@@ -572,7 +656,7 @@ export default {
             const worksheet = workbook.addWorksheet('Sheet1');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'picture')
+                .filter(header => header.value !== 'employee_picture')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -584,9 +668,9 @@ export default {
             this.filtered.forEach((item, index) => {
                 const rowData = {};
                 this.filteredHeaders.forEach(header => {
-                    if (header.value === 'time') {
+                    if (header.value === 'created_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value !== 'picture') {
+                    } else if (header.value !== 'employee_picture') {
                         rowData[header.value] = item[header.value];
                     }
                 });
@@ -619,19 +703,6 @@ export default {
                 link.click();
                 document.body.removeChild(link);
             });
-        },
-
-        maskNewData(data) {
-            if (!data) return '';
-
-            const length = data.length;
-            if (length <= 4) return data;
-
-            const firstPart = data.slice(0, 1);
-            const lastPart = data.slice(-1);
-            const maskedPart = '*'.repeat(length - 4)
-
-            return `${firstPart}${maskedPart}${lastPart}`;
         },
     },
 };

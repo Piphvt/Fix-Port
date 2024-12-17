@@ -339,7 +339,7 @@ export default {
                 action: this.currentAction === 'approve'
                     ? 'อนุมัติผู้ใช้งาน'
                     : 'ไม่อนุมัติผู้ใช้งาน',
-                name: this.currentItem.fname,
+                name: this.currentItem.fname + ' ' + this.currentItem.lname,
                 detail: this.currentAction === 'approve'
                     ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`
                     : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`,
