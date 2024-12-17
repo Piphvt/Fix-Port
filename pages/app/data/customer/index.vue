@@ -5,18 +5,16 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
-        <StockCreate :open="StockCreateOpen" @update:open="StockCreateOpen = false" />
-        <StockEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
-        <DividendData :stockNo="selectedStockNo" v-model="DividendDataOpen" />
-        <SetData v-model="SetDataOpen" />
+        <CustomerEdit :open="editCustomer" :data="editAllData" @update:edit="editCustomer = false" />
+        <CustomerCreate :open="CustomerCreateOpen" @update:open="CustomerCreateOpen = false" />
 
         <v-card class="custom-card" flat>
             <v-container>
                 <v-row justify="center" align="center">
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
-                            <v-icon class="little-icon" color="#85d7df">mdi-archive</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลหุ้น</h3>
+                            <v-icon class="little-icon" color="#85d7df">mdi-account</v-icon>&nbsp;
+                            <h3 class="mb-0">ข้อมูลลูกค้า</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">
@@ -76,18 +74,18 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType === 'stock'" v-model="selectedStocks"
-                                class="mx-2 search-size small-font" :items="getSearchItems('stock')"
-                                label="ค้นหาชื่อหุ้น" dense outlined clearable multiple>
+                            <v-autocomplete v-if="searchType === 'nickname'" v-model="selectedNicknames"
+                                class="mx-2 search-size small-font" :items="getSearchItems('nickname')"
+                                label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
                             </v-autocomplete>
 
-                            <v-autocomplete v-if="searchType === 'employee_no'" v-model="selectedEmployees"
-                                class="mx-2 search-size small-font" :items="getSearchItems('employee_no')"
-                                label="ค้นหาชื่อ" dense outlined clearable multiple>
+                            <v-autocomplete v-if="searchType === 'id'" v-model="selectedIds"
+                                class="mx-2 search-size small-font" :items="getSearchItems('id')"
+                                label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
                             </v-autocomplete>
 
-                            <v-autocomplete v-if="searchType === 'set_no'" v-model="selectedSets"
-                                class="mx-2 search-size small-font" :items="getSearchItems('set_no')"
+                            <v-autocomplete v-if="searchType === 'type_no'" v-model="selectedTopics"
+                                class="mx-2 search-size small-font" :items="getSearchItems('type_no')"
                                 label="ค้นหาประเภท" dense outlined clearable multiple>
                             </v-autocomplete>
 
@@ -131,8 +129,7 @@
                             color="#85d7df">mdi-playlist-check</v-icon>
                     </template>
                     <v-list class="header-list">
-                        <v-list-item
-                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select')"
+                        <v-list-item v-for="header in headers.filter(header => header.value !== 'detail')"
                             :key="header.value" class="header-item">
                             <v-list-item-content>
                                 <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
@@ -141,11 +138,9 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="SetDataOpen = true" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-archive-settings</v-icon> ประเภทหุ้น
-                    </v-btn>
-                    <v-btn @click="StockCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-archive-plus</v-icon> เพิ่มหุ้น
+                    <v-btn @click="CustomerCreateOpen = true" class="tab-icon-two"
+                        style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#24b224">mdi-account-plus</v-icon> เพิ่มลูกค้า
                     </v-btn>
                 </div>
             </div>
@@ -164,9 +159,20 @@
                             style="transform: scale(1);" />
                     </div>
                 </template>
-                <template v-slot:item.set_no="{ item }">
-                    <div class="text-center" :style="{ color: getFromText(getSetName(item.set_no)).color }">
-                        {{ getSetName(item.set_no) || 'ยังไม่ระบุ' }}
+                <template v-slot:item.id="{ item }">
+                    <div class="text-center">{{ item.id }}</div>
+                </template>
+                <template v-slot:item.nickname="{ item }">
+                    <div class="text-center">{{ item.nickname }}</div>
+                </template>
+                <template v-slot:item.type_no="{ item }">
+                    <div class="text-center" :style="{ color: getTypeText(getTypeName(item.type_no)).color }">
+                        {{ getTypeName(item.type_no) }}
+                    </div>
+                </template>
+                <template v-slot:item.base_no="{ item }">
+                    <div class="text-center" :style="{ color: getBaseText(getBaseName(item.base_no)).color }">
+                        {{ getBaseName(item.base_no) }}
                     </div>
                 </template>
                 <template v-slot:item.employee_no="{ item }">
@@ -175,23 +181,14 @@
                 <template v-slot:item.updated_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
                 </template>
-                <template v-slot:item.dividend_amount="{ item }">
-                    <div class="text-center">
-                        {{ item.dividend + ' ' }}
-                        <v-icon color="#85d7df" @click="OpenDividendData(item.no)">mdi-eye</v-icon>
-                    </div>
-                </template>
-                <template v-slot:item.closing_price="{ item }">
-                    <div class="text-center">{{ item.price }}</div>
-                </template>
-                <template v-slot:item.detail="{ item }">
+                <template v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" v-slot:item.detail="{ item }">
                     <div class="text-center">
                         <v-menu offset-y>
                             <template v-slot:activator="{ on, attrs }">
                                 <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
                             </template>
                             <v-list class="custom-list">
-                                <v-list-item @click="openEditStock(item)" class="custom-list-item">
+                                <v-list-item @click="openEditCustomer(item)" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#ffc800">mdi-pencil</v-icon>
                                     </v-list-item-icon>
@@ -224,9 +221,9 @@
                 <v-card-text>
                 </v-card-text>
                 <v-card-actions>
-                    <div class="text-center">
-                        <v-btn color="#e50211" @click="dialog = false">ปิด</v-btn>
-                    </div>
+                    <v-spacer></v-spacer>
+                    <v-btn color="#e50211" @click="dialog = false">ปิด</v-btn>
+                    <v-spacer></v-spacer>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -241,7 +238,6 @@ import moment from 'moment-timezone';
 import 'moment/locale/th'
 import DatePicker from 'vue2-datepicker';
 import 'vue2-datepicker/index.css';
-import Decimal from 'decimal.js';
 
 export default {
 
@@ -250,10 +246,10 @@ export default {
 
     async mounted() {
         await this.checkRank();
-        await this.fetchStockData();
+        await this.fetchCustomerData();
         await this.fetchEmployeeData();
-        await this.fetchSetData();
-        await this.fetchSetTopic();
+        await this.fetchTypeData();
+        await this.fetchBaseData();
     },
 
     components: {
@@ -276,27 +272,26 @@ export default {
                 },
             },
 
-            stocks: [],
-            sets: [],
+            customers: [],
+            types: [],
             employees: [],
+            bases: [],
 
-            selectedStocks: [],
-            selectedEmployees: [],
-            selectedSets: [],
-
-            selectedStockNo: null,
-            DividendDataOpen: false,
-            SetDataOpen: false,
-            StockCreateOpen: false,
+            selectedNicknames: [],
+            selectedIds: [],
+            selectedTopics: [],
 
             selectedItems: [],
             handleConfirm: null,
             isSelectingItems: false,
+            modalConfirmOpen: false,
+
+            CustomerCreateOpen: false,
 
             sortBy: 'updated_date',
             currentAction: '',
             searchQuery: '',
-            searchType: 'stock',
+            searchType: 'nickname',
             selectedItemDetail: '',
             startDateTime: '',
             endDateTime: '',
@@ -306,25 +301,24 @@ export default {
             endDatePickerMenu: false,
             showSavedSearchesDialog: false,
             showColumnSelector: false,
-            modalConfirmOpen: false,
-            editStock: false,
+            editCustomer: false,
             dialog: false,
             sortDesc: true,
-            selectedStock: null,
+            selectedCustomer: null,
             currentItem: null,
-            stockNo: null,
+            customerNo: null,
             actionType: null,
             savedSearches: [],
             editAllData: {},
 
             searchTypes: [
-                { text: 'ชื่อหุ้น', value: 'stock' },
-                { text: 'ทำรายการโดย', value: 'employee_no' },
-                { text: 'ประเภท', value: 'set_no' },
-                { text: 'เวลา', value: 'updated_date' }
+                { text: 'ชื่อเล่น', value: 'nickname' },
+                { text: 'รหัสสมาชิก', value: 'id' },
+                { text: 'ประเภท', value: 'type_no' },
+                { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
-            visibleColumns: ['select', 'updated_date', 'set_no', 'stock', 'dividend_amount', 'closing_price', 'comment', 'employee_no', 'detail'],
+            visibleColumns: ['updated_date', 'id', 'nickname', 'type_no', 'base_no', 'employee_no', 'detail', 'select'],
 
             headers: [
                 {
@@ -344,39 +338,31 @@ export default {
 
                 {
                     text: 'ประเภท',
-                    value: 'set_no',
+                    value: 'type_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },
 
                 {
-                    text: 'ชื่อหุ้น',
-                    value: 'stock',
+                    text: 'รหัสสมาชิก',
+                    value: 'id',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },
 
                 {
-                    text: 'จำนวนปันผลปีนี้',
-                    value: 'dividend_amount',
+                    text: 'ชื่อเล่น',
+                    value: 'nickname',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },
 
                 {
-                    text: 'ราคาปิด',
-                    value: 'closing_price',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'หมายเหตุ',
-                    value: 'comment',
+                    text: 'ฐานทุน',
+                    value: 'base_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -403,17 +389,13 @@ export default {
 
     computed: {
         filtered() {
-            let filteredStocks = this.stocks;
+            let filteredCustomers = this.customers;
             this.savedSearches.forEach(search => {
-                filteredStocks = filteredStocks.filter(stock => {
-                    return this.applySearchFilter(stock, search);
+                filteredCustomers = filteredCustomers.filter(customer => {
+                    return this.applySearchFilter(customer, search);
                 });
             });
-            return filteredStocks;
-        },
-
-        formattedDetailLines() {
-            return this.selectedItemDetail.split('\n');
+            return filteredCustomers;
         },
 
         filteredHeaders() {
@@ -422,32 +404,20 @@ export default {
     },
 
     methods: {
-        OpenDividendData(stockNo) {
-            this.selectedStockNo = stockNo;
-            this.DividendDataOpen = true;
-        },
-
         toggleSelectItems() {
             this.isSelectingItems = !this.isSelectingItems;
         },
 
-        getCurrentItem(id) {
-            return this.stocks.find(item => item.no === id);
-        },
-
         async deleteSelectedItems() {
+
             this.handleConfirm = async () => {
                 const selectedIds = this.selectedItems;
 
                 for (let i = 0; i < selectedIds.length; i++) {
                     try {
-                        await this.$store.dispatch('api/stock/deleteStock', selectedIds[i]);
-
-                        this.currentItem = this.getCurrentItem(selectedIds[i]);
-
-                        this.recordLog();
+                        await this.$store.dispatch('api/customer/deleteCustomer', selectedIds[i]);
                     } catch (error) {
-                        console.error(`Error deleting item with id ${selectedIds[i]}:`, error);
+                        console.error(`Error deleting customer with id ${selectedIds[i]}:`, error);
                     }
                 }
 
@@ -457,70 +427,33 @@ export default {
 
                 this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
                 this.modal.complete.open = true;
+                this.recordLog()
                 this.modalConfirmOpen = false;
             };
 
             this.modalConfirmOpen = true;
         },
 
-        async fetchSetTopic() {
-            try {
-                const settopics = await this.$store.dispatch('api/set/getSet');
-                this.actionTopics = settopics.map(set => ({
-                    text: set.set,
-                    value: set.set
-                }));
-            } catch (error) {
-                console.error('Failed to fetch stocks:', error);
-            }
+        async fetchTypeData() {
+            this.types = await this.$store.dispatch('api/type/getType')
         },
 
-        async fetchSetData() {
-            this.sets = await this.$store.dispatch('api/set/getSet')
+        getTypeName(typeId) {
+            const type = this.types.find(t => t.no === typeId);
+            return type ? type.type : 'ยังไม่ระบุ';
         },
 
-        getSetName(setId) {
-            const set = this.sets.find(t => t.no === setId);
-            return set ? set.set : '';
+        async fetchBaseData() {
+            this.bases = await this.$store.dispatch('api/base/getBase')
         },
 
-        async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStock');
-            this.dividends = await this.$store.dispatch('api/dividend/getDividend');
-            this.prices = await this.$store.dispatch('api/price/getPrice');
+        getBaseName(baseId) {
+            const base = this.bases.find(b => b.no === baseId);
+            return base ? base.base : 'ยังไม่ระบุ';
+        },
 
-            const currentYear = new Date().getFullYear();
-
-            for (let stock of this.stocks) {
-
-                const filteredPrices = this.prices.filter(price => price.stock_no === stock.no);
-
-                if (filteredPrices.length > 0) {
-
-                    const latestPrice = filteredPrices.reduce((latest, current) => {
-                        const latestDate = new Date(latest.created_date);
-                        const currentDate = new Date(current.created_date);
-
-                        return currentDate > latestDate ? current : latest;
-                    });
-
-
-                    stock.price = latestPrice.price;
-                } else {
-
-                    stock.price = null;
-                }
-
-
-                const totalDividend = this.dividends
-                    .filter(dividend => dividend.stock_no === stock.no &&
-                        new Date(dividend.created_date).getFullYear() === currentYear)
-                    .reduce((total, dividend) => {
-                        return total.add(new Decimal(dividend.dividend));
-                    }, new Decimal(0));
-
-                stock.dividend = totalDividend.toString();
-            }
+        async fetchCustomerData() {
+            this.customers = await this.$store.dispatch('api/customer/getCustomer');
         },
 
         async fetchEmployeeData() {
@@ -532,23 +465,23 @@ export default {
             return employee ? employee.fname + ' ' + employee.lname : 'ไม่ทราบ';
         },
 
-        openEditStock(stock) {
-            this.editAllData = stock;
-            this.editStock = true;
+        openEditCustomer(customer) {
+            this.editAllData = customer;
+            this.editCustomer = true;
         },
 
         showEditDialog(item) {
-            this.selectedStock = item;
+            this.selectedCustomer = item;
             this.editDialogOpen = true;
         },
 
         getSearchItems(type) {
-            if (type === 'stock') {
-                return this.stocks.map(stock => stock.stock);
-            } else if (type === 'employee_no') {
-                return this.stocks.map(stock => this.getEmployeeName(stock.employee_no));
-            } else if (type === 'set_no') {
-                return this.stocks.map(stock => this.getSetName(stock.set_no) || 'ยังไม่ระบุ');
+            if (type === 'nickname') {
+                return this.customers.map(emp => emp.nickname);
+            } else if (type === 'id') {
+                return this.customers.map(emp => emp.id);
+            } else if (type === 'type_no') {
+                return this.customers.map(emp => this.getTypeName(emp.type_no) || 'ยังไม่ระบุ');
             }
             return [];
         },
@@ -569,11 +502,11 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/stock/management');
+                        this.$router.push('/app/data/customer');
                     } else if (RankID === '2') {
-                        this.$router.push('/app/home');
+                        this.$router.push('/app/data/customer');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/stock/management');
+                        this.$router.push('/app/data/customer');
                     } else {
                         this.$router.push('/auth');
                     }
@@ -583,33 +516,31 @@ export default {
             }
         },
 
-        getFromText(set) {
-            if (set === 'SET') {
-                return { text: 'SET', color: '#24b224' };
-            } else if (set === 'SET50') {
-                return { text: 'SET50', color: '#ffc800' };
-            } else if (set === 'SET100') {
-                return { text: 'SET100', color: '#38b6ff' };
-            } else if (set === 'ETF') {
-                return { text: 'ETF', color: '#8c52ff' };
-            } else if (set === 'MAI') {
-                return { text: 'MAI', color: '#ff914d' };
-            } else if (set === 'Warrants') {
-                return { text: 'Warrants', color: '#c1ff72' };
-            } else if (set === 'DR') {
-                return { text: 'DR', color: '#ff5757' };
-            } else if (set === 'Preferred Stock') {
-                return { text: 'Preferred Stock', color: '#ff66c4' };
-            } else if (set === '') {
-                return { text: 'ยังไม่ระบุ', color: '#e50211' };
+        getTypeText(type) {
+            if (type === 'เทรดเอง') {
+                return { text: 'เทรดเอง', color: '#24b224' };
+            } else if (type === 'เทรดตามโค้ช') {
+                return { text: 'เทรดตามโค้ช', color: '#ffc800' };
             } else {
-                return { text: '', color: 'inherit' };
+                return { text: 'ยังไม่ระบุ', color: '#e50211' };
+            }
+        },
+
+        getBaseText(base) {
+            if (base === 'มีเงิน') {
+                return { text: 'มีเงิน', color: '#24b224' };
+            } else if (base === 'รอจังหวะ') {
+                return { text: 'รอจังหวะ', color: '#ffc800' };
+            } else if (base === 'รอคุย') {
+                return { text: 'รอคุย', color: '#85d7df' };
+            } else {
+                return { text: 'ยังไม่ระบุ', color: '#e50211' };
             }
         },
 
         formatDateTime(date) {
             if (moment(date).isValid()) {
-                return moment(date).format('YYYY/MM/DD HH:mm');
+                return moment(date).format('YYYY-MM-DD HH:mm');
             }
             return 'Invalid Date';
         },
@@ -620,7 +551,7 @@ export default {
         },
 
         onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchSet !== 'updated_date' && this.searchType !== 'set_no';
+            this.isSearchFieldVisible = this.searchType !== 'updated_date' && this.searchType !== 'type_no';
         },
 
         validateDateRange() {
@@ -639,7 +570,7 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'stock' || this.searchType === 'employee_no' || this.searchType === 'set_no') {
+            if (this.searchType === 'nickname' || this.searchType === 'id' || this.searchType === 'type_no') {
                 this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
@@ -656,9 +587,9 @@ export default {
 
         addSearchItemsToSearch() {
             const selectedItems =
-                this.searchType === 'stock' ? this.selectedStocks :
-                    this.searchType === 'employee_no' ? this.selectedEmployees :
-                        this.searchType === 'set_no' ? this.selectedSets : [];
+                this.searchType === 'nickname' ? this.selectedNicknames :
+                    this.searchType === 'id' ? this.selectedIds :
+                        this.searchType === 'type_no' ? this.selectedTopics : [];
 
             if (selectedItems.length > 0) {
                 this.savedSearches.push({
@@ -668,12 +599,12 @@ export default {
                     end: this.endDateTime
                 });
 
-                if (this.searchType === 'stock') {
-                    this.selectedStocks = [];
-                } else if (this.searchType === 'employee_no') {
-                    this.selectedEmployees = [];
-                } else if (this.searchType === 'set_no') {
-                    this.selectedSets = [];
+                if (this.searchType === 'nickname') {
+                    this.selectedNicknames = [];
+                } else if (this.searchType === 'id') {
+                    this.selectedIds = [];
+                } else if (this.searchType === 'type_no') {
+                    this.selectedTopics = [];
                 }
 
                 this.startDateTime = '';
@@ -681,39 +612,39 @@ export default {
             }
         },
 
-        applySearchFilter(stock, search) {
+        applySearchFilter(customer, search) {
             let queryMatched = true;
 
             let field;
-            if (search.type === 'employee_no') {
-                field = this.getEmployeeName(stock.type_no);
-            } else if (search.type === 'set_no') {
-                field = this.getSetName(stock.set_no) || 'ยังไม่ระบุ';
+            if (search.type === 'type_no') {
+                field = this.getTypeName(customer.type_no) || 'ยังไม่ระบุ';
             } else {
-                field = stock[search.type];
+                field = customer[search.type];
             }
 
-            if (search.type === 'stock' || search.type === 'employee_no' || search.type === 'set_no') {
+            if (search.type === 'id' || search.type === 'nickname' || search.type === 'type_no') {
                 queryMatched = search.query.some(query => {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField === query.toLowerCase();
                 });
-            } else if (search.type === 'updated_date') {
-                return this.checkTimeRange(stock, search);
             } else {
                 const searchQuery = search.query.toLowerCase();
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
 
+            const timeMatched = search.type === 'updated_date'
+                ? this.checkTimeRange(customer, search)
+                : true;
+
             return queryMatched && timeMatched;
         },
 
-        checkTimeRange(stock, search) {
-            const stockTime = moment(stock.updated_date);
+        checkTimeRange(customer, search) {
+            const customerTime = moment(customer.updated_date);
             const startTime = moment(search.start);
             const endTime = moment(search.end);
-            return (!startTime.isValid() || stockTime.isSameOrAfter(startTime)) &&
-                (!endTime.isValid() || stockTime.isSameOrBefore(endTime));
+            return (!startTime.isValid() || customerTime.isSameOrAfter(startTime)) &&
+                (!endTime.isValid() || customerTime.isSameOrBefore(endTime));
         },
 
         toggleSavedSearchesDialog() {
@@ -731,10 +662,10 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
+            const worksheet = workbook.addWorksheet('ลูกค้าทั้งหมด');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'picture' && header.value !== 'detail')
+                .filter(header => header.value !== 'picture' && header.value !== 'detail' && header.value !== 'select')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -748,13 +679,13 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'updated_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value === 'set_no') {
-                        rowData[header.value] = this.getSetName(item.set_no);
+                    } else if (header.value === 'type_no') {
+                        rowData[header.value] = this.getTypeName(item.type_no);
                     } else if (header.value === 'employee_no') {
                         rowData[header.value] = this.getEmployeeName(item.employee_no);
-                    } else if (header.value === 'dividend_amount') {
-                        rowData[header.value] = this.getTotalDividends(item.no);
-                    } else if (header.value !== 'picture' && header.value !== 'detail') {
+                    } else if (header.value === 'base_no') {
+                        rowData[header.value] = this.getBaseName(item.base_no);
+                    } else if (header.value !== 'picture' && header.value !== 'detail' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }
                 });
@@ -782,7 +713,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ข้อมูลหุ้น-${currentDate}.xlsx`);
+                link.setAttribute('download', `ข้อมูลลูกค้า-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -798,11 +729,12 @@ export default {
             const Employee_Email = this.$auth.user.email;
             const Employee_Picture = this.$auth.user.picture;
             const log = {
-                action: 'ลบหุ้น',
-                name: this.currentItem.stock,
-                detail: `ประเภท : ${this.getSetName(this.currentItem.set_no) || 'ยังไม่ระบุ'}\n` +
-                    `หมายเหตุ : ${this.currentItem.comment || 'ยังไม่ระบุ'}`,
-                type: 2,
+                action: 'ลบลูกค้า',
+                name: this.currentItem.id,
+                detail: 'ชื่อเล่น : ' + this.currentItem.nickname +
+                    '\nประเภท : ' + this.getTypeName(this.currentItem.type_no) +
+                    '\nฐานทุน : ' + this.getBaseName(this.currentItem.base_no),
+                type: 3,
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,
                 employee_picture: Employee_Picture,
@@ -811,8 +743,8 @@ export default {
             this.$store.dispatch('api/log/addLog', log);
         },
 
-        goToNewStock() {
-            this.$router.push('/app/stock/new_stock');
+        goToNewUser() {
+            this.$router.push('/app/user/new');
         },
     },
 };
@@ -851,12 +783,6 @@ export default {
 .tab-icon-two {
     cursor: pointer;
     margin-right: 24px;
-    margin-left: 0px;
-}
-
-.tab-icon-three {
-    cursor: pointer;
-    margin-right: 8px;
     margin-left: 0px;
 }
 
@@ -924,6 +850,10 @@ export default {
     margin-bottom: 0px;
 }
 
+.custom-list-item {
+    padding: 0 0;
+}
+
 .v-list-item__content {
     padding: 0;
 }
@@ -970,7 +900,7 @@ export default {
 }
 
 .custom-card {
-    max-width: 1200px;
+    max-width: 1000px;
     width: 100%;
     margin: auto;
 }

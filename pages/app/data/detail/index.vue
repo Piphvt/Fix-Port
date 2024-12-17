@@ -770,11 +770,11 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/transaction/customer_stock');
+                        this.$router.push('/app/data/detail');
                     } else if (RankID === '2') {
-                        this.$router.push('/app/transaction/customer_stock');
+                        this.$router.push('/app/data/detail');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/transaction/customer_stock');
+                        this.$router.push('/app/data/detail');
                     } else {
                         this.$router.push('/auth');
                     }

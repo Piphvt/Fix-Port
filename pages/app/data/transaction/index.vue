@@ -633,11 +633,11 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/transaction/customer_trade');
+                        this.$router.push('/app/data/transaction');
                     } else if (RankID === '2') {
-                        this.$router.push('/app/transaction/customer_trade');
+                        this.$router.push('/app/data/transaction');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/transaction/customer_trade');
+                        this.$router.push('/app/data/transaction');
                     } else {
                         this.$router.push('/auth');
                     }

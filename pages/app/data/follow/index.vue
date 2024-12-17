@@ -461,11 +461,11 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/stock/stock_follow');
+                        this.$router.push('/app/data/follow');
                     } else if (RankID === '2') {
                         this.$router.push('/app/home');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/stock/stock_follow');
+                        this.$router.push('/app/data/follow');
                     } else {
                         this.$router.push('/auth');
                     }
