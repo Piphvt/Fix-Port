@@ -612,23 +612,19 @@ export default {
                 field = employee[search.type];
             }
 
-            if (Array.isArray(search.query)) {
+            if (search.type === 'phone' || search.type === 'email' || search.type === 'fname' || search.type === 'rank_no') {
                 queryMatched = search.query.some(query => {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField === query.toLowerCase();
                 });
-            } else if (typeof search.query === 'string') {
+            } else if (search.type === 'created_date') {
+                return this.checkTimeRange(employee, search);
+            } else {
                 const searchQuery = search.query.toLowerCase();
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
-            } else {
-                queryMatched = false;
             }
 
-            const timeMatched = search.type === 'updated_date'
-                ? this.checkTimeRange(employee, search)
-                : true;
-
-            return queryMatched && timeMatched;
+            return queryMatched;
         },
 
         checkTimeRange(employee, search) {

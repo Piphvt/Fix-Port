@@ -93,7 +93,8 @@
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-bind="attrs" v-on="on" class="date-picker-activator">
                                         <v-icon class="small-label">mdi-calendar-start-outline</v-icon>
-                                        <date-picker v-model="startDateTime" format="YYYY/MM/DD HH:mm" type="datetime" />
+                                        <date-picker v-model="startDateTime" format="YYYY-MM-DD HH:mm"
+                                            type="datetime" />
                                     </div>
                                 </template>
                             </v-menu>
@@ -103,7 +104,7 @@
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
                                         <v-icon class="small-label">mdi-calendar-end-outline</v-icon>
-                                        <date-picker v-model="endDateTime" format="YYYY/MM/DD HH:mm" type="datetime" />
+                                        <date-picker v-model="endDateTime" format="YYYY-MM-DD HH:mm" type="datetime" />
                                     </div>
                                 </template>
                             </v-menu>
@@ -558,7 +559,7 @@ export default {
 
         formatDateTime(date) {
             if (moment(date).isValid()) {
-                return moment(date).format('YYYY/MM/DD HH:mm');
+                return moment(date).format('YYYY-MM-DD HH:mm');
             }
             return 'Invalid Date';
         },
@@ -639,16 +640,14 @@ export default {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField === query.toLowerCase();
                 });
+            } else if (search.type === 'created_date') {
+                return this.checkTimeRange(log, search);
             } else {
                 const searchQuery = search.query.toLowerCase();
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
-
-            const timeMatched = search.type === 'created_date'
-                ? this.checkTimeRange(log, search)
-                : true;
-
-            return queryMatched && timeMatched;
+            
+            return queryMatched;
         },
 
         checkTimeRange(log, search) {

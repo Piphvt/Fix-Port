@@ -211,24 +211,24 @@
                                     height="100" />
                             </div>
                         </template>
-                        <template v-else-if="line.includes('รายการที่ ')">
-                            <span style="color: green">รายการที่ </span>{{ line.replace('รายการที่', '').trim()
+                        <template v-else-if="line.includes('หุ้นที่ ')">
+                            <span style="color: green">หุ้นที่ </span>{{ line.replace('หุ้นที่', '').trim()
                             }}
                         </template>
-                        <template v-else-if="line.includes('ชื่อหุ้น ')">
-                            <span style="color: white">ชื่อหุ้น </span>{{ line.replace('ชื่อหุ้น', '').trim()
+                        <template v-else-if="line.includes('ชื่อ ')">
+                            <span style="color: white">ชื่อ </span>{{ line.replace('ชื่อ', '').trim()
                             }}
                         </template>
-                        <template v-else-if="line.includes('ที่มาที่ไป ')">
-                            <span style="color: blue">ที่มาที่ไป </span>{{ line.replace('ที่มาที่ไป', '').trim()
+                        <template v-else-if="line.includes('ประเภท ')">
+                            <span style="color: blue">ประเภท </span>{{ line.replace('ประเภท', '').trim()
                             }}
                         </template>
-                        <template v-else-if="line.includes('ราคาที่ติด ')">
-                            <span style="color: orange">ราคาที่ติด </span>{{ line.replace('ราคาที่ติด', '').trim()
+                        <template v-else-if="line.includes('จำนวนปันผล ')">
+                            <span style="color: orange">จำนวนปันผล </span>{{ line.replace('จำนวนปันผล', '').trim()
                             }}
                         </template>
-                        <template v-else-if="line.includes('จำนวนที่ติด ')">
-                            <span style="color: purple">จำนวนที่ติด </span>{{ line.replace('จำนวนที่ติด', '').trim()
+                        <template v-else-if="line.includes('ราคาปิด ')">
+                            <span style="color: purple">ราคาปิด </span>{{ line.replace('ราคาปิด', '').trim()
                             }}
                         </template>
                         <template v-else-if="line.includes('หมายเหตุ ')">
@@ -260,11 +260,13 @@
 
 <script>
 
+
 import ExcelJS from 'exceljs';
 import moment from 'moment-timezone';
 import 'moment/locale/th'
 import DatePicker from 'vue2-datepicker';
 import 'vue2-datepicker/index.css';
+
 
 export default {
 
@@ -285,7 +287,18 @@ export default {
             modal: {
                 error: {
                     open: false,
-                    message: 'การป้อนข้อมูลเวลาไม่ถูกต้อง',
+                    message: '',
+                },
+                warning: {
+                    open: false,
+                    message: '',
+                },
+                confirm: {
+                    open: false,
+                },
+                complete: {
+                    open: false,
+                    message: '',
                 },
             },
 
@@ -372,7 +385,7 @@ export default {
                 },
 
                 {
-                    text: 'ผู้ใช้งาน',
+                    text: 'ชื่อหุ้น',
                     value: 'name',
                     sortable: false,
                     align: 'center',
@@ -469,9 +482,9 @@ export default {
         },
 
         getDetailTitle(action) {
-            if (['เพิ่มหุ้นของลูกค้า', 'ลบข้อมูลหุ้นของลูกค้า', 'เพิ่มประเภทหุ้นใหม่', 'ลบประเภทหุ้น'].includes(action)) {
+            if (['เพิ่มหุ้นใหม่', 'ลบหุ้น', 'เพิ่มประเภทหุ้นใหม่', 'ลบประเภทหุ้น'].includes(action)) {
                 return 'ข้อมูลเพิ่มเติม';
-            } else if (['แก้ไขข้อมูลหุ้นของลูกค้า', 'แก้ไขข้อมูลประเภทหุ้น'].includes(action)) {
+            } else if (['แก้ไขข้อมูลหุ้น', 'แก้ไขข้อมูลประเภทหุ้น'].includes(action)) {
                 return 'ข้อมูลที่ถูกแก้ไข';
             }
             return 'ข้อมูลทั่วไป';
@@ -517,11 +530,11 @@ export default {
         },
 
         getActionColor(action) {
-            if (action === 'เพิ่มหุ้นของลูกค้า') {
+            if (action === 'เพิ่มหุ้นใหม่') {
                 return '#24b224';
-            } else if (action === 'ลบข้อมูลหุ้นของลูกค้า') {
+            } else if (action === 'ลบหุ้น') {
                 return '#e50211';
-            } else if (action === 'แก้ไขข้อมูลหุ้นของลูกค้า') {
+            } else if (action === 'แก้ไขข้อมูลหุ้น') {
                 return '#ffc800';
             } else if (action === 'เพิ่มประเภทหุ้นใหม่') {
                 return '#c1ff72';
@@ -618,14 +631,12 @@ export default {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField === query.toLowerCase();
                 });
+            } else if (search.type === 'created_date') {
+                return this.checkTimeRange(log, search);
             } else {
                 const searchQuery = search.query.toLowerCase();
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
-
-            const timeMatched = search.type === 'created_date'
-                ? this.checkTimeRange(log, search)
-                : true;
 
             return queryMatched && timeMatched;
         },
@@ -653,7 +664,7 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
+            const worksheet = workbook.addWorksheet('ประวัติการซื้อขายหุ้น');
 
             const headers = this.filteredHeaders
                 .filter(header => header.value !== 'employee_picture')
@@ -698,7 +709,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ประวัติการซื้อขายหุ้นของลูกค้า-${currentDate}.xlsx`);
+                link.setAttribute('download', `ประวัติการซื้อขายหุ้น-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -802,7 +813,11 @@ export default {
 }
 
 .custom-list-item {
-    padding: 0 0;
+    padding: 0.1px 8px;
+}
+
+.custom-list {
+    padding: 0.4px 2px;
 }
 
 .v-list-item__content {

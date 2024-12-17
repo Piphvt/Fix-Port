@@ -385,7 +385,7 @@ export default {
                 },
 
                 {
-                    text: 'ผู้ใช้งาน',
+                    text: 'ชื่อหุ้น',
                     value: 'name',
                     sortable: false,
                     align: 'center',
@@ -631,14 +631,12 @@ export default {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField === query.toLowerCase();
                 });
+            } else if (search.type === 'created_date') {
+                return this.checkTimeRange(log, search);
             } else {
                 const searchQuery = search.query.toLowerCase();
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
-
-            const timeMatched = search.type === 'created_date'
-                ? this.checkTimeRange(log, search)
-                : true;
 
             return queryMatched && timeMatched;
         },

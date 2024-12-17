@@ -693,14 +693,12 @@ export default {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField === query.toLowerCase();
                 });
+            } else if (search.type === 'updated_date') {
+                return this.checkTimeRange(stock, search);
             } else {
                 const searchQuery = search.query.toLowerCase();
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
-
-            const timeMatched = search.type === 'updated_date'
-                ? this.checkTimeRange(stock, search)
-                : true;
 
             return queryMatched && timeMatched;
         },

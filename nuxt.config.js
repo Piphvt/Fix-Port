@@ -85,11 +85,7 @@ export default {
           success: colors.green.darken1,
         },
       },
-    },
-    lang: {
-      locales: { th }, // เพิ่มการตั้งค่าภาษาไทย
-      current: 'th', // ตั้งค่าภาษาเป็นไทย
-    },
+    }
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
