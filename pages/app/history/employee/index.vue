@@ -127,7 +127,7 @@
                         color="#85d7df">mdi-playlist-check</v-icon>
                 </template>
                 <v-list class="header-list">
-                    <v-list-item v-for="header in headers" :key="header.value" class="header-item">
+                    <v-list-item v-for="header in headers.filter(header => header.value !== 'edit' && header.value !== 'select')" :key="header.value" class="header-item">
                         <v-list-item-content>
                             <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
                         </v-list-item-content>
@@ -287,7 +287,6 @@ export default {
     async mounted() {
         await this.checkRank();
         await this.fetchLogData();
-        await this.fetchEmployeeData();
     },
 
     components: {
@@ -315,7 +314,6 @@ export default {
             },
 
             logs: [],
-            employees: [],
 
             selectedName: [],
             selectedEmail: [],
@@ -496,7 +494,7 @@ export default {
 
         getSearchItems(type) {
             if (type === 'employee_name') {
-                return this.logs.map(log => log.action);
+                return this.logs.map(log => log.employee_name);
             } else if (type === 'employee_email') {
                 return this.logs.map(log => log.employee_email);
             } else if (type === 'action') {
@@ -531,14 +529,6 @@ export default {
 
         async fetchLogData() {
             this.logs = await this.$store.dispatch('api/log/getLogByType', '4');
-        },
-
-        async fetchEmployeeData() {
-            this.employees = await this.$store.dispatch('api/employee/getEmployee');
-        },
-
-        getEmployeeByNo(empNo) {
-            return this.employees.find(employee => employee.no === empNo);
         },
 
         getActionColor(action) {
@@ -654,7 +644,7 @@ export default {
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
 
-            const timeMatched = search.type === 'updated_date'
+            const timeMatched = search.type === 'created_date'
                 ? this.checkTimeRange(log, search)
                 : true;
 
