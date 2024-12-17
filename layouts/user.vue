@@ -336,11 +336,11 @@ export default {
     },
 
     goToManagement() {
-      this.$router.push('/app/user/management');
+      this.$router.push('/app/data/customer');
     },
 
     goToEmpManagement() {
-      this.$router.push('/app/user/employee_management');
+      this.$router.push('/app/data/employee');
     },
 
     goToTransHist() {
@@ -360,11 +360,11 @@ export default {
     },
 
     goToStocksManagement() {
-      this.$router.push('/app/stock/management');
+      this.$router.push('/app/data/stock');
     },
 
     goToStocksFollow() {
-      this.$router.push('/app/stock/stock_follow');
+      this.$router.push('/app/data/follow');
     },
 
     goToStocksUpdate() {
@@ -373,11 +373,11 @@ export default {
 
 
     goToStockDetail() {
-      this.$router.push('/app/transaction/customer_stock');
+      this.$router.push('/app/data/detail');
     },
 
     goToStockTrade() {
-      this.$router.push('/app/transaction/customer_trade');
+      this.$router.push('/app/data/transaction');
     },
 
     goToStockResult() {
