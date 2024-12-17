@@ -69,7 +69,7 @@ export default {
             headers: [],
             isLoadingClosePrice: false,
             isLoadingDividendYield: false,
-            isDataLoaded: false, // Flag เพื่อควบคุมการแสดง headers
+            isDataLoaded: false,
             xhr: null,
         };
     },
@@ -112,7 +112,7 @@ export default {
 
         fetchClosePriceData() {
             this.isLoadingClosePrice = true;
-            this.headers = [ // ตั้งค่า headers สำหรับราคาปิด
+            this.headers = [
                 { text: 'เวลา', value: 'datetime' },
                 { text: 'ชื่อหุ้น', value: 'symbol' },
                 { text: 'ราคาปิด', value: 'close' }
@@ -129,7 +129,7 @@ export default {
                         const text = event.target.result;
                         this.parseClosePriceData(text);
                         this.isLoadingClosePrice = false;
-                        this.isDataLoaded = true; // ตั้งค่า flag เป็น true หลังจากโหลดข้อมูลเสร็จ
+                        this.isDataLoaded = true;
                     };
                     reader.readAsText(this.xhr.response);
                 } else {
@@ -171,7 +171,7 @@ export default {
 
         fetchDividendYieldData() {
             this.isLoadingDividendYield = true;
-            this.headers = [ // ตั้งค่า headers สำหรับจำนวนปันผล
+            this.headers = [ 
                 { text: 'วันที่', value: 'xdate' },
                 { text: 'ชื่อหุ้น', value: 'symbol' },
                 { text: 'จำนวนปันผล', value: 'dividend' },
@@ -188,7 +188,7 @@ export default {
                         const text = event.target.result;
                         this.parseDividendYieldData(text);
                         this.isLoadingDividendYield = false;
-                        this.isDataLoaded = true; // ตั้งค่า flag เป็น true หลังจากโหลดข้อมูลเสร็จ
+                        this.isDataLoaded = true;
                     };
                     reader.readAsText(this.xhr.response);
                 } else {
@@ -245,39 +245,35 @@ export default {
 
         async parseDividendYieldData(data) {
             try {
-                // เรียกดูข้อมูลที่มีอยู่ในฐานข้อมูล
                 const existingDividends = await this.$store.dispatch('api/dividend/getDividend', {
-                    x_date: moment().tz('Asia/Bangkok').format('YYYY-MM-DD'), // ใช้วันที่ปัจจุบันในการตรวจสอบ
-                    stock_id: null // ถ้าต้องการตรวจสอบสำหรับทุก stock_id
+                    x_date: moment().tz('Asia/Bangkok').format('YYYY-MM-DD'),
+                    stock_no: null
                 });
 
-                // ตรวจสอบว่าได้ข้อมูล existingDividends หรือไม่
                 if (!existingDividends) {
                     throw new Error('ไม่สามารถดึงข้อมูลปันผลที่มีอยู่จากฐานข้อมูลได้');
                 }
 
-                // แปลงข้อมูล existingDividends ให้เป็นรูปแบบที่ตรวจสอบได้ง่าย
                 const existingDividendSet = new Set(existingDividends.map(item =>
-                    `${item.stock_id}-${moment(item.created_date).tz('Asia/Bangkok').format('YYYY-MM-DD')}`
+                    `${item.stock_no}-${moment(item.created_date).tz('Asia/Bangkok').format('YYYY-MM-DD')}`
                 ));
 
                 Papa.parse(data, {
                     header: true,
                     complete: (results) => {
-                        // กรองข้อมูลให้เอาเฉพาะแถวที่ dividend เป็น float และไม่ซ้ำกับ existing dividends
+
                         this.csvData = results.data
                             .filter(item => {
                                 const dividend = parseFloat(item.dividend);
-                                const createdDate = moment(item.xdate).tz('Asia/Bangkok').format('YYYY-MM-DD'); // แปลง created_date
-                                const stockId = this.getStockByName(item.symbol)?.no; // รับ stock_id จาก symbol
+                                const createdDate = moment(item.xdate).tz('Asia/Bangkok').format('YYYY-MM-DD');
+                                const stockId = this.getStockByName(item.symbol)?.no; 
 
-                                // ตรวจสอบว่าเป็น float ที่ไม่ใช่ NaN และไม่ซ้ำกับ existing dividends
                                 return !isNaN(dividend) && !existingDividendSet.has(`${stockId}-${createdDate}`);
                             })
                             .map(item => ({
                                 xdate: item.xdate,
                                 symbol: item.symbol,
-                                dividend: parseFloat(item.dividend), // แปลงเป็น float เพื่อความถูกต้อง
+                                dividend: parseFloat(item.dividend),
                                 remark: item.remark
                             }));
 
@@ -286,8 +282,8 @@ export default {
                     },
                 });
             } catch (error) {
-                console.error('เกิดข้อผิดพลาดในการประมวลผลข้อมูล:', error); // Log ข้อผิดพลาด
-                alert('ไม่สามารถประมวลผลข้อมูลได้: ' + error.message); // แจ้งเตือนผู้ใช้
+                console.error('เกิดข้อผิดพลาดในการประมวลผลข้อมูล:', error);
+                alert('ไม่สามารถประมวลผลข้อมูลได้: ' + error.message);
             }
         },
 
@@ -302,16 +298,12 @@ export default {
                     const stockData = JSON.parse(JSON.stringify(stock));
                     const symbol = stockData.symbol;
                     
-
-                    // ตรวจสอบให้แน่ใจว่ามีค่าที่ถูกต้องก่อนส่งคำขอ
                     if (!symbol) {
                         continue;
                     }
 
-                    // แปลง symbol เป็น int
                     const stockId = this.getStockByName(symbol).no;
 
-                    // ตรวจสอบว่าเป็นข้อมูล ClosePrice หรือ DividendYield
                     if (stockData.close !== undefined) {
                         const closePrice = stockData.close;
                         const price_created_date = stockData.datetime
@@ -326,35 +318,31 @@ export default {
 
                     if (stockData.dividend !== undefined) {
                         const dividend = stockData.dividend;
-                        const created_date = stockData.xdate; // วันที่ที่ได้จาก stockData
+                        const created_date = stockData.xdate;
 
-                        // แปลง created_date เป็นเวลาของเขต Bangkok/Asia
                         const newCreatedDate = moment.tz(created_date, 'Asia/Bangkok').toDate();
 
-                        // ตรวจสอบข้อมูล dividend
                         const existingDividend = await this.$store.dispatch('api/dividend/getDividend', {
-                            x_date: moment(created_date).tz('Asia/Bangkok').format('YYYY-MM-DD'), // ใช้ฟอร์แมตวันที่
-                            stock_id: stockId
+                            x_date: moment(created_date).tz('Asia/Bangkok').format('YYYY-MM-DD'),
+                            stock_no: stockId
                         });
 
-                        console.log('Existing dividends:', existingDividend); // Log existing dividends
 
-                        // ตรวจสอบว่ามีข้อมูลซ้ำหรือไม่
                         const isDuplicate = existingDividend.some(item => {
                             const existingCreatedDate = moment.tz(item.created_date, 'Asia/Bangkok').toDate();
-                            return item.stock_id === stockId && existingCreatedDate.toDateString() === newCreatedDate.toDateString();
+                            return item.stock_no === stockId && existingCreatedDate.toDateString() === newCreatedDate.toDateString();
                         });
 
                         if (isDuplicate) {
                             console.log(`ข้อมูลปันผลสำหรับ ${symbol} วันที่ ${moment(created_date).tz('Asia/Bangkok').format('YYYY-MM-DD')} มีอยู่แล้วในฐานข้อมูล`);
-                            continue; // ข้ามการเพิ่มข้อมูล
+                            continue;
                         }
 
                         await this.$store.dispatch('api/dividend/addDividend', {
                             updated_date: moment.tz(new Date(), 'Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
                             created_date: moment(created_date).tz('Asia/Bangkok').format('YYYY-MM-DD'),
                             employee_no: this.$auth.user.no,
-                            stock_id: stockId,
+                            stock_no: stockId,
                             dividend: dividend,
                         });
                     }

@@ -27,7 +27,7 @@
                             </v-menu>
                         </v-col>
                         <v-col cols="5" sm="5" class="pa-0 ml-4">
-                            <v-autocomplete v-model="stock_id" :items="stocks" item-text="name" item-value="no"
+                            <v-autocomplete v-model="stock_no" :items="stocks" item-text="name" item-value="no"
                                 label="ชื่อหุ้น" dense outlined :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable>
                             </v-autocomplete>
                         </v-col>
@@ -70,7 +70,7 @@ export default {
 
     data() {
         return {
-            stock_id: '',
+            stock_no: '',
             stocks: [],
             newStockType: '',
             isOpen: this.open,
@@ -129,12 +129,12 @@ export default {
                 return;
             }
             try {
-                const emp_id = this.$auth.user.no;
+                const employee_no = this.$auth.user.no;
                 const updated_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const response = await this.$store.dispatch('api/dividend/addDividend', {
-                    stock_id: this.stock_id,
+                    stock_no: this.stock_no,
                     dividend: this.newStockType,
-                    emp_id,
+                    employee_no,
                     created_date: this.selectedDate,
                     updated_date,
                 });
@@ -142,7 +142,7 @@ export default {
                 this.modal.complete.message = 'เพิ่มจำนวนปันผลสำเร็จ';
                 this.modal.complete.open = true;
                 this.recordLog();
-                this.stock_id = '';
+                this.stock_no = '';
                 this.selectedDate = '';
                 this.newStockType = '';
                 this.$emit('update:open', false);
@@ -164,7 +164,7 @@ export default {
         },
         recordLog() {
             const log = {
-                stock_id: this.newStockType,
+                stock_no: this.newStockType,
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
                 detail: 'ไม่มีข้อมูลเพิ่มเติม',

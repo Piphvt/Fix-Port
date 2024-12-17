@@ -6,6 +6,7 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <StockEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
+        <DividendData :stockNo="selectedStockNo" v-model="dialogOpen" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -175,7 +176,13 @@
                     <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
                 </template>
                 <template v-slot:item.dividend_amount="{ item }">
-                    <div class="text-center">{{ getTotalDividends(item.no) }}</div>
+                    <div class="text-center">
+                        {{ item.dividend+' ' }}
+                        <v-icon color="#85d7df" @click="sendStockNo(item.no)">mdi-eye</v-icon>
+                    </div>
+                </template>
+                <template v-slot:item.closing_price="{ item }">
+                    <div class="text-center">{{ item.price }}</div>
                 </template>
                 <template v-slot:item.detail="{ item }">
                     <div class="text-center">
@@ -217,9 +224,9 @@
                 <v-card-text>
                 </v-card-text>
                 <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="#e50211" @click="dialog = false">ปิด</v-btn>
-                    <v-spacer></v-spacer>
+                    <div class="text-center">
+                        <v-btn color="#e50211" @click="dialog = false">ปิด</v-btn>
+                    </div>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -247,7 +254,6 @@ export default {
         await this.fetchEmployeeData();
         await this.fetchSetData();
         await this.fetchSetTopic();
-        await this.fetchDividendData();
     },
 
     components: {
@@ -259,25 +265,27 @@ export default {
             modal: {
                 warning: {
                     open: false,
-                    message: 'การป้อนข้อมูลเวลาไม่ถูกต้อง',
+                    message: '',
                 },
                 confirm: {
                     open: false,
                 },
                 complete: {
                     open: false,
-                    message: 'สำเร็จ',
+                    message: '',
                 },
             },
 
             stocks: [],
             sets: [],
             employees: [],
-            dividends: [],
 
             selectedStocks: [],
             selectedEmployees: [],
             selectedSets: [],
+
+            selectedStockNo: null,
+            dialogOpen: false,
 
             selectedItems: [],
             handleConfirm: null,
@@ -412,6 +420,11 @@ export default {
     },
 
     methods: {
+        sendStockNo(stockNo) {
+            this.selectedStockNo = stockNo;
+            this.dialogOpen = true;
+        },
+
         toggleSelectItems() {
             this.isSelectingItems = !this.isSelectingItems;
         },
@@ -448,26 +461,6 @@ export default {
             this.modalConfirmOpen = true;
         },
 
-        async fetchDividendData() {
-            try {
-                this.dividends = await this.$store.dispatch('api/dividend/getDividend');
-            } catch (error) {
-                console.error('Failed to fetch dividends:', error);
-            }
-        },
-
-        getTotalDividends(stockId) {
-            const currentYear = new Date().getFullYear();
-            const total = this.dividends
-                .filter(dividend => dividend.stock_no === stockId &&
-                    new Date(dividend.created_date).getFullYear() === currentYear)
-                .reduce((total, dividend) => {
-                    return total.add(new Decimal(dividend.dividend));
-                }, new Decimal(0));
-
-            return total.toString();
-        },
-
         async fetchSetTopic() {
             try {
                 const settopics = await this.$store.dispatch('api/set/getSet');
@@ -491,6 +484,41 @@ export default {
 
         async fetchStockData() {
             this.stocks = await this.$store.dispatch('api/stock/getStock');
+            this.dividends = await this.$store.dispatch('api/dividend/getDividend');
+            this.prices = await this.$store.dispatch('api/price/getPrice');
+
+            const currentYear = new Date().getFullYear();
+
+            for (let stock of this.stocks) {
+
+                const filteredPrices = this.prices.filter(price => price.stock_no === stock.no);
+
+                if (filteredPrices.length > 0) {
+
+                    const latestPrice = filteredPrices.reduce((latest, current) => {
+                        const latestDate = new Date(latest.created_date);
+                        const currentDate = new Date(current.created_date);
+
+                        return currentDate > latestDate ? current : latest;
+                    });
+
+
+                    stock.price = latestPrice.price;
+                } else {
+
+                    stock.price = null;
+                }
+
+
+                const totalDividend = this.dividends
+                    .filter(dividend => dividend.stock_no === stock.no &&
+                        new Date(dividend.created_date).getFullYear() === currentYear)
+                    .reduce((total, dividend) => {
+                        return total.add(new Decimal(dividend.dividend));
+                    }, new Decimal(0));
+
+                stock.dividend = totalDividend.toString();
+            }
         },
 
         async fetchEmployeeData() {
@@ -898,10 +926,6 @@ export default {
     left: 0;
     margin-top: 0px;
     margin-bottom: 0px;
-}
-
-.custom-list-item {
-    padding: 0 0;
 }
 
 .v-list-item__content {

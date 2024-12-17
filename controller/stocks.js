@@ -10,7 +10,7 @@ exports.getStock = (req, res) => {
 
 exports.addStock = async (req, res) => {
     try {
-        const { stock, set_no, closing_price, comment, employee_no, created_date, updated_date } = req.body;
+        const { stock, set_no, comment, employee_no, created_date, updated_date } = req.body;
         connection.query('SELECT * FROM `stocks` WHERE `stock` = ?',
             [stock], function (err, results) {
                 if (results.length > 0) {
@@ -19,7 +19,6 @@ exports.addStock = async (req, res) => {
                     const customerData = {
                         stock,
                         set_no,
-                        closing_price,
                         comment,
                         employee_no,
                         created_date,
@@ -46,7 +45,7 @@ exports.addStock = async (req, res) => {
 
 exports.updateStock = async (req, res) => {
     try {
-        const { stock, set_no, closing_price, comment, employee_no } = req.body;
+        const { stock, set_no, comment, employee_no } = req.body;
         const stockId = req.params.no;
         const [existingStocks] = await connection.promise().query('SELECT * FROM `stocks` WHERE `stock` = ? AND `no` != ?', [stock, stockId]);
         if (existingStocks.length > 0) {
@@ -55,7 +54,6 @@ exports.updateStock = async (req, res) => {
         const updatedData = {
             stock,
             set_no,
-            closing_price,
             comment,
             employee_no,
             updated_date: new Date()
@@ -92,7 +90,7 @@ exports.deleteStock = (req, res) => {
 
 exports.updateClosePriceByName = async (req, res) => {
     try {
-        const { stock, closing_price, employee_no } = req.body;
+        const { stock, employee_no } = req.body;
 
         const [existingStocks] = await connection.promise().query('SELECT * FROM `stocks` WHERE `stock` = ?', [stock]);
         if (existingStocks.length === 0) {
@@ -101,7 +99,6 @@ exports.updateClosePriceByName = async (req, res) => {
 
         const updatedData = {
             employee_no,
-            closing_price,
             updated_date: new Date()
         };
 

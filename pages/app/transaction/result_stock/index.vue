@@ -501,8 +501,6 @@ export default {
                 date, 
             }));
 
-            console.log('selectedStockData:', this.selectedStockData);
-
             this.selectedDataType = type || '';
             this.dialogOpen = true;
         },

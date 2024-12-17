@@ -393,9 +393,9 @@ export default {
 
         getSearchItems(type) {
             if (type === 'stock_no') {
-                return this.stocks.map(stock => stock.stock);
+                return this.dividends.map(stock => this.getStockName(stock.stock_no));
             } else if (type === 'emp_id') {
-                return this.stocks.map(emp => this.getEmployeeName(emp.employee_no));
+                return this.dividends.map(emp => this.getEmployeeName(emp.employee_no));
             }
             return [];
         },
@@ -785,10 +785,6 @@ export default {
     left: 0;
     margin-top: 0px;
     margin-bottom: 0px;
-}
-
-.custom-list-item {
-    padding: 0 0;
 }
 
 .v-list-item__content {
