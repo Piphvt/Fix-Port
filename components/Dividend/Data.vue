@@ -12,7 +12,7 @@
                 <DividendEdit :open="editDividend" :data="editAllData" @update:edit="editDividend = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-basket</v-icon>
+                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-basket</v-icon>
                 <span class="headline">ข้อมูลเงินปันผล</span></v-card-title>
             <v-card-text>
                 <v-data-table v-if="filteredDividends.length > 0" :headers="headers" :items="filteredDividends"
@@ -103,7 +103,7 @@ export default {
 
             headers: [
                 {
-                    text: 'วันที่จ่ายปันผล',
+                    text: 'วันที่จ่ายเงินปันผล',
                     value: 'created_date',
                     align: 'center',
                     cellClass: 'text-center',
@@ -197,7 +197,7 @@ export default {
 
         formatDateTime(date) {
             if (moment(date).isValid()) {
-                return moment(date).format('YYYY/MM/DD');
+                return moment(date).format('DD/MM/YYYY');
             }
             return 'Invalid Date';
         },

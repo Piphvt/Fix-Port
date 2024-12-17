@@ -19,13 +19,15 @@ exports.getLogByType = (req, res) => {
 
 exports.addLog = (req, res) => {
   try {
-    const { type_no, type, action, detail, employee_no, created_date } = req.body;
+    const { action, name, detail, type, employee_name, employee_email, employee_picture, created_date } = req.body;
     const logData = {
-      type_no,
-      type,
       action,
+      name,
       detail,
-      employee_no,
+      type,
+      employee_name,
+      employee_email,
+      employee_picture,
       created_date,
     }
     connection.query('INSERT INTO `logs` SET ?',
@@ -42,15 +44,15 @@ exports.addLog = (req, res) => {
 
 exports.deleteLog = (req, res) => {
   try {
-      const LogNo = req.params.no;
-      connection.query('DELETE FROM `logs` WHERE no = ?',
-          [LogNo], function (err, results) {
-              res.json({ message: "ลบประวัติสำเร็จ", results });
-          }
-      );
+    const LogNo = req.params.no;
+    connection.query('DELETE FROM `logs` WHERE no = ?',
+      [LogNo], function (err, results) {
+        res.json({ message: "ลบประวัติสำเร็จ", results });
+      }
+    );
 
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
+    console.error(error);
+    res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
   }
 }

@@ -10,21 +10,21 @@
     <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
       content-class="rounded-xl">
       <v-card class="rounded-xl">
-        <v-card-title class="card-title-center mb-7">แก้ไขรายละเอียดหุ้น</v-card-title>
+        <v-card-title class="card-title-center mb-3">แก้ไขรายละเอียดหุ้น</v-card-title>
         <v-card-text>
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-text-field v-model="formData.name" :rules="[
+                <v-text-field v-model="formData.stock" :rules="[
                   (v) => !!v || 'โปรดกรอกชื่อหุ้น'
-                ]" label="ชื่อหุ้น" outlined required maxlength="12" />
+                ]" label="ชื่อหุ้น" dense outlined required maxlength="12" />
 
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
-                <v-select v-model="formData.set_id" :items="setOptions" :item-text="item => item.text"
-                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกประเภท']" label="ประเภท" outlined
-                  required>
+                <v-select v-model="formData.set_no" :items="setOptions" :item-text="item => item.text"
+                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกประเภท']" label="ประเภท" dense
+                  outlined required>
                   <template v-slot:item="data">
                     <v-icon left>
                       {{ data.item.icon }}
@@ -34,28 +34,20 @@
                 </v-select>
               </v-col>
 
-              <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-text-field v-model="formData.closing_price" :rules="[
-                  (v) => !!v || 'โปรดกรอกราคาปิด',
-                  (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
-                ]" label="ราคาปิด" outlined required />
-              </v-col>
-
-              <v-col cols="6" sm="5" class="pa-0">
-                <v-text-field v-model="formData.comment" label="หมายเหตุ" outlined />
+              <v-col cols="5" sm="11" class="pa-0 ml-4">
+                <v-text-field v-model="formData.comment" label="หมายเหตุ" dense outlined />
               </v-col>
             </v-row>
           </v-form>
+          <v-card-actions class="card-title-center pa-0">
+            <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.stock" depressed color="#24b224"
+              class="font-weight-medium mr-2">
+              บันทึก
+            </v-btn>
+            <v-btn color="#e50211" @click="cancel" class="font-weight-medium">ยกเลิก
+            </v-btn>
+          </v-card-actions>
         </v-card-text>
-
-        <v-card-actions class="card-title-center pa-0">
-          <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.name" depressed color="#24b224"
-            class="font-weight-medium mr-2 mb-5">
-            บันทึก
-          </v-btn>
-          <v-btn color="#e50211" @click="cancel" class="font-weight-medium mb-5">ยกเลิก
-          </v-btn>
-        </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
@@ -171,10 +163,10 @@ export default {
           return acc;
         }, []).concat(allTypes.filter(r => !prioritizedTypes.includes(r.text)));
 
-        if (this.data && this.data.set_id) {
-          const selectedType = this.setOptions.find(r => r.value === this.data.set_id);
+        if (this.data && this.data.set_no) {
+          const selectedType = this.setOptions.find(r => r.value === this.data.set_no);
           this.setOptions = selectedType
-            ? [selectedType, ...this.setOptions.filter(r => r.value !== this.data.set_id)]
+            ? [selectedType, ...this.setOptions.filter(r => r.value !== this.data.set_no)]
             : this.setOptions;
         }
       } catch (warning) {
@@ -224,7 +216,7 @@ export default {
 
     getStockNameByNo(stockNo) {
       const stock = this.stocks.find(item => item.no === stockNo);
-      return stock ? stock.name : "ไม่พบข้อมูลหุ้น";
+      return stock ? stock.stock : "ไม่พบข้อมูลหุ้น";
     },
 
     handleKeydown(event) {
@@ -249,11 +241,11 @@ export default {
 
     recordLogUpdate() {
       const changes = [];
-      if (this.formData.name !== this.originalData.name) {
-        changes.push('ชื่อ : ' + this.formData.name + '\n');
+      if (this.formData.stock !== this.originalData.stock) {
+        changes.push('ชื่อ : ' + this.formData.stock + '\n');
       }
-      const setText = this.getSetName(this.formData.set_id);
-      const originalTypeText = this.getSetName(this.originalData.set_id);
+      const setText = this.getSetName(this.formData.set_no);
+      const originalTypeText = this.getSetName(this.originalData.set_no);
       if (setText !== originalTypeText) {
         changes.push('ประเภท : ' + setText + '\n');
       }
@@ -270,7 +262,7 @@ export default {
         changes.push('หมายเหตุ : ' + this.formData.comment + '\n');
       }
       const log = {
-        stock_id: this.originalData.name,
+        stock_id: this.originalData.stock,
         emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
         emp_email: this.$auth.user.email,
         detail: changes.join(''),

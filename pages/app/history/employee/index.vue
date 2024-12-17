@@ -73,13 +73,13 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType === 'emp_name'" v-model="selectedName"
-                                class="mx-2 search-size small-font" :items="getSearchItems('emp_name')"
+                            <v-autocomplete v-if="searchType === 'employee_name'" v-model="selectedName"
+                                class="mx-2 search-size small-font" :items="getSearchItems('employee_name')"
                                 label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
                             </v-autocomplete>
 
-                            <v-autocomplete v-if="searchType === 'emp_email'" v-model="selectedEmail"
-                                class="mx-2 search-size small-font" :items="getSearchItems('emp_email')"
+                            <v-autocomplete v-if="searchType === 'employee_email'" v-model="selectedEmail"
+                                class="mx-2 search-size small-font" :items="getSearchItems('employee_email')"
                                 label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
                             </v-autocomplete>
 
@@ -137,9 +137,9 @@
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
                 item-key="no" :items-per-page="5">
-                <template v-slot:item.picture="{ item }">
+                <template v-slot:item.employee_picture="{ item }">
                     <v-avatar size="40">
-                        <img :src="`http://localhost:3001/file/profile/${getEmployeeByNo(item.employee_no)?.picture}`"
+                        <img :src="`http://localhost:3001/file/profile/${item.employee_picture}`"
                             alt="picture" />
                     </v-avatar>
                 </template>
@@ -150,17 +150,14 @@
                             style="transform: scale(1);" />
                     </div>
                 </template>
-                <template v-slot:item.emp_email="{ item }">
-                    <div class="text-center">{{ getEmployeeByNo(item.employee_no)?.email }}</div>
+                <template v-slot:item.employee_email="{ item }">
+                    <div class="text-center">{{ item.employee_email }}</div>
                 </template>
-                <template v-slot:item.emp_name="{ item }">
-                    <div class="text-center">{{ getEmployeeByNo(item.employee_no)?.fname + ' ' +
-                        getEmployeeByNo(item.employee_no)?.lname }}</div>
+                <template v-slot:item.employee_name="{ item }">
+                    <div class="text-center">{{ item.employee_name }}</div>
                 </template>
-                <template v-slot:item.emp_id="{ item }">
-                    <div class="text-center">{{ (getEmployeeByNo(item.type_no)?.fname || '') + ' ' +
-                        (getEmployeeByNo(item.type_no)?.lname || '')
-                        }}</div>
+                <template v-slot:item.name="{ item }">
+                    <div class="text-center">{{  item.name || ''}}</div>
                 </template>
                 <template v-slot:item.action="{ item }">
                     <div class="text-center" :style="{ color: getActionColor(item.action) }">
@@ -329,7 +326,7 @@ export default {
             endDateTime: '',
             selectedItemDetail: '',
             searchQuery: '',
-            searchType: 'emp_name',
+            searchType: 'employee_name',
             sortBy: 'created_date',
             sortDesc: true,
             dialog: false,
@@ -341,13 +338,13 @@ export default {
             savedSearches: [],
 
             searchTypes: [
-                { text: 'ทำรายการโดย', value: 'emp_name' },
-                { text: 'อีเมล', value: 'emp_email' },
+                { text: 'ทำรายการโดย', value: 'employee_name' },
+                { text: 'อีเมล', value: 'employee_email' },
                 { text: 'การกระทำ', value: 'action' },
                 { text: 'เวลา', value: 'created_date' }
             ],
 
-            visibleColumns: ['select','created_date', 'picture', 'action', 'emp_email', 'emp_id', 'emp_name', 'detail','edit'],
+            visibleColumns: ['select','created_date', 'employee_picture', 'action', 'employee_email', 'name', 'employee_name', 'detail','edit'],
 
             headers: [
                 {
@@ -366,7 +363,7 @@ export default {
 
                 {
                     text: 'โปรไฟล์',
-                    value: 'picture',
+                    value: 'employee_picture',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -374,7 +371,7 @@ export default {
 
                 {
                     text: 'ทำรายการโดย',
-                    value: 'emp_name',
+                    value: 'employee_name',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -382,7 +379,7 @@ export default {
 
                 {
                     text: 'อีเมล',
-                    value: 'emp_email',
+                    value: 'employee_email',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -398,7 +395,7 @@ export default {
 
                 {
                     text: 'ผู้ใช้งาน',
-                    value: 'emp_id',
+                    value: 'name',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -494,10 +491,10 @@ export default {
         },
 
         getSearchItems(type) {
-            if (type === 'emp_name') {
-                return this.logs.map(log => this.getEmployeeByNo(log.employee_no)?.fname + ' ' + this.getEmployeeByNo(log.employee_no)?.lname);
-            } else if (type === 'emp_email') {
-                return this.logs.map(log => this.getEmployeeByNo(log.employee_no)?.email);
+            if (type === 'employee_name') {
+                return this.logs.map(log => log.action);
+            } else if (type === 'employee_email') {
+                return this.logs.map(log => log.employee_email);
             } else if (type === 'action') {
                 return this.logs.map(log => log.action);
             }
@@ -597,7 +594,7 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'emp_name' || this.searchType === 'emp_email' || this.searchType === 'action') {
+            if (this.searchType === 'employee_name' || this.searchType === 'employee_email' || this.searchType === 'action') {
                 this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
@@ -614,8 +611,8 @@ export default {
 
         addSearchItemsToSearch() {
             const selectedItems =
-                this.searchType === 'emp_name' ? this.selectedName :
-                    this.searchType === 'emp_email' ? this.selectedEmail :
+                this.searchType === 'employee_name' ? this.selectedName :
+                    this.searchType === 'employee_email' ? this.selectedEmail :
                         this.searchType === 'action' ? this.selectedAction : [];
 
             if (selectedItems.length > 0) {
@@ -626,9 +623,9 @@ export default {
                     end: this.endDateTime
                 });
 
-                if (this.searchType === 'emp_name') {
+                if (this.searchType === 'employee_name') {
                     this.selectedName = [];
-                } else if (this.searchType === 'emp_email') {
+                } else if (this.searchType === 'employee_email') {
                     this.selectedEmail = [];
                 } else if (this.searchType === 'action') {
                     this.selectedAction = [];
@@ -641,17 +638,9 @@ export default {
 
         applySearchFilter(log, search) {
             let queryMatched = true;
+            let field = log[search.type];
 
-            let field;
-            if (search.type === 'emp_name') {
-                field = this.getEmployeeByNo(log.employee_no)?.fname + ' ' + this.getEmployeeByNo(log.employee_no)?.lname;
-            } else if (search.type === 'emp_email') {
-                field = this.getEmployeeByNo(log.employee_no)?.email;
-            } else {
-                field = log[search.type];
-            }
-
-            if (search.type === 'emp_name' || search.type === 'emp_email' || search.type === 'action') {
+            if (search.type === 'employee_name' || search.type === 'employee_email' || search.type === 'action') {
                 queryMatched = search.query.some(query => {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField === query.toLowerCase();
@@ -694,7 +683,7 @@ export default {
             const worksheet = workbook.addWorksheet('Sheet1');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'picture')
+                .filter(header => header.value !== 'employee_picture')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -708,7 +697,7 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'created_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value !== 'picture') {
+                    } else if (header.value !== 'employee_picture') {
                         rowData[header.value] = item[header.value];
                     }
                 });

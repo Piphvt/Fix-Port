@@ -138,9 +138,6 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="goToDividend" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-basket</v-icon> ข้อมูลจำนวนปันผล
-                    </v-btn>
                     <v-btn @click="goToTypeStock" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-settings</v-icon> ประเภทหุ้น
                     </v-btn>
@@ -813,10 +810,6 @@ export default {
 
         goToTypeStock() {
             this.$router.push('/app/stock/type');
-        },
-
-        goToDividend() {
-            this.$router.push('/app/stock/dividend');
         },
     },
 };

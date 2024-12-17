@@ -42,8 +42,8 @@
           </v-list>
         </v-menu>
 
-        <v-menu v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" bottom right :offset-y="true"
-          :nudge-top="8" :nudge-right="8" class="user-menu">
+        <v-menu v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" bottom right :offset-y="true" :nudge-top="8"
+          :nudge-right="8" class="user-menu">
           <template v-slot:activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on" rounded>
               <v-icon class="icon-host">mdi-archive-outline</v-icon>
@@ -212,7 +212,7 @@
             style="width: 100px; height: 40px;" color="#24b224" absolute top right>
             <div class="snackbar-content">
               <v-icon class="small-bell-icon" style="margin-right: 8px; font-size: 16px;">mdi-bell</v-icon>{{
-              snackbarText }}
+                snackbarText }}
             </div>
           </v-snackbar>
 
@@ -244,7 +244,7 @@ export default {
 
   data() {
     return {
-      profileImage: `http://localhost:3001/file/profile/${this.$auth.user.picture}`, 
+      profileImage: `http://localhost:3001/file/profile/${this.$auth.user.picture}`,
       employees: [],
       pendingEmployeesCount: 0,
       clipped: false,
@@ -307,10 +307,13 @@ export default {
     },
 
     async recordLog() {
-      const empId = this.$auth.user.no;
-
-      let userLocation = 'Unknown';
-      let userIP = 'Unknown';
+      const Employee_No = this.$auth.user.no;
+      const employee = this.employees.find(employee => employee.no === Employee_No);
+      const Employee_Name = employee ? employee.fname + ' ' + employee.lname : 'ไม่รู้จัก';
+      const Employee_Email = employee ? employee.email : 'ยังไม่ระบุ';
+      const Employee_Picture = employee ? employee.picture : 'ยังไม่ระบุ';
+      let userLocation = 'ไม่รู้จัก';
+      let userIP = 'ไม่รู้จัก';
 
       try {
         const response = await fetch('https://ipinfo.io/json?token=a29d27593626a2');
@@ -321,10 +324,12 @@ export default {
       }
 
       const log = {
-        employee_no: empId,
-        type: 4,
         action: 'ออกจากระบบ',
         detail: `ที่อยู่ : ${userLocation}\nไอพี : ${userIP}`,
+        type: 4,
+        employee_name: Employee_Name,
+        employee_email: Employee_Email,
+        employee_picture: Employee_Picture,
         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
       this.$store.dispatch('api/log/addLog', log);

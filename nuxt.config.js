@@ -1,4 +1,5 @@
 import colors from 'vuetify/es5/util/colors'
+import { th } from 'vuetify/es5/locale'; // นำเข้าภาษาไทย
 
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
@@ -28,19 +29,15 @@ export default {
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
-    // https://go.nuxtjs.dev/vuetify
-    '@nuxtjs/vuetify',
+    '@nuxtjs/vuetify', // Vuetify module
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
-    '@nuxtjs/auth-next'
+    '@nuxtjs/auth-next',
   ],
-  // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
-    // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
     baseURL: 'http://localhost:3001',
     credentials: true,
   },
@@ -57,31 +54,19 @@ export default {
           property: 'token',
           global: true,
           required: true,
-          type: 'Bearer'
+          type: 'Bearer',
         },
         endpoints: {
-          login: { 
-            url: '/auth/login',
-            method: 'post',
-            propertyName: 'token'
-          },
-          logout: { 
-            url: '/auth/logout', 
-            method: 'delete',
-            propertyName: 'token' 
-          },
-          user: { 
-            url: '/auth/refresh',
-            method: 'get',
-            propertyName: 'token'
-          }
+          login: { url: '/auth/login', method: 'post', propertyName: 'token' },
+          logout: { url: '/auth/logout', method: 'delete', propertyName: 'token' },
+          user: { url: '/auth/refresh', method: 'get', propertyName: 'token' },
         },
-      }
+      },
     },
   },
 
   server: {
-    port: 3000, // Change to 3000 // Allows external access if needed
+    port: 3000,
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
@@ -101,8 +86,11 @@ export default {
         },
       },
     },
+    lang: {
+      locales: { th }, // เพิ่มการตั้งค่าภาษาไทย
+      current: 'th', // ตั้งค่าภาษาเป็นไทย
+    },
   },
-  
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {},

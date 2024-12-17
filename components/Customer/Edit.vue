@@ -10,24 +10,24 @@
     <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
       content-class="rounded-xl">
       <v-card class="rounded-xl">
-        <v-card-title class="card-title-center mb-7">แก้ไขรายละเอียดผู้ใช้</v-card-title>
+        <v-card-title class="card-title-center mb-3">แก้ไขรายละเอียดผู้ใช้</v-card-title>
         <v-card-text>
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                 <v-text-field v-model="formData.id" :rules="[(v) => /^(AQT)?[0-9]{9}$/.test(v) || 'กรุณากรอกข้อมูลให้ถูกต้อง'
-                ]" label="ไอดีลูกค้า" outlined required maxlength="12" />
+                ]" label="ไอดีลูกค้า" dense outlined required maxlength="12" />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-text-field v-model="formData.nickname"
                   :rules="[(v) => !!v || 'โปรดกรอกชื่อเล่นลูกค้า', (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'ต้องเป็นภาษาไทยเท่านั้น']"
-                  label="ชื่อเล่น" outlined required />
+                  label="ชื่อเล่น" dense outlined required />
               </v-col>
 
-              <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-select v-model="formData.type_id" :items="typeOptions" :item-text="item => item.text"
-                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกประเภท']" label="ประเภท" outlined
+              <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4  ">
+                <v-select v-model="formData.type_no" :items="typeOptions" :item-text="item => item.text"
+                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกประเภท']" label="ประเภท" dense outlined
                   required>
                   <template v-slot:item="data">
                     <v-icon left>
@@ -39,8 +39,8 @@
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
-                <v-select v-model="formData.base_id" :items="baseOptions" :item-text="item => item.text"
-                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกฐานทุน']" label="ฐานทุน" outlined
+                <v-select v-model="formData.base_no" :items="baseOptions" :item-text="item => item.text"
+                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกฐานทุน']" label="ฐานทุน" dense outlined
                   required>
                   <template v-slot:item="data">
                     <v-icon left>
@@ -52,16 +52,15 @@
               </v-col>
             </v-row>
           </v-form>
+          <v-card-actions class="card-title-center pa-0">
+            <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.id || !formData.nickname" depressed
+              color="#24b224" class="font-weight-medium mr-2">
+              บันทึก
+            </v-btn>
+            <v-btn color="#e50211" @click="cancel" class="font-weight-medium">ยกเลิก
+            </v-btn>
+          </v-card-actions>
         </v-card-text>
-
-        <v-card-actions class="card-title-center pa-0">
-          <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.id || !formData.nickname" depressed
-            color="#24b224" class="font-weight-medium mr-2 mb-5">
-            บันทึก
-          </v-btn>
-          <v-btn color="#e50211" @click="cancel" class="font-weight-medium mb-5">ยกเลิก
-          </v-btn>
-        </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
@@ -158,17 +157,17 @@ export default {
           icon: baseIcons[base.base] || 'mdi-cash'
         }));
 
-        const prioritizedBases = ['มีเงิน', 'รอจังหวะ','รอคุย'];
+        const prioritizedBases = ['มีเงิน', 'รอจังหวะ', 'รอคุย'];
         this.baseOptions = prioritizedBases.reduce((acc, baseName) => {
           const base = allBases.find(r => r.text === baseName);
           if (base) acc.push(base);
           return acc;
         }, []).concat(allBases.filter(r => !prioritizedBases.includes(r.text)));
 
-        if (this.data && this.data.base_id) {
-          const selectedBase = this.baseOptions.find(r => r.value === this.data.base_id);
+        if (this.data && this.data.base_no) {
+          const selectedBase = this.baseOptions.find(r => r.value === this.data.base_no);
           this.baseOptions = selectedBase
-            ? [selectedBase, ...this.baseOptions.filter(r => r.value !== this.data.base_id)]
+            ? [selectedBase, ...this.baseOptions.filter(r => r.value !== this.data.base_no)]
             : this.baseOptions;
         }
       } catch (warning) {
@@ -197,10 +196,10 @@ export default {
           return acc;
         }, []).concat(allTypes.filter(r => !prioritizedTypes.includes(r.text)));
 
-        if (this.data && this.data.type_id) {
-          const selectedType = this.typeOptions.find(r => r.value === this.data.type_id);
+        if (this.data && this.data.type_no) {
+          const selectedType = this.typeOptions.find(r => r.value === this.data.type_no);
           this.typeOptions = selectedType
-            ? [selectedType, ...this.typeOptions.filter(r => r.value !== this.data.type_id)]
+            ? [selectedType, ...this.typeOptions.filter(r => r.value !== this.data.type_no)]
             : this.typeOptions;
         }
       } catch (warning) {
@@ -275,14 +274,14 @@ export default {
         changes.push('ชื่อเล่น : ' + this.formData.nickname + '\n');
       }
 
-      const typeText = this.getTypeName(this.formData.type_id);
-      const originalTypeText = this.getTypeName(this.originalData.type_id);
+      const typeText = this.getTypeName(this.formData.type_no);
+      const originalTypeText = this.getTypeName(this.originalData.type_no);
       if (typeText !== originalTypeText) {
         changes.push('ประเภท : ' + typeText + '\n');
       }
 
-      const baseText = this.getBaseName(this.formData.base_id);
-      const originalBaseText = this.getBaseName(this.originalData.base_id);
+      const baseText = this.getBaseName(this.formData.base_no);
+      const originalBaseText = this.getBaseName(this.originalData.base_no);
       if (baseText !== originalBaseText) {
         changes.push('ฐานทุน : ' + baseText + '\n');
       }

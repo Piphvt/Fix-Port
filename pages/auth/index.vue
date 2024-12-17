@@ -81,7 +81,7 @@ export default {
       show1: false,
       show2: false,
       employees: [],
-      
+
       form: {
         email: '',
         password: '',
@@ -148,8 +148,13 @@ export default {
     },
 
     async recordLog() {
-      let userLocation = 'Unknown';
-      let userIP = 'Unknown';
+      const Employee_No = this.$auth.user.no;
+      const employee = this.employees.find(employee => employee.no === Employee_No);
+      const Employee_Name = employee ? employee.fname + ' ' + employee.lname : 'ไม่รู้จัก';
+      const Employee_Email = employee ? employee.email : 'ยังไม่ระบุ';
+      const Employee_Picture = employee ? employee.picture : 'ยังไม่ระบุ';
+      let userLocation = 'ไม่รู้จัก';
+      let userIP = 'ไม่รู้จัก';
 
       try {
         const response = await fetch('https://ipinfo.io/json?token=a29d27593626a2');
@@ -160,10 +165,12 @@ export default {
       }
 
       const log = {
-        employee_no: this.$auth.user.no,
-        type: 4,
         action: 'เข้าสู่ระบบ',
         detail: `ที่อยู่ : ${userLocation}\nไอพี : ${userIP}`,
+        type: 4,
+        employee_name: Employee_Name,
+        employee_email: Employee_Email,
+        employee_picture: Employee_Picture,
         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
       this.$store.dispatch('api/log/addLog', log);
