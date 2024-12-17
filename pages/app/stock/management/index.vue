@@ -129,7 +129,8 @@
                             color="#85d7df">mdi-playlist-check</v-icon>
                     </template>
                     <v-list class="header-list">
-                        <v-list-item v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select')"
+                        <v-list-item
+                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select')"
                             :key="header.value" class="header-item">
                             <v-list-item-content>
                                 <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
@@ -174,7 +175,7 @@
                 </template>
                 <template v-slot:item.dividend_amount="{ item }">
                     <div class="text-center">
-                        {{ item.dividend+' ' }}
+                        {{ item.dividend + ' ' }}
                         <v-icon color="#85d7df" @click="sendStockNo(item.no)">mdi-eye</v-icon>
                     </div>
                 </template>
@@ -789,14 +790,18 @@ export default {
         },
 
         recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
             const log = {
-                type_no: this.currentItem.no,
-                employee_no: this.$auth.user.no,
+                action: 'ลบหุ้น',
+                name: this.currentItem.stock,
                 detail: `ประเภท : ${this.getSetName(this.currentItem.set_no) || 'ยังไม่ระบุ'}\n` +
-                    `ราคาปิด : ${this.currentItem.closing_price || 'ยังไม่ระบุ'}\n` +
                     `หมายเหตุ : ${this.currentItem.comment || 'ยังไม่ระบุ'}`,
                 type: 2,
-                action: 'ลบหุ้น',
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
                 created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLog', log);

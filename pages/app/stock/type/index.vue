@@ -21,28 +21,15 @@
             </v-container>
 
             <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
-                    <template v-slot:activator="{ on }">
-                        <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
-                            color="#85d7df">mdi-playlist-check</v-icon>
-                    </template>
-                    <v-list class="header-list">
-                        <v-list-item v-for="header in headers.filter(header => header.value !== 'detail')"
-                            :key="header.value" class="header-item">
-                            <v-list-item-content>
-                                <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
-                            </v-list-item-content>
-                        </v-list-item>
-                    </v-list>
-                </v-menu>
-                <v-btn @click="createSetOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                <v-btn @click="createSetOpen = true" class="tab-icon-two"
+                    style="font-size: 1.5 rem; margin-left: auto;">
                     <v-icon left color="#24b224">mdi-archive-plus</v-icon> เพิ่มประเภทหุ้น
                 </v-btn>
             </div>
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
                 item-key="no" :items-per-page="5">
-                <template v-slot:item.emp_id="{ item }">
+                <template v-slot:item.employee_no="{ item }">
                     <div class="text-center">
                         <span v-if="getEmployeeById(item.employee_no)">{{ getEmployeeById(item.employee_no).fname }} {{
                             getEmployeeById(item.employee_no).lname }}</span>
@@ -81,7 +68,7 @@
                 </template>
             </v-data-table>
             <div class="text-center">
-                <v-btn class = "mb-4" color="#e50211" @click="goToStockManagement">
+                <v-btn class="mb-4" color="#e50211" @click="goToStockManagement">
                     ย้อนกลับ
                 </v-btn>
             </div>
@@ -133,14 +120,14 @@ export default {
             modal: {
                 warning: {
                     open: false,
-                    message: 'การป้อนข้อมูลเวลาไม่ถูกต้อง',
+                    message: '',
                 },
                 confirm: {
                     open: false,
                 },
                 complete: {
                     open: false,
-                    message: 'สำเร็จ',
+                    message: '',
                 },
             },
 
@@ -163,11 +150,11 @@ export default {
             savedSearches: [],
             editAllData: {},
             showColumnSelector: false,
-            visibleColumns: ['updated_date', 'set', 'emp_id', 'detail'],
+            visibleColumns: ['updated_date', 'set', 'employee_no', 'detail'],
 
             headers: [
                 {
-                    text: 'เวลา',
+                    text: 'ข้อมูลวันที่',
                     value: 'updated_date',
                     align: 'center',
                     cellClass: 'text-center',
@@ -183,7 +170,7 @@ export default {
 
                 {
                     text: 'ทำรายการโดย',
-                    value: 'emp_id',
+                    value: 'employee_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -216,7 +203,7 @@ export default {
     },
 
     methods: {
-    
+
         async fetchSetData() {
             this.sets = await this.$store.dispatch('api/set/getSet')
         },
@@ -305,7 +292,7 @@ export default {
             } else if (set === 'DR') {
                 return { text: 'DR', color: '#ff5757' };
             } else if (set === 'Preferred Stock') {
-                return { text: 'Preferred Stock', color: '#ff66c4' }; 
+                return { text: 'Preferred Stock', color: '#ff66c4' };
             } else {
                 return { text: '', color: 'inherit' };
             }
@@ -323,19 +310,22 @@ export default {
         },
 
         recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
             const log = {
-                stock_id: this.currentItem.set, 
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
+                action: this.currentAction === 'delete'
+                    ? 'ลบประเภทหุ้น'
+                    : 'ลบประเภทหุ้น',
+                name: this.currentItem.set,
                 detail: this.currentAction === 'delete'
                     ? `ไม่มีข้อมูลเพิ่มเติม`
                     : `ไม่มีข้อมูลเพิ่มเติม`,
                 type: 2,
-                picture: this.$auth.user.picture || 'Unknown',
-                action: this.currentAction === 'delete'
-                    ? 'ลบประเภทหุ้น'
-                    : 'ลบประเภทหุ้น',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLog', log);
         },

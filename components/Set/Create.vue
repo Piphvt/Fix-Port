@@ -10,28 +10,25 @@
                 <v-icon class="little-icon" color="#24b224">mdi-archive-plus</v-icon>&nbsp;
                 <h3 class="mb-0">เพิ่มประเภทหุ้น</h3>
             </v-card-title>
-
-            <v-form ref="form" v-model="isFormValid" lazy-validation>
-                <v-container>
+            <v-card-text>
+                <v-form ref="form" v-model="isFormValid" lazy-validation>
                     <v-row>
                         <v-col cols="5" sm="11" class="pa-0 ml-3">
-                            <v-text-field v-model="newStockType" label="ชื่อประเภทหุ้น" required outlined
+                            <v-text-field v-model="newStockType" label="ชื่อประเภทหุ้น" required dense outlined
                                 :rules="[value => !!value || 'กรุณากรอกชื่อประเภทหุ้น']">
                             </v-text-field>
                         </v-col>
                     </v-row>
-                    <v-row>
-                        <v-col cols="12" class="text-center pa-0">
-                            <v-btn @click="confirm" :disabled="!isFormValid || !newStockType" color="#24b224" class="mb-5">
-                                ยืนยัน
-                            </v-btn>
-                            <v-btn @click="cancel" color="#e50211" class="ml-2 mb-5">
-                                ยกเลิก
-                            </v-btn>
-                        </v-col>
-                    </v-row>
-                </v-container>
-            </v-form>
+                </v-form>
+                <v-card-actions class="card-title-center pa-0">
+                    <v-btn @click="confirm" :disabled="!isFormValid || !newStockType" color="#24b224">
+                        ยืนยัน
+                    </v-btn>
+                    <v-btn @click="cancel" color="#e50211" class="ml-2">
+                        ยกเลิก
+                    </v-btn>
+                </v-card-actions>
+            </v-card-text>
         </v-card>
     </v-dialog>
 </template>
@@ -59,7 +56,7 @@ export default {
         };
     },
     watch: {
-        open(newVal) { 
+        open(newVal) {
             this.isOpen = newVal;
         }
     },
@@ -90,12 +87,12 @@ export default {
                 return;
             }
             try {
-                const emp_id = this.$auth.user.no;
+                const employee_no = this.$auth.user.no;
                 const created_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const updated_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const response = await this.$store.dispatch('api/set/addSet', {
                     set: this.newStockType,
-                    emp_id,
+                    employee_no,
                     created_date,
                     updated_date,
                 });
@@ -122,18 +119,30 @@ export default {
             this.$emit('update:open', false);
         },
         recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
             const log = {
-                stock_id: this.newStockType,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
+                action: 'เพิ่มประเภทหุ้นใหม่',
+                name: this.newStockType,
                 detail: 'ไม่มีข้อมูลเพิ่มเติม',
                 type: 2,
-                picture: this.$auth.user.picture || 'Unknown',
-                action: 'เพิ่มประเภทหุ้นใหม่',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };
 </script>
+
+<style scoped>
+.card-title-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+</style>

@@ -385,7 +385,7 @@ export default {
                 },
 
                 {
-                    text: 'ชื่อหุ้น',
+                    text: 'หุ้น/ประเภทหุ้น',
                     value: 'name',
                     sortable: false,
                     align: 'center',
