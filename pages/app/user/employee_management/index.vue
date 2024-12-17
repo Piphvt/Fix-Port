@@ -6,6 +6,7 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <EmployeeEditAllDialog :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
+        <EmployeeNew v-model="EmployeeDataOpen" />
 
         <v-card flat>
             <v-container>
@@ -141,7 +142,7 @@
                         </v-list-item>
                     </v-list>
                 </v-menu>
-                <v-btn @click="goToNewEmp" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                <v-btn @click="EmployeeDataOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
                     <v-icon left color="#24b224">mdi-home-plus</v-icon> คำร้องขอสมัครสมาชิก
                 </v-btn>
             </div>
@@ -271,6 +272,8 @@ export default {
             selectedEmail: [],
             selectedPhone: [],
             selectedRank: [],
+
+            EmployeeDataOpen: false,
 
             sortBy: 'updated_date',
             currentAction: '',
@@ -733,10 +736,6 @@ export default {
                 created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLog', log);
-        },
-
-        goToNewEmp() {
-            this.$router.push('/app/user/new_employee');
         },
     },
 };

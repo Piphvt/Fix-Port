@@ -138,7 +138,8 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="CustomerCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="CustomerCreateOpen = true" class="tab-icon-two"
+                        style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#24b224">mdi-account-plus</v-icon> เพิ่มลูกค้า
                     </v-btn>
                 </div>
@@ -309,7 +310,7 @@ export default {
             actionType: null,
             savedSearches: [],
             editAllData: {},
-            
+
             searchTypes: [
                 { text: 'ชื่อเล่น', value: 'nickname' },
                 { text: 'รหัสสมาชิก', value: 'id' },
@@ -408,7 +409,7 @@ export default {
         },
 
         async deleteSelectedItems() {
-            
+
             this.handleConfirm = async () => {
                 const selectedIds = this.selectedItems;
 
@@ -426,6 +427,7 @@ export default {
 
                 this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
                 this.modal.complete.open = true;
+                this.recordLog()
                 this.modalConfirmOpen = false;
             };
 
@@ -723,21 +725,22 @@ export default {
         },
 
         recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
             const log = {
-                customer_id: this.currentItem.nickname,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
-                detail: this.currentAction === 'delete'
-                    ? `รหัส : ${this.currentItem.id}\nประเภท : ${this.getTypeName(this.currentItem.type_no)}\nฐานทุน : ${this.getBaseName(this.currentItem.base_no)}`
-                    : `รหัส : ${this.currentItem.id}\nประเภท : ${this.getTypeName(this.currentItem.type_no)}\nฐานทุน : ${this.getBaseName(this.currentItem.base_no)}`,
+                action: 'ลบลูกค้า',
+                name: this.currentItem.id,
+                detail: 'ชื่อเล่น : ' + this.currentItem.nickname +
+                    '\nประเภท : ' + this.getTypeName(this.currentItem.type_no) +
+                    '\nฐานทุน : ' + this.getBaseName(this.currentItem.base_no),
                 type: 3,
-                picture: this.$auth.user.picture || 'ไม่รู้จัก',
-                action: this.currentAction === 'delete'
-                    ? 'ลบลูกค้า'
-                    : 'ไม่ลบลูกค้า',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
 
         goToNewUser() {

@@ -27,8 +27,8 @@
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4  ">
                 <v-select v-model="formData.type_no" :items="typeOptions" :item-text="item => item.text"
-                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกประเภท']" label="ประเภท" dense outlined
-                  required>
+                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกประเภท']" label="ประเภท" dense
+                  outlined required>
                   <template v-slot:item="data">
                     <v-icon left>
                       {{ data.item.icon }}
@@ -40,8 +40,8 @@
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-select v-model="formData.base_no" :items="baseOptions" :item-text="item => item.text"
-                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกฐานทุน']" label="ฐานทุน" dense outlined
-                  required>
+                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกฐานทุน']" label="ฐานทุน" dense
+                  outlined required>
                   <template v-slot:item="data">
                     <v-icon left>
                       {{ data.item.icon }}
@@ -228,8 +228,7 @@ export default {
         this.formData.emp_id = this.$auth.user.no;
         const req = await this.$store.dispatch('api/customer/updateCustomer', this.formData);
         this.modal.complete.open = true;
-        this.data = { ...this.formData };
-        this.recordLogUpdate();
+        this.recordLog();
       } catch (warning) {
         this.modal.warning.open = true;
       }
@@ -265,7 +264,10 @@ export default {
       this.updateData();
     },
 
-    recordLogUpdate() {
+    recordLog() {
+      const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+      const Employee_Email = this.$auth.user.email;
+      const Employee_Picture = this.$auth.user.picture;
       const changes = [];
       if (this.formData.id !== this.originalData.id) {
         changes.push('รหัส : ' + this.formData.id + '\n');
@@ -287,16 +289,16 @@ export default {
       }
 
       const log = {
-        customer_id: this.originalData.nickname,
-        emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-        emp_email: this.$auth.user.email,
+        action: 'แก้ไขข้อมูลลูกค้า',
+        name: this.originalData.id,
         detail: changes.join(''),
         type: 3,
-        picture: this.$auth.user.picture || 'Unknown',
-        action: 'แก้ไขข้อมูลลูกค้า',
-        time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        employee_name: Employee_Name,
+        employee_email: Employee_Email,
+        employee_picture: Employee_Picture,
+        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
-      this.$store.dispatch('api/log/addLogs', log);
+      this.$store.dispatch('api/log/addLog', log);
     },
   },
 };
