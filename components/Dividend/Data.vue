@@ -14,8 +14,14 @@
                 <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-basket</v-icon>
                 <span class="headline">ข้อมูลเงินปันผล</span></v-card-title>
             <v-card-text>
-                <v-data-table v-if="filteredDividends.length > 0" :headers="headers" :items="filteredDividends"
-                    item-value="no" item-key="no" :items-per-page="5">
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <v-btn @click="createDividendOpen = true" style="font-size: 1.5 rem; margin-left: auto;"
+                        color="#24b224">
+                        <v-icon left>mdi-basket-plus</v-icon> เพิ่ม
+                    </v-btn>
+                </div>
+                <v-data-table :headers="headers" :items="filteredDividends" item-value="no" item-key="no"
+                    :items-per-page="5">
                     <template v-slot:item.stock_no="{ item }">
                         <td class="text-center">{{ getStockName(item.stock_no) }}</td>
                     </template>
@@ -52,12 +58,8 @@
                         </div>
                     </template>
                 </v-data-table>
-                <p class="text-center" v-else>ไม่พบการจ่ายเงินปันผลของหุ้นนี้</p>
             </v-card-text>
             <div class="text-center">
-                <v-btn @click="createDividendOpen = true" class="mb-4 mr-4" style="font-size: 1.5 rem;" color="#24b224">
-                    <v-icon left>mdi-basket-plus</v-icon> เพิ่ม
-                </v-btn>
                 <v-btn @click="dialog = false" class="mb-4" color="#e50211">ปิด</v-btn>
             </div>
         </v-card>

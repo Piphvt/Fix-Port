@@ -15,6 +15,11 @@
                 <span class="headline">ข้อมูลประเภทหุ้น</span>
             </v-card-title>
             <v-card-text>
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <v-btn @click="createSetOpen = true" style="font-size: 1.5 rem; margin-left: auto;" color="#24b224">
+                        <v-icon left>mdi-archive-plus</v-icon> เพิ่ม
+                    </v-btn>
+                </div>
                 <v-data-table :headers="headers" :items="sets" item-value="no" item-key="no" :items-per-page="5">
                     <template v-slot:item.set="{ item }">
                         <div class="text-center" :style="{ color: getSetText(item.set).color }">{{ item.set }}</div>
@@ -51,9 +56,6 @@
                 </v-data-table>
             </v-card-text>
             <div class="text-center">
-                <v-btn @click="createSetOpen = true" class="mb-4 mr-4" style="font-size: 1.5 rem;" color="#24b224">
-                    <v-icon left>mdi-archive-plus</v-icon> เพิ่ม
-                </v-btn>
                 <v-btn @click="dialog = false" class="mb-4" color="#e50211">ปิด</v-btn>
             </div>
         </v-card>

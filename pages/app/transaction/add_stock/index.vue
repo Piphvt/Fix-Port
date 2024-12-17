@@ -54,15 +54,13 @@
                         </v-col>
 
                         <v-col cols="2">
-                            <v-menu ref="datePickerMenu" v-model="datePickerMenu" :close-on-content-click="false"
+                            <v-menu v-model="datePickerMenus[index]" :close-on-content-click="false"
                                 transition="scale-transition" offset-y min-width="auto">
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-text-field v-model="item.created_date" label="วันที่ซื้อหุ้น" readonly
-                                        v-bind="attrs" v-on="on" outlined
-                                        dense>
-                                    </v-text-field>
+                                        v-bind="attrs" v-on="on" outlined dense></v-text-field>
                                 </template>
-                                <v-date-picker v-model="item.created_date" @input="datePickerMenu = false"
+                                <v-date-picker v-model="item.created_date" @input="datePickerMenus[index] = false"
                                     locale="th"></v-date-picker>
                             </v-menu>
                         </v-col>
@@ -131,8 +129,11 @@ export default {
                 { text: 'รหัสลูกค้า', value: 'customer_id' },
                 { text: 'ชื่อลูกค้า', value: 'customer_name' }
             ],
+            datePickerMenus: [],
+
             customer_id: null,
             customer_name: null,
+
             valid: false,
             created_date: '',
             datePickerMenu: false,
@@ -304,17 +305,19 @@ export default {
 
         addProduct() {
             this.withdrawalItems.push({
-                name: '',
+                stock_id: null,
                 dividend_amount: null,
                 closing_price: null,
                 from_id: 1,
                 created_date: null,
                 comment: null,
             });
+            this.datePickerMenus.push(false); // เพิ่มสถานะสำหรับ datePickerMenu
         },
 
         removeProduct(index) {
             this.withdrawalItems.splice(index, 1);
+            this.datePickerMenus.splice(index, 1);
         },
 
         goBack() {
