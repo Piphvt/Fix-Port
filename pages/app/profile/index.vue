@@ -128,7 +128,7 @@ export default {
         },
 
         async fetchRankData() {
-            this.ranks = await this.$store.dispatch('api/rank/getRanks')
+            this.ranks = await this.$store.dispatch('api/rank/getRank')
         },
 
         async fetchFileData() {

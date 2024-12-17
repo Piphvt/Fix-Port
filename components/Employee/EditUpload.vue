@@ -1,5 +1,5 @@
 <template>
-  
+
   <div>
     <ModalConfirm :open="modal.confirm.open" :message="modal.confirm.message" :confirm.sync="modal.confirm.open"
       :method="UploadFile" />
@@ -21,23 +21,22 @@
                   (v) => !!v || 'โปรดเลือกไฟล์',
                   (v) => (v && v.size < 15000000) || 'ไฟล์ต้องมีขนาดไม่เกิน 15 MB',
                   (v) => (v && ['image/jpeg', 'image/png'].includes(v.type)) || 'ไฟล์ต้องเป็นรูปภาพเท่านั้น',
-                ]" accept="image/*" label="เลือกไฟล์" outlined required class="file-input"></v-file-input>
-              </v-col>
-
-              <v-col cols="12" class="pa-0">
-                <v-card-actions class="card-title-center pa-0">
-                  <v-btn color="#24b224" @click="confirm" :disabled="!valid || file === null || file === undefined"
-                    depressed class="font-weight-medium mr-2 mb-2" style="min-width: 100px;">
-                    อัพโหลด
-                  </v-btn>
-                  <v-btn color="#e50211" @click="cancel" class="font-weight-medium mb-2" style="min-width: 100px;">
-                    ยกเลิก
-                  </v-btn>
-                </v-card-actions>
+                ]" accept="image/*" label="เลือกไฟล์" dense outlined required class="file-input"></v-file-input>
               </v-col>
             </v-row>
           </v-form>
+          <v-card-actions class="card-title-center pa-0">
+            <v-btn color="#24b224" @click="confirm" :disabled="!valid || file === null || file === undefined" depressed
+              class="font-weight-medium mr-2">
+              บันทึก
+            </v-btn>
+            <v-btn color="#e50211" @click="cancel" class="font-weight-medium">
+              ยกเลิก
+            </v-btn>
+          </v-card-actions>
         </v-card-text>
+
+
       </v-card>
     </v-dialog>
   </div>
@@ -83,7 +82,7 @@ export default {
       file: null,
       date: new Date().toISOString().substr(0, 10),
       employees: [],
-      
+
     }
   },
 
@@ -98,7 +97,7 @@ export default {
 
   methods: {
     async fetchEmployeeData() {
-      this.employees = await this.$store.dispatch('api/employee/getEmployees');
+      this.employees = await this.$store.dispatch('api/employee/getEmployee');
     },
 
     async confirm() {

@@ -79,7 +79,7 @@
 
                                 <v-list-item @click="showConfirmDialog('reject', item)" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#e50211">mdi-cancel</v-icon>
+                                        <v-icon class="icon-tab" color="#e50211">mdi-close-circle</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">ไม่อนุมัติ</v-list-item-content>
                                 </v-list-item>

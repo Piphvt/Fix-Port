@@ -109,11 +109,13 @@ export default {
                 console.error('Error fetching stocks:', error);
             }
         },
+
         handleKeydown(event) {
             if (event.key === 'Escape') {
                 this.cancel();
             }
         },
+        
         updateOpen(val) {
             this.isOpen = val;
             this.$emit('update:open', val);

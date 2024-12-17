@@ -18,14 +18,14 @@
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                 <v-autocomplete v-model="formData.customer_id" :items="customers" :item-text="item => item.text"
                   :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดกรอกรหัสสมาชิก']" label="รหัสสมาชิก"
-                  outlined clearable solo hide-no-data hide-details />
+                  dense outlined clearable solo hide-no-data hide-details />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-menu ref="menu" v-model="menu" :close-on-content-click="false" :nudge-right="40"
                   :return-value.sync="formData.created_date" transition="scale-transition" offset-y min-width="290px">
                   <template v-slot:activator="{ on, attrs }">
-                    <v-text-field v-model="formattedCreatedDate" label="วันที่" outlined readonly v-bind="attrs"
+                    <v-text-field v-model="formattedCreatedDate" label="วันที่" dense outlined readonly v-bind="attrs"
                       v-on="on" :rules="[(v) => !!v || 'โปรดเลือกวันที่']"></v-text-field>
                   </template>
                   <v-date-picker v-model="formData.created_date" no-title scrollable @input="onDateSelected"
@@ -35,14 +35,14 @@
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                 <v-autocomplete v-model="formData.stock_id" :items="stocks" :item-text="item => item.text"
-                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดกรอกชื่อหุ้น']" label="ชื่อหุ้น" outlined
+                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดกรอกชื่อหุ้น']" label="ชื่อหุ้น" dense outlined
                   clearable solo hide-no-data hide-details />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-select v-model="formData.from_id" :items="fromOptions" :item-text="item => item.text"
                   :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกที่มาที่ไป']" label="ที่มาที่ไป"
-                  outlined required>
+                  dense outlined required>
                   <template v-slot:item="data">
                     <v-icon left>
                       {{ data.item.icon }}
@@ -56,14 +56,14 @@
                 <v-text-field v-model="formData.detailprice" :rules="[
                   (v) => !!v || 'โปรดกรอกราคาที่ติด',
                   (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
-                ]" label="ราคาที่ติด" outlined required />
+                ]" label="ราคาที่ติด" dense outlined required />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-text-field v-model="formData.detailamount" :rules="[
                   (v) => !!v || 'โปรดกรอกจำนวนที่ติด',
                   (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
-                ]" label="จำนวนที่ติด" outlined required />
+                ]" label="จำนวนที่ติด" dense outlined required />
               </v-col>
             </v-row>
           </v-form>
@@ -178,7 +178,6 @@ export default {
       deep: true,
     }
   },
-
 
   beforeDestroy() {
     document.removeEventListener('keydown', this.handleKeydown);

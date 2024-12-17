@@ -18,7 +18,7 @@
                   v-model="data.new_password" :rules="[
                     (v) => !!v || 'โปรดกรอกรหัสผ่านใหม่',
                     (v) => (v && v.length >= 8) || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
-                  ]" @click:append="show2 = !show2" label="รหัสผ่านใหม่" required>
+                  ]" @click:append="show2 = !show2" label="รหัสผ่านใหม่" dense outlined required>
                 </v-text-field>
               </v-col>
 
@@ -28,23 +28,22 @@
                     (v) => !!v || 'โปรดยืนยันรหัสผ่านใหม่',
                     (v) => (v && v.length >= 8) || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
                     (v) => v === data.new_password || 'รหัสผ่านไม่ตรงกัน',
-                  ]" @click:append="show1 = !show1" label="ยืนยันรหัสผ่านใหม่" required>
+                  ]" @click:append="show1 = !show1" label="ยืนยันรหัสผ่านใหม่" dense outlined required>
                 </v-text-field>
               </v-col>
             </v-row>
           </v-form>
-        </v-card-text>
-
-        <v-card-actions class="card-title-center">
+          <v-card-actions class="card-title-center pa-0">
           <v-btn color="#24b224" @click="confirm"
             :disabled="!valid || data.new_password === null || data.new_password === undefined || data.confirm_password === null || data.confirm_password === undefined"
-            depressed class="font-weight-medium mb-5 mr-2">
-            เปลี่ยน
+            depressed class="font-weight-medium mr-2">
+            บันทึก
           </v-btn>
-          <v-btn color="#e50211" @click="cancel" class="font-weight-medium mb-5">
+          <v-btn color="#e50211" @click="cancel" class="font-weight-medium">
             ยกเลิก
           </v-btn>
         </v-card-actions>
+        </v-card-text>
       </v-card>
     </v-dialog>
   </div>
@@ -134,7 +133,7 @@ export default {
     },
 
     async fetchEmployeeData() {
-      this.employees = await this.$store.dispatch('api/employee/getEmployees');
+      this.employees = await this.$store.dispatch('api/employee/getEmployee');
     },
 
     cancel() {

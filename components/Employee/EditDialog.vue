@@ -10,7 +10,7 @@
     <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
       content-class="rounded-xl">
       <v-card class="rounded-xl">
-        <v-card-title class="card-title-center mb-7">แก้ไขรายละเอียด</v-card-title>
+        <v-card-title class="card-title-center mb-3">แก้ไขข้อมูลส่วนตัว</v-card-title>
         <v-card-text>
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
@@ -18,14 +18,14 @@
                 <v-text-field v-model="formData.fname" :rules="[
                   (v) => !!v || 'โปรดกรอกชื่อ',
                   (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'ชื่อต้องเป็นภาษาไทยเท่านั้น'
-                ]" label="ชื่อ" outlined required />
+                ]" label="ชื่อ" dense outlined required />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-text-field v-model="formData.lname" :rules="[
                   (v) => !!v || 'โปรดกรอกนามสกุล',
                   (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'นามสกุลต้องเป็นภาษาไทยเท่านั้น'
-                ]" label="นามสกุล" outlined required />
+                ]" label="นามสกุล" dense outlined required />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
@@ -33,12 +33,12 @@
                   (v) => !!v || 'โปรดกรอกเบอร์โทรศัพท์',
                   (v) => (v && v.length === 10) || 'เบอร์โทรศัพท์ต้องมี 10 หลัก',
                   (v) => /^0/.test(v) || 'เบอร์โทรศัพท์ต้องมี 10 หลัก'
-                ]" label="เบอร์โทรศัพท์" outlined required />
+                ]" label="เบอร์โทรศัพท์" dense outlined required />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-select v-model="formData.gender" :items="genderOptions" :item-text="item => item.text"
-                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกเพศ']" label="เพศ" outlined
+                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกเพศ']" label="เพศ" dense outlined
                   required>
                   <template v-slot:item="data">
                     <v-icon left>
@@ -50,16 +50,16 @@
               </v-col>
             </v-row>
           </v-form>
+          <v-card-actions class="card-title-center pa-0">
+            <v-btn @click="confirm"
+              :disabled="!valid || !hasChanges || !formData.fname || !formData.lname || !formData.phone || !formData.gender"
+              depressed color="#24b224" class="font-weight-medium mr-2">
+              บันทึก
+            </v-btn>
+            <v-btn color="#e50211" @click="cancel" class="font-weight-medium">ยกเลิก
+            </v-btn>
+          </v-card-actions>
         </v-card-text>
-
-        <v-card-actions class="card-title-center pa-0">
-          <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.fname || !formData.lname || !formData.phone || !formData.gender" depressed
-            color="#24b224" class="font-weight-medium mr-2 mb-5">
-            บันทึก
-          </v-btn>
-          <v-btn color="#e50211" @click="cancel" class="font-weight-medium mb-5">ยกเลิก
-          </v-btn>
-        </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
@@ -242,7 +242,6 @@ export default {
 </script>
 
 <style scoped>
-
 .card-title-center {
   display: flex;
   justify-content: center;
@@ -261,5 +260,4 @@ export default {
 .v-btn {
   margin-top: 0px !important;
 }
-
 </style>
