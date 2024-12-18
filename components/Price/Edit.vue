@@ -10,7 +10,7 @@
         <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
             content-class="rounded-xl">
             <v-card class="rounded-xl">
-                <v-card-title class="card-title-center mb-3">แก้ไขรายละเอียดเงินปันผล</v-card-title>
+                <v-card-title class="card-title-center mb-3">แก้ไขรายละเอียดราคาปิด</v-card-title>
                 <v-card-text>
                     <v-form ref="form" v-model="valid" lazy-validation>
                         <v-row>
@@ -19,13 +19,15 @@
                                     :return-value.sync="formData.created_date" transition="scale-transition" offset-y
                                     min-width="290px">
                                     <template v-slot:activator="{ on, attrs }">
-                                        <v-text-field v-model="formattedCreatedDate" label="วันที่จ่ายเงินปันผล"
-                                            outlined dense readonly v-bind="attrs" v-on="on"
-                                            :rules="[(v) => !!v || 'โปรดเลือกวันที่']"></v-text-field>
+                                        <v-text-field v-model="formattedCreatedDate" label="ข้อมูลวันที่" outlined dense
+                                            readonly v-bind="attrs" v-on="on" :rules="[
+                                                (v) => !!v || 'โปรดเลือกวันที่',
+                                                (v) => moment(v).isValid() || 'วันที่ไม่ถูกต้อง'
+                                            ]"></v-text-field>
                                     </template>
-                                    <v-date-picker v-model="formData.created_date" no-title scrollable
-                                        @input="onDateSelected" @change="onDateChange" :locale="'th'"
-                                        :first-day-of-week="1" />
+                                    <date-picker v-model="formData.created_date" no-title scrollable
+                                        @input="onDateSelected" @change="onDateChange" format="YYYY-MM-DD HH:mm"
+                                        type="datetime" :locale="'th'" />
                                 </v-menu>
                             </v-col>
 
@@ -37,10 +39,10 @@
                             </v-col>
 
                             <v-col cols="6" sm="5" class="pa-0">
-                                <v-text-field v-model="formData.dividend" :rules="[
-                                    (v) => !!v || 'โปรดกรอกเงินปันผล',
+                                <v-text-field v-model="formData.price" :rules="[
+                                    (v) => !!v || 'โปรดกรอกราคาปิด',
                                     (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
-                                ]" label="เงินปันผล" outlined dense required />
+                                ]" label="ราคาปิด" outlined dense required />
                             </v-col>
                         </v-row>
                     </v-form>
@@ -63,6 +65,8 @@
 
 import moment from 'moment';
 moment.locale('th');
+import DatePicker from 'vue2-datepicker';
+import 'vue2-datepicker/index.css';
 
 export default {
 
@@ -74,6 +78,10 @@ export default {
         data: {
             required: true,
         },
+    },
+
+    components: {
+        DatePicker,
     },
 
     data() {
@@ -90,13 +98,15 @@ export default {
                 },
                 warning: {
                     open: false,
-                    message: 'มีหุ้นชื่อนี้แล้ว',
+                    message: '',
                 },
             },
 
             menu: false,
 
-            formData: { ...this.data },
+            moment,
+
+            formData: {},
             valid: false,
             setOptions: [],
             details: [],
@@ -108,10 +118,10 @@ export default {
 
     computed: {
         hasChanges() {
-            const dateHasChanged = !moment(this.formData.created_date).isSame(this.originalData.created_date, 'day');
+            const dateHasChanged = !moment(this.formData.created_date).isSame(this.originalData.created_date);
             const stockNoHasChanged = this.formData.stock_no !== this.originalData.stock_no;
-            const dividendHasChanged = parseFloat(this.formData.dividend).toFixed(2) !== parseFloat(this.originalData.dividend).toFixed(2);
-            return dateHasChanged || stockNoHasChanged || dividendHasChanged;
+            const priceHasChanged = parseFloat(this.formData.price).toFixed(2) !== parseFloat(this.originalData.price).toFixed(2);
+            return dateHasChanged || stockNoHasChanged || priceHasChanged;
         }
     },
 
@@ -124,7 +134,7 @@ export default {
         this.formData = JSON.parse(JSON.stringify(this.data));
         this.originalData = JSON.parse(JSON.stringify(this.data));
         if (moment(this.formData.created_date).isValid()) {
-            this.formattedCreatedDate = moment(this.formData.created_date).format('DD-MM-YYYY');
+            this.formattedCreatedDate = moment(this.formData.created_date).format('YYYY-MM-DD HH:mm');
         } else {
             this.formattedCreatedDate = '';
         }
@@ -137,7 +147,7 @@ export default {
                 this.formData = JSON.parse(JSON.stringify(newData));
                 this.originalData = JSON.parse(JSON.stringify(newData));
                 if (moment(this.formData.created_date).isValid()) {
-                    this.formattedCreatedDate = moment(this.formData.created_date).format('DD-MM-YYYY');
+                    this.formattedCreatedDate = moment(this.formData.created_date).format('YYYY-MM-DD HH:mm');
                 } else {
                     this.formattedCreatedDate = '';
                 }
@@ -154,9 +164,8 @@ export default {
     methods: {
         onDateSelected(date) {
             if (moment(date).isValid()) {
-                this.formData.created_date = date;
-                this.formattedCreatedDate = moment(date).format('DD-MM-YYYY');
-                this.originalData.created_date = date;
+                this.formData.created_date = moment(date).toDate();
+                this.formattedCreatedDate = moment(date).format('YYYY-MM-DD HH:mm');
             } else {
                 this.formData.created_date = null;
                 this.formattedCreatedDate = '';
@@ -186,8 +195,9 @@ export default {
 
         async updateData() {
             try {
-                this.formData.emp_id = this.$auth.user.no;
-                const req = await this.$store.dispatch('api/dividend/updateDividend', this.formData);
+                this.formData.employee_no = this.$auth.user.no;
+                this.formData.created_date = moment(this.formData.created_date).format('YYYY-MM-DD HH:mm:ss');
+                const req = await this.$store.dispatch('api/price/updatePrice', this.formData);
                 this.modal.complete.open = true;
                 this.recordLogUpdate();
             } catch (warning) {
@@ -248,7 +258,7 @@ export default {
                 detail: changes.join(''),
                 type: 2,
                 action: 'แก้ไขข้อมูลหุ้น',
-                created_date: moment(new Date()).format('DD-MM-YYYY HH:mm:ss'),
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm'),
             };
             this.$store.dispatch('api/log/addLog', log);
         },

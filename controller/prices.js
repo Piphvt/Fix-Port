@@ -32,12 +32,12 @@ exports.addPrice = async (req, res) => {
 
 exports.updatePrice = async (req, res) => {
     try {
-        const { stock_no, price, employee_no } = req.body;
+        const { stock_no, price, employee_no, created_date } = req.body;
         const no = req.params.no;
 
         connection.query(
-            'UPDATE `prices` SET `stock_no` = ?, `price` = ?, `employee_no` = ?, `updated_date` = now() WHERE no = ?',
-            [stock_no, price, employee_no, no],
+            'UPDATE `prices` SET `stock_no` = ?, `price` = ?, `employee_no` = ?, `created_date` = ?, `updated_date` = now() WHERE no = ?',
+            [stock_no, price, employee_no, created_date, no],
             function (err, updateResults) {
                 if (err) {
                     console.error(err);

@@ -9,6 +9,7 @@
         <StockEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
         <StockUpdate v-model="StockUpdateOpen" />
         <DividendData :stockNo="selectedStockNo" v-model="DividendDataOpen" />
+        <PriceData :stockNo="selectedStockNo" v-model="PriceDataOpen" />
         <SetData v-model="SetDataOpen" />
 
         <v-card class="custom-card" flat>
@@ -186,7 +187,10 @@
                     </div>
                 </template>
                 <template v-slot:item.closing_price="{ item }">
-                    <div class="text-center">{{ item.price }}</div>
+                    <div class="text-center">
+                        {{ item.price + ' ' }}
+                        <v-icon color="#85d7df" @click="OpenPriceData(item.no)">mdi-eye</v-icon>
+                    </div>
                 </template>
                 <template v-slot:item.detail="{ item }">
                     <div class="text-center">
@@ -290,6 +294,7 @@ export default {
 
             selectedStockNo: null,
             DividendDataOpen: false,
+            PriceDataOpen: false,
             SetDataOpen: false,
             StockUpdateOpen: false,
             StockCreateOpen: false,
@@ -430,6 +435,11 @@ export default {
         OpenDividendData(stockNo) {
             this.selectedStockNo = stockNo;
             this.DividendDataOpen = true;
+        },
+
+        OpenPriceData(stockNo) {
+            this.selectedStockNo = stockNo;
+            this.PriceDataOpen = true;
         },
 
         toggleSelectItems() {
