@@ -1,438 +1,444 @@
 <template>
-
-    <div>
-        <ModalWarning :open="modal.warning.open" :message="modal.warning.message" :warning.sync="modal.warning.open" />
-        <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
-        <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
-            :complete.sync="modal.complete.open" :method="goBack" />
-        <DetailCreate :open="DetailCreateOpen" @update:open="DetailCreateOpen = false" />
-        <DetailEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
-        <DetailSoldOut v-model="SoldOutStockDataOpen" />
-
-        <v-card flat>
-            <v-container>
-                <v-row justify="center" align="center">
-                    <v-col cols="auto">
-                        <v-card-title class="d-flex align-center justify-center">
-                            <v-icon class="little-icon" color="#85d7df">mdi-bank</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลหุ้นของลูกค้า</h3>
-                        </v-card-title>
-                        <div class="d-flex align-center mt-2 justify-center">
-                            <div class="d-flex align-center mt-2 justify-center">
-                                <v-icon class="small-icon" @click="toggleSavedSearchesDialog">
-                                    mdi-format-list-bulleted-type
-                                </v-icon>
-                                <span>{{ savedSearches.length }}</span>
-                            </div>
-
-                            <v-dialog v-model="showSavedSearchesDialog" max-width="400px">
-                                <v-card>
-                                    <v-card-title class="headline"
-                                        style="justify-content: center; display: flex;">บันทึกการค้นหา</v-card-title>
-                                    <v-card-text>
-                                        <v-list>
-                                            <v-list-item-group v-if="savedSearches.length > 0">
-                                                <v-list-item v-for="(search, index) in savedSearches" :key="index">
-                                                    <v-list-item-content>
-                                                        <v-list-item-title>
-                                                            <strong>ประเภท :</strong>
-                                                            {{ getSearchTypeText(search.type) }}
-                                                        </v-list-item-title>
-                                                        <v-list-item-subtitle v-if="search.query">
-                                                            <strong>รายละเอียด :</strong> {{ search.query }}
-                                                        </v-list-item-subtitle>
-                                                        <v-list-item-subtitle v-if="search.start && search.end">
-                                                            <strong>ระยะเวลา :</strong> {{
-                                                                formatDateTime(search.start)
-                                                            }} - {{ formatDateTime(search.end) }}
-                                                        </v-list-item-subtitle>
-                                                        <v-list-item-subtitle v-if="search.topics">
-                                                            <strong>หัวข้อ :</strong> {{ search.topics.join(', ') }}
-                                                        </v-list-item-subtitle>
-                                                    </v-list-item-content>
-                                                    <v-list-item-action>
-                                                        <v-btn icon @click="deleteSearch(index)">
-                                                            <v-icon color=#e50211>mdi-delete</v-icon>
-                                                        </v-btn>
-                                                    </v-list-item-action>
-                                                </v-list-item>
-                                            </v-list-item-group>
-                                            <v-list-item v-else>
-                                                <v-list-item-content style="justify-content: center; display: flex;">
-                                                    <v-icon color=#e50211>mdi-alert-circle</v-icon>
-                                                    ไม่มีข้อมูลการค้นหา</v-list-item-content>
-                                            </v-list-item>
-                                        </v-list>
-                                    </v-card-text>
-                                    <v-card-actions>
-                                        <v-spacer></v-spacer>
-                                        <v-btn color="#e50211" @click="showSavedSearchesDialog = false">ปิด</v-btn>
-                                        <v-spacer></v-spacer>
-                                    </v-card-actions>
-                                </v-card>
-                            </v-dialog>
-
-                            <v-select v-model="searchType" :items="searchTypes" dense outlined
-                                class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
-
-                            <v-autocomplete v-if="searchType === 'customer_no'" v-model="selectedCustomerIDs"
-                                class="mx-2 search-size small-font" :items="getSearchItems('customer_no')"
-                                label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
-                            </v-autocomplete>
-
-                            <v-autocomplete v-if="searchType === 'customer_name'" v-model="selectedCustomerNames"
-                                class="mx-2 search-size small-font" :items="getSearchItems('customer_name')"
-                                label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
-                            </v-autocomplete>
-
-                            <v-autocomplete v-if="searchType === 'stock_no'" v-model="selectedStocks"
-                                class="mx-2 search-size small-font" :items="getSearchItems('stock_no')"
-                                label="ค้นหาชื่อหุ้น" dense outlined clearable multiple>
-                            </v-autocomplete>
-
-                            <v-autocomplete v-if="searchType === 'employee_no'" v-model="selectedEmployees"
-                                class="mx-2 search-size small-font" :items="getSearchItems('employee_no')"
-                                label="ค้นหาผู้ทำรายการ" dense outlined clearable multiple>
-                            </v-autocomplete>
-
-                            <v-autocomplete v-if="searchType === 'port'" v-model="selectedPorts"
-                                class="mx-2 search-size small-font" :items="getSearchItems('port')"
-                                label="ค้นหาประเภทพอร์ต" dense outlined clearable multiple>
-                            </v-autocomplete>
-
-                            <v-autocomplete v-if="searchType === 'customer_base'" v-model="selectedBases"
-                                class="mx-2 search-size small-font" :items="getSearchItems('customer_base')"
-                                label="ค้นหาฐานทุน" dense outlined clearable multiple>
-                            </v-autocomplete>
-
-                            <v-autocomplete v-if="searchType === 'customer_type'" v-model="selectedTypes"
-                                class="mx-2 search-size small-font" :items="getSearchItems('customer_type')"
-                                label="ค้นหาประเภทลูกค้า" dense outlined clearable multiple>
-                            </v-autocomplete>
-
-                            <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
-                                :close-on-content-click="false" transition="scale-transition" offset-y>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <div v-bind="attrs" v-on="on" class="date-picker-activator">
-                                        <v-icon class="small-label">mdi-calendar-start-outline</v-icon>
-                                        <date-picker v-model="startDateTime" format="YYYY-MM-DD HH:mm"
-                                            type="datetime" />
-                                    </div>
-                                </template>
-                            </v-menu>
-
-                            <v-menu v-if="searchType === 'updated_date'" v-model="endDatePickerMenu"
-                                :close-on-content-click="false" transition="scale-transition" offset-y>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
-                                        <v-icon class="small-label">mdi-calendar-end-outline</v-icon>
-                                        <date-picker v-model="endDateTime" format="YYYY-MM-DD HH:mm" type="datetime" />
-                                    </div>
-                                </template>
-                            </v-menu>
-
-                            <v-btn icon @click="addSearch">
-                                <v-icon class="small-icon ">mdi-plus</v-icon>
-                            </v-btn>
-
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
-                                <v-icon>mdi-file-excel</v-icon>
-                            </v-btn>
-                        </div>
-                    </v-col>
-                </v-row>
-            </v-container>
-
-            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
-                    <template v-slot:activator="{ on }">
-                        <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
-                            color="#85d7df">mdi-playlist-check</v-icon>
-                    </template>
-                    <v-list class="header-list">
-                        <v-list-item
-                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select')"
-                            :key="header.value" class="header-item">
-                            <v-list-item-content>
-                                <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
-                            </v-list-item-content>
-                        </v-list-item>
-                    </v-list>
-                </v-menu>
-                <div>
-                    <v-btn @click="SoldOutStockDataOpen = true" class="tab-icon-three"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-piggy-bank</v-icon> หุ้นที่ขายหมดแล้ว
-                    </v-btn>
-
-                    <v-btn @click="DetailCreateOpen = true" class="tab-icon-two"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-bank-plus</v-icon> เพิ่มข้อมูลหุ้น
-                    </v-btn>
-                </div>
+    <v-dialog v-model="dialog" max-width="1000px">
+        <v-card>
+            <div>
+                <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen"
+                    @update:confirm="modalConfirmOpen = false" />
+                <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
+                    :complete.sync="modal.complete.open" :method="goBack" />
+                <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
+                <ModalWarning :open="modal.warning.open" :message="modal.warning.message"
+                    :warning.sync="modal.warning.open" />
+                <DetailEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
             </div>
+            <v-card-title class="d-flex justify-center">
+                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-piggy-bank</v-icon>
+                <span class="headline">หุ้นที่ขายหมดแล้ว</span>
+            </v-card-title>
 
-            <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
-                item-key="no" :items-per-page="5" style="overflow-x: auto; white-space: nowrap;">
-                <template v-slot:item="{ item }">
-                    <tr>
-                        <td v-if="visibleColumns.includes('select')" class="text-center"
-                            style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                            <v-checkbox v-if="isSelectingItems" v-model="selectedItems" :value="item.no"
-                                style="transform: scale(1);" />
-                        </td>
-                        <td class="text-center">
-                            <v-icon style="color:#85d7df" @click="toggleOpen(item)">
-                                {{ item.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
-                            </v-icon>
-                        </td>
-                        <td v-if="visibleColumns.includes('updated_date')" class="text-center">
-                            {{ formatDateTime(item.updated_date) }}</td>
-                        <td v-if="visibleColumns.includes('customer_no')" class="text-center">
-                            {{ getCustomerByNo(item.customer_no)?.id || 'ยังไม่ระบุ' }}</td>
-                        <td v-if="visibleColumns.includes('customer_name')" class="text-center">
-                            {{ getCustomerByNo(item.customer_no)?.nickname || 'ยังไม่ระบุ' }}</td>
-                        <td v-if="visibleColumns.includes('stock_no')" class="text-center">
-                            {{ getStockByNo(item.stock_no)?.stock || 'ยังไม่ระบุ' }}</td>
-                        <td v-if="visibleColumns.includes('from_no')" class="text-center"
-                            :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
-                            {{ getFromByNo(item.from_no)?.from || 'ยังไม่ระบุ' }}</td>
-                        <td v-if="visibleColumns.includes('created_date')" class="text-center"
-                            :style="{ color: getDateColor(item.created_date) }">
-                            {{ formatDate(item.created_date) }}</td>
-                        <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
-                            {{ item.price.toLocaleString(2) }}</td>
-                        <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
-                            {{ item.amount.toLocaleString(2) }}</td>
-                        <td v-if="visibleColumns.includes('money')" class="text-center">
-                            {{ item.money }}</td>
-                        <td v-if="visibleColumns.includes('dividend_amount')" class="text-center" style="color:#8c52ff">
-                            {{ item.dividend_amount }}</td>
-                        <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
-                            {{ item.balance_dividend }}</td>
-                        <td v-if="visibleColumns.includes('closing_price')" class="text-center" style="color:#ff914d">
-                            {{ item.closing_price }}</td>
-                        <td v-if="visibleColumns.includes('present_price')" class="text-center">
-                            {{ item.present_price }}</td>
-                        <td v-if="visibleColumns.includes('total')" class="text-center">
-                            {{ item.total }}</td>
-                        <td v-if="visibleColumns.includes('present_profit')" class="text-center"
-                            :style="{ color: getColorForNumber(item.present_profit) }">
-                            {{ item.present_profit }}</td>
-                        <td v-if="visibleColumns.includes('total_percent')" class="text-center"
-                            :style="{ color: getColorForPercent(item.total_percent) }">
-                            {{ item.total_percent }}%</td>
-                        <td v-if="visibleColumns.includes('port')" class="text-center"
-                            :style="{ color: getPortText(item.total_percent).color }">
-                            {{ getPortText(item.total_percent).text }}</td>
-                        <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                            {{ getEmployeeByNo(item.employee_no)?.fname + ' ' + getEmployeeByNo(item.employee_no)?.lname
-                                ||
-                                'ยังไม่ระบุ' }}</td>
-                        <td v-if="visibleColumns.includes('comment')" class="text-center">
-                            {{ item.comment || '-' }}</td>
-                        <td v-if="visibleColumns.includes('type_no')" class="text-center">
-                            {{ getTypeByNo(getCustomerByNo(item.customer_no)?.type_no)?.type || 'ยังไม่ระบุ' }}</td>
-                        <td v-if="visibleColumns.includes('base_no')" class="text-center">
-                            {{ getBaseByNo(getCustomerByNo(item.customer_no)?.base_no)?.base || 'ยังไม่ระบุ' }}</td>
-                        <td class="text-center">
-                            <v-menu offset-y>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
-                                </template>
-                                <v-list class="custom-list">
-                                    <v-list-item @click="openEditAllDialog(item)" class="custom-list-item">
-                                        <v-list-item-icon style="margin-right: 4px;">
-                                            <v-icon class="icon-tab" color="#ffc800">mdi-pencil</v-icon>
-                                        </v-list-item-icon>
-                                        <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
-                                    </v-list-item>
+            <v-card-text>
+                <v-container>
+                    <v-row justify="center" align="center">
+                        <v-col cols="auto">
+                            <div class="d-flex align-center mt-2 justify-center">
+                                <div class="d-flex align-center mt-2 justify-center">
+                                    <v-icon class="small-icon" @click="toggleSavedSearchesDialog">
+                                        mdi-format-list-bulleted-type
+                                    </v-icon>
+                                    <span>{{ savedSearches.length }}</span>
+                                </div>
 
-                                    <v-list-item @click="toggleSelectItems" class="custom-list-item">
-                                        <v-list-item-icon style="margin-right: 4px;">
-                                            <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
-                                        </v-list-item-icon>
-                                        <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
-                                    </v-list-item>
-                                </v-list>
-                            </v-menu>
-                        </td>
-                    </tr>
+                                <v-dialog v-model="showSavedSearchesDialog" max-width="400px">
+                                    <v-card>
+                                        <v-card-title class="headline"
+                                            style="justify-content: center; display: flex;">บันทึกการค้นหา</v-card-title>
+                                        <v-card-text>
+                                            <v-list>
+                                                <v-list-item-group v-if="savedSearches.length > 0">
+                                                    <v-list-item v-for="(search, index) in savedSearches" :key="index">
+                                                        <v-list-item-content>
+                                                            <v-list-item-title>
+                                                                <strong>ประเภท :</strong>
+                                                                {{ getSearchTypeText(search.type) }}
+                                                            </v-list-item-title>
+                                                            <v-list-item-subtitle v-if="search.query">
+                                                                <strong>รายละเอียด :</strong> {{ search.query }}
+                                                            </v-list-item-subtitle>
+                                                            <v-list-item-subtitle v-if="search.start && search.end">
+                                                                <strong>ระยะเวลา :</strong> {{
+                                                                    formatDateTime(search.start)
+                                                                }} - {{ formatDateTime(search.end) }}
+                                                            </v-list-item-subtitle>
+                                                            <v-list-item-subtitle v-if="search.topics">
+                                                                <strong>หัวข้อ :</strong> {{ search.topics.join(', ') }}
+                                                            </v-list-item-subtitle>
+                                                        </v-list-item-content>
+                                                        <v-list-item-action>
+                                                            <v-btn icon @click="deleteSearch(index)">
+                                                                <v-icon color=#e50211>mdi-delete</v-icon>
+                                                            </v-btn>
+                                                        </v-list-item-action>
+                                                    </v-list-item>
+                                                </v-list-item-group>
+                                                <v-list-item v-else>
+                                                    <v-list-item-content
+                                                        style="justify-content: center; display: flex;">
+                                                        <v-icon color=#e50211>mdi-alert-circle</v-icon>
+                                                        ไม่มีข้อมูลการค้นหา</v-list-item-content>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <v-btn color="#e50211" @click="showSavedSearchesDialog = false">ปิด</v-btn>
+                                            <v-spacer></v-spacer>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
 
-                    <tr v-if="item.isOpen">
-                        <td v-if="visibleColumns.includes('select')" class="text-center"></td>
-                        <td class="text-center" style="color:#e6c56c">หุ้นเดิม</td>
-                        <td v-if="visibleColumns.includes('updated_date')" class="text-center">
-                            {{ formatDateTime(item.detailupdated_date) }}</td>
-                        <td v-if="visibleColumns.includes('customer_no')" class="text-center">
-                            {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('customer_name')" class="text-center">
-                            {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('stock_no')" class="text-center">
-                            {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('from_no')" class="text-center"
-                            :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
-                            {{ getFromByNo(item.from_no)?.from || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('created_date')" class="text-center"
-                            :style="{ color: getDateColor(item.created_date) }">
-                            {{ formatDate(item.created_date) }}</td>
-                        <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
-                            {{ item.detailprice.toLocaleString(2) }}</td>
-                        <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
-                            {{ item.detailamount.toLocaleString(2) }}</td>
-                        <td v-if="visibleColumns.includes('money')" class="text-center">
-                            {{ item.detailmoney }}</td>
-                        <td v-if="visibleColumns.includes('dividend_amount')" class="text-center" style="color:#8c52ff">
-                            {{ item.detaildividend_amount }}</td>
-                        <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
-                            {{ item.detailbalance_dividend }}</td>
-                        <td v-if="visibleColumns.includes('closing_price')" class="text-center" style="color:#ff914d">
-                            {{ item.closing_price }}</td>
-                        <td v-if="visibleColumns.includes('present_price')" class="text-center">
-                            {{ item.detailpresent_price }}</td>
-                        <td v-if="visibleColumns.includes('total')" class="text-center">
-                            {{ item.detailtotal }}</td>
-                        <td v-if="visibleColumns.includes('present_profit')" class="text-center"
-                            :style="{ color: getColorForNumber(item.detailpresent_profit) }">
-                            {{ item.detailpresent_profit }}</td>
-                        <td v-if="visibleColumns.includes('total_percent')" class="text-center"
-                            :style="{ color: getColorForPercent(item.detailtotal_percent) }">
-                            {{ item.detailtotal_percent }}%</td>
-                        <td v-if="visibleColumns.includes('port')" class="text-center"
-                            :style="{ color: getPortText(item.detailtotal_percent).color }">
-                            {{ getPortText(item.detailtotal_percent).text }}</td>
-                        <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                            {{ getEmployeeByNo(item.detailemployee_no)?.fname + ' ' +
-                                getEmployeeByNo(item.detailemployee_no)?.lname || 'ไม่ทราบ'
-                            }}</td>
-                        <td v-if="visibleColumns.includes('comment')" class="text-center">
-                            {{ item.comment || '-' }}</td>
-                        <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
-                        <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
-                        <td class="text-center"></td>
-                    </tr>
+                                <v-select v-model="searchType" :items="searchTypes" dense outlined
+                                    class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                    <tr v-if="item.transactions && item.isOpen" v-for="transaction in item.transactions"
-                        :key="transaction.id">
-                        <td v-if="visibleColumns.includes('select')" class="text-center"></td>
-                        <td class="text-center" style="color:#6ce69f">ซื้อเพิ่ม</td>
-                        <td v-if="visibleColumns.includes('updated_date')" class="text-center">
-                            {{ formatDateTime(transaction.updated_date) }}</td>
-                        <td v-if="visibleColumns.includes('customer_no')" class="text-center">
-                            {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('customer_name')" class="text-center">
-                            {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('stock_no')" class="text-center">
-                            {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('from_no')" class="text-center"
-                            :style="{ color: getFromText(getFromByNo(transaction.from_no)?.from).color }">
-                            {{ getFromByNo(transaction.from_no)?.from || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('created_date')" class="text-center"
-                            :style="{ color: getDateColor(transaction.created_date) }">
-                            {{ formatDate(transaction.created_date) }}</td>
-                        <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
-                            {{ transaction.price.toLocaleString(2) }}</td>
-                        <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
-                            {{ transaction.amount.toLocaleString(2) }}</td>
-                        <td v-if="visibleColumns.includes('money')" class="text-center">
-                            {{ transaction.money }}</td>
-                        <td v-if="visibleColumns.includes('dividend_amount')" class="text-center" style="color:#8c52ff">
-                            {{ transaction.dividend_amount }}</td>
-                        <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
-                            {{ transaction.balance_dividend }}</td>
-                        <td v-if="visibleColumns.includes('closing_price')" class="text-center" style="color:#ff914d">
-                            {{ item.closing_price }}</td>
-                        <td v-if="visibleColumns.includes('present_price')" class="text-center">
-                            {{ transaction.present_price }}</td>
-                        <td v-if="visibleColumns.includes('total')" class="text-center">
-                            {{ transaction.total }}</td>
-                        <td v-if="visibleColumns.includes('present_profit')" class="text-center"
-                            :style="{ color: getColorForNumber(transaction.present_profit) }">
-                            {{ transaction.present_profit }}</td>
-                        <td v-if="visibleColumns.includes('total_percent')" class="text-center"
-                            :style="{ color: getColorForPercent(transaction.total_percent) }">
-                            {{ transaction.total_percent }}%</td>
-                        <td v-if="visibleColumns.includes('port')" class="text-center"
-                            :style="{ color: getPortText(transaction.total_percent).color }">
-                            {{ getPortText(transaction.total_percent).text }}</td>
-                        <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                            {{ getEmployeeByNo(transaction.employee_no)?.fname + ' ' +
-                                getEmployeeByNo(transaction.employee_no)?.lname ||
-                                'ไม่ทราบ' }}</td>
-                        <td v-if="visibleColumns.includes('comment')" class="text-center">
-                            {{ item.comment || '-' }}</td>
-                        <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
-                        <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
-                        <td class="text-center"></td>
-                    </tr>
+                                <v-autocomplete v-if="searchType === 'customer_no'" v-model="selectedCustomerIDs"
+                                    class="mx-2 search-size small-font" :items="getSearchItems('customer_no')"
+                                    label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
+                                </v-autocomplete>
 
-                    <tr v-if="item.isOpen">
-                        <td v-if="visibleColumns.includes('select')" class="text-center"></td>
-                        <td class="text-center" style="color:#cb6ce6">รวมหักปันผล</td>
-                        <td v-if="visibleColumns.includes('updated_date')" class="text-center">
-                            {{ formatDateTime(item.updated_date) }}</td>
-                        <td v-if="visibleColumns.includes('customer_no')" class="text-center">
-                            {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('customer_name')" class="text-center">
-                            {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('stock_no')" class="text-center">
-                            {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('from_no')" class="text-center"
-                            :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
-                            {{ getFromByNo(item.from_no)?.from || 'N/A' }}</td>
-                        <td v-if="visibleColumns.includes('created_date')" class="text-center"
-                            :style="{ color: getDateColor(item.created_date) }">
-                            {{ formatDate(item.created_date) }}</td>
-                        <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
-                            {{ item.dividendprice.toLocaleString(2) }}</td>
-                        <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
-                            {{ item.amount.toLocaleString(2) }}</td>
-                        <td v-if="visibleColumns.includes('money')" class="text-center">
-                            {{ item.dividendmoney }}</td>
-                        <td v-if="visibleColumns.includes('dividend_amount')" class="text-center" style="color:#8c52ff">
-                            {{ item.dividend_amount }}</td>
-                        <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
-                            {{ item.balance_dividend }}</td>
-                        <td v-if="visibleColumns.includes('closing_price')" class="text-center" style="color:#ff914d">
-                            {{ item.closing_price }}</td>
-                        <td v-if="visibleColumns.includes('base_no')" class="text-center">
-                            {{ item.present_price }}</td>
-                        <td v-if="visibleColumns.includes('total')" class="text-center">
-                            {{ item.total }}</td>
-                        <td v-if="visibleColumns.includes('present_profit')" class="text-center"
-                            :style="{ color: getColorForNumber(item.present_profit) }">
-                            {{ item.present_profit }}</td>
-                        <td v-if="visibleColumns.includes('total_percent')" class="text-center"
-                            :style="{ color: getColorForPercent(item.total_percent) }">
-                            {{ item.total_percent }}%</td>
-                        <td v-if="visibleColumns.includes('port')" class="text-center"
-                            :style="{ color: getPortText(item.total_percent).color }">
-                            {{ getPortText(item.total_percent).text }}</td>
-                        <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                            {{ getEmployeeByNo(item.employee_no)?.fname + ' ' + getEmployeeByNo(item.employee_no)?.lname
-                                ||
-                                'ไม่ทราบ' }}</td>
-                        <td v-if="visibleColumns.includes('comment')" class="text-center">
-                            {{ item.comment || '-' }}</td>
-                        <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
-                        <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
-                        <td class="text-center"></td>
-                    </tr>
-                </template>
-            </v-data-table>
+                                <v-autocomplete v-if="searchType === 'customer_name'" v-model="selectedCustomerNames"
+                                    class="mx-2 search-size small-font" :items="getSearchItems('customer_name')"
+                                    label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
+                                </v-autocomplete>
+
+                                <v-autocomplete v-if="searchType === 'stock_no'" v-model="selectedStocks"
+                                    class="mx-2 search-size small-font" :items="getSearchItems('stock_no')"
+                                    label="ค้นหาชื่อหุ้น" dense outlined clearable multiple>
+                                </v-autocomplete>
+
+                                <v-autocomplete v-if="searchType === 'employee_no'" v-model="selectedEmployees"
+                                    class="mx-2 search-size small-font" :items="getSearchItems('employee_no')"
+                                    label="ค้นหาผู้ทำรายการ" dense outlined clearable multiple>
+                                </v-autocomplete>
+
+                                <v-autocomplete v-if="searchType === 'port'" v-model="selectedPorts"
+                                    class="mx-2 search-size small-font" :items="getSearchItems('port')"
+                                    label="ค้นหาประเภทพอร์ต" dense outlined clearable multiple>
+                                </v-autocomplete>
+
+                                <v-autocomplete v-if="searchType === 'customer_base'" v-model="selectedBases"
+                                    class="mx-2 search-size small-font" :items="getSearchItems('customer_base')"
+                                    label="ค้นหาฐานทุน" dense outlined clearable multiple>
+                                </v-autocomplete>
+
+                                <v-autocomplete v-if="searchType === 'customer_type'" v-model="selectedTypes"
+                                    class="mx-2 search-size small-font" :items="getSearchItems('customer_type')"
+                                    label="ค้นหาประเภทลูกค้า" dense outlined clearable multiple>
+                                </v-autocomplete>
+
+                                <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
+                                    :close-on-content-click="false" transition="scale-transition" offset-y>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <div v-bind="attrs" v-on="on" class="date-picker-activator">
+                                            <v-icon class="small-label">mdi-calendar-start-outline</v-icon>
+                                            <date-picker v-model="startDateTime" format="YYYY-MM-DD HH:mm"
+                                                type="datetime" />
+                                        </div>
+                                    </template>
+                                </v-menu>
+
+                                <v-menu v-if="searchType === 'updated_date'" v-model="endDatePickerMenu"
+                                    :close-on-content-click="false" transition="scale-transition" offset-y>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
+                                            <v-icon class="small-label">mdi-calendar-end-outline</v-icon>
+                                            <date-picker v-model="endDateTime" format="YYYY-MM-DD HH:mm"
+                                                type="datetime" />
+                                        </div>
+                                    </template>
+                                </v-menu>
+
+                                <v-btn icon @click="addSearch">
+                                    <v-icon class="small-icon ">mdi-plus</v-icon>
+                                </v-btn>
+
+                                <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
+                                    <v-icon>mdi-file-excel</v-icon>
+                                </v-btn>
+                            </div>
+                        </v-col>
+                    </v-row>
+                </v-container>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
+                        <template v-slot:activator="{ on }">
+                            <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
+                                color="#85d7df">mdi-playlist-check</v-icon>
+                        </template>
+                        <v-list class="header-list">
+                            <v-list-item
+                                v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select' && header.value !== 'action')"
+                                :key="header.value" class="header-item">
+                                <v-list-item-content>
+                                    <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
+                                </v-list-item-content>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                    <div>
+                        <v-btn v-if="isSelectingItems && selectedItems.length > 0" color="red"
+                            @click="deleteSelectedItems" class="mb-4" style="font-size: 1.5 rem; margin-left: auto;">
+                            <v-icon left color="white">mdi-delete</v-icon> ลบ
+                        </v-btn>
+                    </div>
+                </div>
+                <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy"
+                    :sort-desc.sync="sortDesc" item-key="no" :items-per-page="5"
+                    style="overflow-x: auto; white-space: nowrap;">
+                    <template v-slot:item="{ item }">
+                        <tr>
+                            <td v-if="visibleColumns.includes('select')" class="text-center"
+                                style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                                <v-checkbox v-if="isSelectingItems" v-model="selectedItems" :value="item.no"
+                                    style="transform: scale(1);" />
+                            </td>
+                            <td class="text-center">
+                                <v-icon style="color:#85d7df" @click="toggleOpen(item)">
+                                    {{ item.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                                </v-icon>
+                            </td>
+                            <td v-if="visibleColumns.includes('updated_date')" class="text-center">
+                                {{ formatDateTime(item.updated_date) }}</td>
+                            <td v-if="visibleColumns.includes('customer_no')" class="text-center">
+                                {{ getCustomerByNo(item.customer_no)?.id || 'ยังไม่ระบุ' }}</td>
+                            <td v-if="visibleColumns.includes('customer_name')" class="text-center">
+                                {{ getCustomerByNo(item.customer_no)?.nickname || 'ยังไม่ระบุ' }}</td>
+                            <td v-if="visibleColumns.includes('stock_no')" class="text-center">
+                                {{ getStockByNo(item.stock_no)?.stock || 'ยังไม่ระบุ' }}</td>
+                            <td v-if="visibleColumns.includes('from_no')" class="text-center"
+                                :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
+                                {{ getFromByNo(item.from_no)?.from || 'ยังไม่ระบุ' }}</td>
+                            <td v-if="visibleColumns.includes('created_date')" class="text-center"
+                                :style="{ color: getDateColor(item.created_date) }">
+                                {{ formatDate(item.created_date) }}</td>
+                            <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
+                                {{ item.price.toLocaleString(2) }}</td>
+                            <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
+                                {{ item.amount.toLocaleString(2) }}</td>
+                            <td v-if="visibleColumns.includes('money')" class="text-center">
+                                {{ item.money }}</td>
+                            <td v-if="visibleColumns.includes('dividend_amount')" class="text-center"
+                                style="color:#8c52ff">
+                                {{ item.dividend_amount }}</td>
+                            <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
+                                {{ item.balance_dividend }}</td>
+                            <td v-if="visibleColumns.includes('closing_price')" class="text-center"
+                                style="color:#ff914d">
+                                {{ item.closing_price }}</td>
+                            <td v-if="visibleColumns.includes('present_price')" class="text-center">
+                                {{ item.present_price }}</td>
+                            <td v-if="visibleColumns.includes('total')" class="text-center">
+                                {{ item.total }}</td>
+                            <td v-if="visibleColumns.includes('present_profit')" class="text-center"
+                                :style="{ color: getColorForNumber(item.present_profit) }">
+                                {{ item.present_profit }}</td>
+                            <td v-if="visibleColumns.includes('total_percent')" class="text-center"
+                                :style="{ color: getColorForPercent(item.total_percent) }">
+                                {{ item.total_percent }}%</td>
+                            <td v-if="visibleColumns.includes('port')" class="text-center"
+                                :style="{ color: getPortText(item.total_percent).color }">
+                                {{ getPortText(item.total_percent).text }}</td>
+                            <td v-if="visibleColumns.includes('employee_no')" class="text-center">
+                                {{ getEmployeeByNo(item.employee_no)?.fname + ' ' +
+                                    getEmployeeByNo(item.employee_no)?.lname
+                                    ||
+                                    'ยังไม่ระบุ' }}</td>
+                            <td v-if="visibleColumns.includes('comment')" class="text-center">
+                                {{ item.comment || '-' }}</td>
+                            <td v-if="visibleColumns.includes('type_no')" class="text-center">
+                                {{ getTypeByNo(getCustomerByNo(item.customer_no)?.type_no)?.type || 'ยังไม่ระบุ' }}</td>
+                            <td v-if="visibleColumns.includes('base_no')" class="text-center">
+                                {{ getBaseByNo(getCustomerByNo(item.customer_no)?.base_no)?.base || 'ยังไม่ระบุ' }}</td>
+                            <td class="text-center">
+                                <v-menu offset-y>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
+                                    </template>
+                                    <v-list class="custom-list">
+                                        <v-list-item @click="openEditAllDialog(item)" class="custom-list-item">
+                                            <v-list-item-icon style="margin-right: 4px;">
+                                                <v-icon class="icon-tab" color="#ffc800">mdi-pencil</v-icon>
+                                            </v-list-item-icon>
+                                            <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
+                                        </v-list-item>
+
+                                        <v-list-item @click="toggleSelectItems" class="custom-list-item">
+                                            <v-list-item-icon style="margin-right: 4px;">
+                                                <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
+                                            </v-list-item-icon>
+                                            <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
+                                        </v-list-item>
+                                    </v-list>
+                                </v-menu>
+                            </td>
+                        </tr>
+
+                        <tr v-if="item.isOpen">
+                            <td v-if="visibleColumns.includes('select')" class="text-center"></td>
+                            <td class="text-center" style="color:#e6c56c">หุ้นเดิม</td>
+                            <td v-if="visibleColumns.includes('updated_date')" class="text-center">
+                                {{ formatDateTime(item.detailupdated_date) }}</td>
+                            <td v-if="visibleColumns.includes('customer_no')" class="text-center">
+                                {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('customer_name')" class="text-center">
+                                {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('stock_no')" class="text-center">
+                                {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('from_no')" class="text-center"
+                                :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
+                                {{ getFromByNo(item.from_no)?.from || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('created_date')" class="text-center"
+                                :style="{ color: getDateColor(item.created_date) }">
+                                {{ formatDate(item.created_date) }}</td>
+                            <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
+                                {{ item.detailprice.toLocaleString(2) }}</td>
+                            <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
+                                {{ item.detailamount.toLocaleString(2) }}</td>
+                            <td v-if="visibleColumns.includes('money')" class="text-center">
+                                {{ item.detailmoney }}</td>
+                            <td v-if="visibleColumns.includes('dividend_amount')" class="text-center"
+                                style="color:#8c52ff">
+                                {{ item.detaildividend_amount }}</td>
+                            <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
+                                {{ item.detailbalance_dividend }}</td>
+                            <td v-if="visibleColumns.includes('closing_price')" class="text-center"
+                                style="color:#ff914d">
+                                {{ item.closing_price }}</td>
+                            <td v-if="visibleColumns.includes('present_price')" class="text-center">
+                                {{ item.detailpresent_price }}</td>
+                            <td v-if="visibleColumns.includes('total')" class="text-center">
+                                {{ item.detailtotal }}</td>
+                            <td v-if="visibleColumns.includes('present_profit')" class="text-center"
+                                :style="{ color: getColorForNumber(item.detailpresent_profit) }">
+                                {{ item.detailpresent_profit }}</td>
+                            <td v-if="visibleColumns.includes('total_percent')" class="text-center"
+                                :style="{ color: getColorForPercent(item.detailtotal_percent) }">
+                                {{ item.detailtotal_percent }}%</td>
+                            <td v-if="visibleColumns.includes('port')" class="text-center"
+                                :style="{ color: getPortText(item.detailtotal_percent).color }">
+                                {{ getPortText(item.detailtotal_percent).text }}</td>
+                            <td v-if="visibleColumns.includes('employee_no')" class="text-center">
+                                {{ getEmployeeByNo(item.detailemployee_no)?.fname + ' ' +
+                                    getEmployeeByNo(item.detailemployee_no)?.lname || 'ไม่ทราบ'
+                                }}</td>
+                            <td v-if="visibleColumns.includes('comment')" class="text-center">
+                                {{ item.comment || '-' }}</td>
+                            <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
+                            <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
+                            <td class="text-center"></td>
+                        </tr>
+
+                        <tr v-if="item.transactions && item.isOpen" v-for="transaction in item.transactions"
+                            :key="transaction.id">
+                            <td v-if="visibleColumns.includes('select')" class="text-center"></td>
+                            <td class="text-center" style="color:#6ce69f">ซื้อเพิ่ม</td>
+                            <td v-if="visibleColumns.includes('updated_date')" class="text-center">
+                                {{ formatDateTime(transaction.updated_date) }}</td>
+                            <td v-if="visibleColumns.includes('customer_no')" class="text-center">
+                                {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('customer_name')" class="text-center">
+                                {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('stock_no')" class="text-center">
+                                {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('from_no')" class="text-center"
+                                :style="{ color: getFromText(getFromByNo(transaction.from_no)?.from).color }">
+                                {{ getFromByNo(transaction.from_no)?.from || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('created_date')" class="text-center"
+                                :style="{ color: getDateColor(transaction.created_date) }">
+                                {{ formatDate(transaction.created_date) }}</td>
+                            <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
+                                {{ transaction.price.toLocaleString(2) }}</td>
+                            <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
+                                {{ transaction.amount.toLocaleString(2) }}</td>
+                            <td v-if="visibleColumns.includes('money')" class="text-center">
+                                {{ transaction.money }}</td>
+                            <td v-if="visibleColumns.includes('dividend_amount')" class="text-center"
+                                style="color:#8c52ff">
+                                {{ transaction.dividend_amount }}</td>
+                            <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
+                                {{ transaction.balance_dividend }}</td>
+                            <td v-if="visibleColumns.includes('closing_price')" class="text-center"
+                                style="color:#ff914d">
+                                {{ item.closing_price }}</td>
+                            <td v-if="visibleColumns.includes('present_price')" class="text-center">
+                                {{ transaction.present_price }}</td>
+                            <td v-if="visibleColumns.includes('total')" class="text-center">
+                                {{ transaction.total }}</td>
+                            <td v-if="visibleColumns.includes('present_profit')" class="text-center"
+                                :style="{ color: getColorForNumber(transaction.present_profit) }">
+                                {{ transaction.present_profit }}</td>
+                            <td v-if="visibleColumns.includes('total_percent')" class="text-center"
+                                :style="{ color: getColorForPercent(transaction.total_percent) }">
+                                {{ transaction.total_percent }}%</td>
+                            <td v-if="visibleColumns.includes('port')" class="text-center"
+                                :style="{ color: getPortText(transaction.total_percent).color }">
+                                {{ getPortText(transaction.total_percent).text }}</td>
+                            <td v-if="visibleColumns.includes('employee_no')" class="text-center">
+                                {{ getEmployeeByNo(transaction.employee_no)?.fname + ' ' +
+                                    getEmployeeByNo(transaction.employee_no)?.lname ||
+                                    'ไม่ทราบ' }}</td>
+                            <td v-if="visibleColumns.includes('comment')" class="text-center">
+                                {{ item.comment || '-' }}</td>
+                            <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
+                            <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
+                            <td class="text-center"></td>
+                        </tr>
+
+                        <tr v-if="item.isOpen">
+                            <td v-if="visibleColumns.includes('select')" class="text-center"></td>
+                            <td class="text-center" style="color:#cb6ce6">รวมหักปันผล</td>
+                            <td v-if="visibleColumns.includes('updated_date')" class="text-center">
+                                {{ formatDateTime(item.updated_date) }}</td>
+                            <td v-if="visibleColumns.includes('customer_no')" class="text-center">
+                                {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('customer_name')" class="text-center">
+                                {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('stock_no')" class="text-center">
+                                {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('from_no')" class="text-center"
+                                :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
+                                {{ getFromByNo(item.from_no)?.from || 'N/A' }}</td>
+                            <td v-if="visibleColumns.includes('created_date')" class="text-center"
+                                :style="{ color: getDateColor(item.created_date) }">
+                                {{ formatDate(item.created_date) }}</td>
+                            <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
+                                {{ item.dividendprice.toLocaleString(2) }}</td>
+                            <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
+                                {{ item.amount.toLocaleString(2) }}</td>
+                            <td v-if="visibleColumns.includes('money')" class="text-center">
+                                {{ item.dividendmoney }}</td>
+                            <td v-if="visibleColumns.includes('dividend_amount')" class="text-center"
+                                style="color:#8c52ff">
+                                {{ item.dividend_amount }}</td>
+                            <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
+                                {{ item.balance_dividend }}</td>
+                            <td v-if="visibleColumns.includes('closing_price')" class="text-center"
+                                style="color:#ff914d">
+                                {{ item.closing_price }}</td>
+                            <td v-if="visibleColumns.includes('base_no')" class="text-center">
+                                {{ item.present_price }}</td>
+                            <td v-if="visibleColumns.includes('total')" class="text-center">
+                                {{ item.total }}</td>
+                            <td v-if="visibleColumns.includes('present_profit')" class="text-center"
+                                :style="{ color: getColorForNumber(item.present_profit) }">
+                                {{ item.present_profit }}</td>
+                            <td v-if="visibleColumns.includes('total_percent')" class="text-center"
+                                :style="{ color: getColorForPercent(item.total_percent) }">
+                                {{ item.total_percent }}%</td>
+                            <td v-if="visibleColumns.includes('port')" class="text-center"
+                                :style="{ color: getPortText(item.total_percent).color }">
+                                {{ getPortText(item.total_percent).text }}</td>
+                            <td v-if="visibleColumns.includes('employee_no')" class="text-center">
+                                {{ getEmployeeByNo(item.employee_no)?.fname + ' ' +
+                                    getEmployeeByNo(item.employee_no)?.lname
+                                    ||
+                                    'ไม่ทราบ' }}</td>
+                            <td v-if="visibleColumns.includes('comment')" class="text-center">
+                                {{ item.comment || '-' }}</td>
+                            <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
+                            <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
+                            <td class="text-center"></td>
+                        </tr>
+                    </template>
+                </v-data-table>
+            </v-card-text>
             <div class="text-center">
-                <v-btn v-if="isSelectingItems && selectedItems.length > 0" color="red" @click="deleteSelectedItems"
-                    class="mb-4" style="font-size: 1.5 rem; margin-left: auto;">
-                    <v-icon left color="white">mdi-delete</v-icon> ลบ
-                </v-btn>
+                <v-btn @click="dialog = false" class="mb-4" color="#e50211">ปิด</v-btn>
             </div>
         </v-card>
-    </div>
-
+    </v-dialog>
 </template>
 
 <script>
-
 import ExcelJS from 'exceljs';
 import moment from 'moment-timezone';
 import 'moment/locale/th'
@@ -441,19 +447,8 @@ import 'vue2-datepicker/index.css';
 import Decimal from 'decimal.js';
 
 export default {
-
-    layout: 'user',
-    middleware: 'auth',
-
-    async mounted() {
-        await this.checkRank();
-        await this.fetchEmployeeData();
-        await this.fetchDetailData();
-        await this.fetchCustomerData();
-        await this.fetchStockData();
-        await this.fetchFromData();
-        await this.fetchBaseData();
-        await this.fetchTypeData();
+    props: {
+        value: Boolean,
     },
 
     components: {
@@ -465,14 +460,18 @@ export default {
             modal: {
                 warning: {
                     open: false,
-                    message: 'การป้อนข้อมูลเวลาไม่ถูกต้อง',
+                    message: '',
+                },
+                error: {
+                    open: false,
+                    message: '',
                 },
                 confirm: {
                     open: false,
                 },
                 complete: {
                     open: false,
-                    message: 'สำเร็จ',
+                    message: '',
                 },
             },
 
@@ -484,8 +483,9 @@ export default {
             bases: [],
             types: [],
 
-            DetailCreateOpen: false,
-            SoldOutStockDataOpen: false,
+            selectedItems: [],
+            handleConfirm: null,
+            isSelectingItems: false,
 
             selectedCustomerIDs: [],
             selectedCustomerNames: [],
@@ -494,36 +494,6 @@ export default {
             selectedPorts: [],
             selectedBases: [],
             selectedTypes: [],
-
-            selectedItems: [],
-            handleConfirm: null,
-            isSelectingItems: false,
-
-            showModalResult: false,
-            ResultDetailData: {},
-            sortBy: 'updated_date',
-            currentAction: '',
-            searchQuery: '',
-            searchType: 'customer_no',
-            selectedItemDetail: '',
-            startDateTime: '',
-            endDateTime: '',
-            editDialogOpen: false,
-            isSearchFieldVisible: false,
-            datePickerMenu: false,
-            endDatePickerMenu: false,
-            showSavedSearchesDialog: false,
-            showColumnSelector: false,
-            modalConfirmOpen: false,
-            editAllDialog: false,
-            dialog: false,
-            sortDesc: true,
-            selectedEmployee: null,
-            currentItem: null,
-            employeeNo: null,
-            actionType: null,
-            savedSearches: [],
-            editAllData: {},
 
             searchTypes: [
                 { text: 'รหัสสมาชิก', value: 'customer_no' },
@@ -730,7 +700,44 @@ export default {
                     cellClass: 'text-center',
                 },
             ],
+
+            showModalResult: false,
+            ResultDetailData: {},
+            sortBy: 'updated_date',
+            currentAction: '',
+            searchQuery: '',
+            searchType: 'customer_no',
+            selectedItemDetail: '',
+            startDateTime: '',
+            endDateTime: '',
+            editDialogOpen: false,
+            isSearchFieldVisible: false,
+            datePickerMenu: false,
+            endDatePickerMenu: false,
+            showSavedSearchesDialog: false,
+            showColumnSelector: false,
+            modalConfirmOpen: false,
+            editAllDialog: false,
+            dialog: false,
+            sortDesc: true,
+            selectedEmployee: null,
+            currentItem: null,
+            employeeNo: null,
+            actionType: null,
+            savedSearches: [],
+            editAllData: {},
+
+            dialog: this.value,
         };
+    },
+
+    watch: {
+        value(newValue) {
+            this.dialog = newValue;
+        },
+        dialog(newValue) {
+            this.$emit('input', newValue);
+        },
     },
 
     computed: {
@@ -757,6 +764,16 @@ export default {
         filteredHeaders() {
             return this.headers.filter(header => this.visibleColumns.includes(header.value));
         },
+    },
+
+    async mounted() {
+        await this.fetchEmployeeData();
+        await this.fetchDetailData();
+        await this.fetchCustomerData();
+        await this.fetchStockData();
+        await this.fetchFromData();
+        await this.fetchBaseData();
+        await this.fetchTypeData();
     },
 
     methods: {
@@ -813,31 +830,31 @@ export default {
         getSearchItems(type) {
             if (type === 'stock_no') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getStockByNo(detail.stock_no)?.stock)
+                    .filter(detail => detail.amount <= 0 && this.getStockByNo(detail.stock_no)?.stock)
                     .map(detail => this.getStockByNo(detail.stock_no).stock);
             } else if (type === 'customer_name') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getCustomerByNo(detail.customer_no)?.nickname)
+                    .filter(detail => detail.amount <= 0 && this.getCustomerByNo(detail.customer_no)?.nickname)
                     .map(detail => this.getCustomerByNo(detail.customer_no).nickname);
             } else if (type === 'customer_no') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getCustomerByNo(detail.customer_no)?.id)
+                    .filter(detail => detail.amount <= 0 && this.getCustomerByNo(detail.customer_no)?.id)
                     .map(detail => this.getCustomerByNo(detail.customer_no).id);
             } else if (type === 'employee_no') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => detail.amount <= 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
                     .map(detail => this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname);
             } else if (type === 'port') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => detail.amount <= 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
                     .map(detail => this.getPortText(detail.total_percent).text);
             } else if (type === 'customer_base') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => detail.amount <= 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
                     .map(detail => this.getBaseByNo(this.getCustomerByNo(detail.customer_no)?.base_no)?.base || 'ยังไม่ระบุ');
             } else if (type === 'customer_type') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => detail.amount <= 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
                     .map(detail => this.getTypeByNo(this.getCustomerByNo(detail.customer_no)?.type_no)?.type || 'ยังไม่ระบุ');
             }
             return [];
@@ -847,30 +864,6 @@ export default {
             this.currentAction = action;
             this.currentItem = item;
             this.modalConfirmOpen = true;
-        },
-
-        async checkRank() {
-            if (this.$auth.loggedIn) {
-                const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.rank_no.toString();
-                if (Status === '2') {
-                    this.$router.push('/');
-                    await this.$auth.logout();
-                }
-                else {
-                    if (RankID === '1') {
-                        this.$router.push('/app/data/detail');
-                    } else if (RankID === '2') {
-                        this.$router.push('/app/data/detail');
-                    } else if (RankID === '3') {
-                        this.$router.push('/app/data/detail');
-                    } else {
-                        this.$router.push('/auth');
-                    }
-                }
-            } else {
-                this.$router.push('/');
-            }
         },
 
         async fetchEmployeeData() {
@@ -1096,7 +1089,7 @@ export default {
                         }
                     }
 
-                    this.details = this.details.filter(detail => detail.amount !== 0);
+                    this.details = this.details.filter(detail => detail.amount == 0);
                 } else {
                     console.error("ข้อมูล details ไม่มีข้อมูลหรือไม่ใช่อาร์เรย์");
                 }
@@ -1462,7 +1455,6 @@ export default {
         },
     },
 };
-
 </script>
 
 <style scoped>

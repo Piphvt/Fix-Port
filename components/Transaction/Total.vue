@@ -1,271 +1,272 @@
 <template>
-
-    <div>
-        <ModalWarning :open="modal.warning.open" :message="modal.warning.message" :warning.sync="modal.warning.open" />
-        <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
-        <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
-            :complete.sync="modal.complete.open" :method="goBack" />
-        <TransactionSummarize :stockData="[selectedStockData]" :dataType="selectedDataType" :dialogOpen.sync="dialogOpen"
-            :date="date" />
-
-
-        <v-card flat>
-            <v-container>
-                <v-row justify="center" align="center">
-                    <v-col cols="auto">
-                        <v-card-title class="d-flex align-center justify-center">
-                            <v-icon class="little-icon" color="#85d7df">mdi-cash-register</v-icon>&nbsp;
-                            <h3 class="mb-0">สรุปผลการซื้อขายหุ้นของลูกค้า</h3>
-                        </v-card-title>
-                        <div class="d-flex align-center mt-2 justify-center">
-                            <div class="d-flex align-center mt-2 justify-center">
-                                <v-icon class="small-icon" @click="toggleSavedSearchesDialog">
-                                    mdi-format-list-bulleted-type
-                                </v-icon>
-                                <span>{{ savedSearches.length }}</span>
-                            </div>
-
-                            <v-dialog v-model="showSavedSearchesDialog" max-width="400px">
-                                <v-card>
-                                    <v-card-title class="headline"
-                                        style="justify-content: center; display: flex;">บันทึกการค้นหา</v-card-title>
-                                    <v-card-text>
-                                        <v-list>
-                                            <v-list-item-group v-if="savedSearches.length > 0">
-                                                <v-list-item v-for="(search, index) in savedSearches" :key="index">
-                                                    <v-list-item-content>
-                                                        <v-list-item-title>
-                                                            <strong>ประเภท :</strong>
-                                                            {{ getSearchTypeText(search.type) }}
-                                                        </v-list-item-title>
-                                                        <v-list-item-subtitle v-if="search.query">
-                                                            <strong>รายละเอียด :</strong> {{ search.query }}
-                                                        </v-list-item-subtitle>
-                                                        <v-list-item-subtitle v-if="search.start && search.end">
-                                                            <strong>ระยะเวลา :</strong> {{
-                                                                formatDateTime(search.start)
-                                                            }} - {{ formatDateTime(search.end) }}
-                                                        </v-list-item-subtitle>
-                                                        <v-list-item-subtitle v-if="search.topics">
-                                                            <strong>หัวข้อ :</strong> {{ search.topics.join(', ') }}
-                                                        </v-list-item-subtitle>
-                                                    </v-list-item-content>
-                                                    <v-list-item-action>
-                                                        <v-btn icon @click="deleteSearch(index)">
-                                                            <v-icon color=#e50211>mdi-delete</v-icon>
-                                                        </v-btn>
-                                                    </v-list-item-action>
-                                                </v-list-item>
-                                            </v-list-item-group>
-                                            <v-list-item v-else>
-                                                <v-list-item-content style="justify-content: center; display: flex;">
-                                                    <v-icon color=#e50211>mdi-alert-circle</v-icon>
-                                                    ไม่มีข้อมูลการค้นหา</v-list-item-content>
-                                            </v-list-item>
-                                        </v-list>
-                                    </v-card-text>
-                                    <v-card-actions>
-                                        <v-spacer></v-spacer>
-                                        <v-btn color="#e50211" @click="showSavedSearchesDialog = false">ปิด</v-btn>
-                                        <v-spacer></v-spacer>
-                                    </v-card-actions>
-                                </v-card>
-                            </v-dialog>
-
-                            <v-select v-model="searchType" :items="searchTypes" dense outlined
-                                class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
-
-                            <v-autocomplete v-if="searchType !== 'port' && searchType !== 'updated_date'"
-                                v-model="searchQuery" :items="getSearchItems(searchType)" label="ค้นหา" dense outlined
-                                append-icon="mdi-magnify" class="mx-2 same-size small-font" hide-no-data hide-details
-                                clearable></v-autocomplete>
-
-                            <v-select v-if="searchType === 'port'" v-model="selectedTopics" :items="actionTopics" dense
-                                outlined multiple class="mx-2 search-size small-font"></v-select>
-
-                            <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
-                                :close-on-content-click="false" transition="scale-transition" offset-y>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <div v-bind="attrs" v-on="on" class="date-picker-activator">
-                                        <v-icon class="small-label">mdi-calendar-start-outline</v-icon>
-                                        <date-picker v-model="startDateTime" format="YYYY-MM-DD HH:mm"
-                                            type="datetime" />
-                                    </div>
-                                </template>
-                            </v-menu>
-
-                            <v-menu v-if="searchType === 'updated_date'" v-model="endDatePickerMenu"
-                                :close-on-content-click="false" transition="scale-transition" offset-y>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
-                                        <v-icon class="small-label">mdi-calendar-end-outline</v-icon>
-                                        <date-picker v-model="endDateTime" format="YYYY-MM-DD HH:mm" type="datetime" />
-                                    </div>
-                                </template>
-                            </v-menu>
-
-                            <v-btn icon @click="addSearch">
-                                <v-icon class="small-icon ">mdi-plus</v-icon>
-                            </v-btn>
-
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
-                                <v-icon>mdi-file-excel</v-icon>
-                            </v-btn>
-                        </div>
-                    </v-col>
-                </v-row>
-            </v-container>
-
-            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
-                    <template v-slot:activator="{ on }">
-                        <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
-                            color="#85d7df">mdi-playlist-check</v-icon>
-                    </template>
-                    <v-list class="header-list">
-                        <v-list-item
-                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'action')"
-                            :key="header.value" class="header-item">
-                            <v-list-item-content>
-                                <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
-                            </v-list-item-content>
-                        </v-list-item>
-                    </v-list>
-                </v-menu>
+    <v-dialog v-model="dialog" max-width="1000px">
+        <v-card>
+            <div>
+                <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen"
+                    @update:confirm="modalConfirmOpen = false" />
+                <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
+                    :complete.sync="modal.complete.open" :method="goBack" />
+                <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
+                <ModalWarning :open="modal.warning.open" :message="modal.warning.message"
+                    :warning.sync="modal.warning.open" />
+                <TransactionSummarize :stockData="[selectedStockData]" :dataType="selectedDataType"
+                    :dialogOpen.sync="dialogOpen" :date="date" />
             </div>
+            <v-card-title class="d-flex justify-center">
+                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-cash-register</v-icon>
+                <span class="headline">สรุปผลการซื้อขายหุ้นของลูกค้า</span>
+            </v-card-title>
 
-            <v-data-table :headers="filteredHeaders" :items="details" :item-value="customer_no" item-key="customer_no">
-                <template v-slot:body="{ items }">
-                    <template v-for="(group, index) in items" :key="group.customer_no + '-' + index">
-                        <tr>
-                            <td class="text-center" v-if="visibleColumns.includes('action')">
-                                <v-icon style="color:#85d7df" @click="group.isOpen = !group.isOpen">
-                                    {{ group.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
-                                </v-icon>
-                            </td>
-                            <td v-if="visibleColumns.includes('updated_date')" class="text-center">
-                                {{ formatDateTime(group.updated_date) }}</td>
-                            <td class="text-center">
-                                {{ getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ' }}</td>
-                            <td class="text-center">
-                                {{ getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ' }}
-                            </td>
-                            <td class="text-center">
-                                {{ (group.from1TotalDifference || 0).toLocaleString() }}</td>
-                            <td class="text-center">
-                                {{ (group.from2TotalDifference || 0).toLocaleString() }}</td>
-                            <td class="text-center">
-                                {{ (group.from3TotalDifference || 0).toLocaleString() }}</td>
-                            <td class="text-center" :style="{
-                                color: getColorForNumber((group.from1TotalDifference + group.from2TotalDifference +
-                                    group.from3TotalDifference) || 0)
-                            }">
-                                {{ ((group.from1TotalDifference + group.from2TotalDifference +
-                                    group.from3TotalDifference) || 0).toLocaleString() }}</td>
-                            <td class="text-center"><v-btn color="#5271ff" @click="openStockPopup(group, 'group')" icon>
-                                    <v-icon>mdi-eye</v-icon></v-btn></td>
-                            <td class="text-center"><v-btn color="#00bf63"
-                                    @click="exportForPerson(group.customer_no, 'group', group)" icon>
-                                    <v-icon>mdi-file-excel</v-icon></v-btn></td>
-                        </tr>
+            <v-card-text>
+                <v-container>
+                    <v-row justify="center" align="center">
+                        <v-col cols="auto">
+                            <div class="d-flex align-center mt-2 justify-center">
+                                <div class="d-flex align-center mt-2 justify-center">
+                                    <v-icon class="small-icon" @click="toggleSavedSearchesDialog">
+                                        mdi-format-list-bulleted-type
+                                    </v-icon>
+                                    <span>{{ savedSearches.length }}</span>
+                                </div>
 
-                        <template v-if="group.isOpen">
-                            <template v-for="(yearlyData, year) in group.yearlyDifferences" :key="year">
-                                <tr>
-                                    <td class="text-center" v-if="visibleColumns.includes('action')"></td>
-                                    <td class="text-center">
-                                        <v-icon style="color:#85d7df" @click="yearlyData.isOpen = !yearlyData.isOpen">
-                                            {{ yearlyData.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
-                                        </v-icon>
-                                    </td>
-                                    <td class="text-center">-</td>
-                                    <td class="text-center">{{ year }}</td>
-                                    <td class="text-center">
-                                        {{ yearlyData.from1TotalDifference.toLocaleString() }}</td>
-                                    <td class="text-center">
-                                        {{ yearlyData.from2TotalDifference.toLocaleString() }}</td>
-                                    <td class="text-center">
-                                        {{ yearlyData.from3TotalDifference.toLocaleString() }}</td>
-                                    <td class="text-center" :style="{
-                                        color: getColorForNumber((yearlyData.from1TotalDifference + yearlyData.from2TotalDifference +
-                                            yearlyData.from3TotalDifference) || 0)
-                                    }">
-                                        {{ (yearlyData.from1TotalDifference + yearlyData.from2TotalDifference +
-                                            yearlyData.from3TotalDifference).toLocaleString() }}</td>
-                                    <td class="text-center"><v-btn color="#5271ff"
-                                            @click="openStockPopup(group, 'year', year)" icon>
-                                            <v-icon>mdi-eye</v-icon>
-                                        </v-btn></td>
-                                    <td class="text-center"><v-btn color="#00bf63"
-                                            @click="exportForPerson(group.customer_no, 'year', year)" icon>
-                                            <v-icon>mdi-file-excel</v-icon></v-btn></td>
-                                </tr>
+                                <v-dialog v-model="showSavedSearchesDialog" max-width="400px">
+                                    <v-card>
+                                        <v-card-title class="headline"
+                                            style="justify-content: center; display: flex;">บันทึกการค้นหา</v-card-title>
+                                        <v-card-text>
+                                            <v-list>
+                                                <v-list-item-group v-if="savedSearches.length > 0">
+                                                    <v-list-item v-for="(search, index) in savedSearches" :key="index">
+                                                        <v-list-item-content>
+                                                            <v-list-item-title>
+                                                                <strong>ประเภท :</strong>
+                                                                {{ getSearchTypeText(search.type) }}
+                                                            </v-list-item-title>
+                                                            <v-list-item-subtitle v-if="search.query">
+                                                                <strong>รายละเอียด :</strong> {{ search.query }}
+                                                            </v-list-item-subtitle>
+                                                            <v-list-item-subtitle v-if="search.start && search.end">
+                                                                <strong>ระยะเวลา :</strong> {{
+                                                                    formatDateTime(search.start)
+                                                                }} - {{ formatDateTime(search.end) }}
+                                                            </v-list-item-subtitle>
+                                                            <v-list-item-subtitle v-if="search.topics">
+                                                                <strong>หัวข้อ :</strong> {{ search.topics.join(', ') }}
+                                                            </v-list-item-subtitle>
+                                                        </v-list-item-content>
+                                                        <v-list-item-action>
+                                                            <v-btn icon @click="deleteSearch(index)">
+                                                                <v-icon color=#e50211>mdi-delete</v-icon>
+                                                            </v-btn>
+                                                        </v-list-item-action>
+                                                    </v-list-item>
+                                                </v-list-item-group>
+                                                <v-list-item v-else>
+                                                    <v-list-item-content
+                                                        style="justify-content: center; display: flex;">
+                                                        <v-icon color=#e50211>mdi-alert-circle</v-icon>
+                                                        ไม่มีข้อมูลการค้นหา</v-list-item-content>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <v-btn color="#e50211" @click="showSavedSearchesDialog = false">ปิด</v-btn>
+                                            <v-spacer></v-spacer>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
 
-                                <tr v-if="yearlyData.isOpen"
-                                    v-for="(monthlyData, month) in yearlyData.monthlyDifferences" :key="month">
-                                    <td class="text-center" v-if="visibleColumns.includes('action')"></td>
-                                    <td class="text-center"></td>
-                                    <td class="text-center">-</td>
-                                    <td class="text-center" :style="{ color: formatMonthName(month).color }">
-                                        {{ formatMonthName(month).name }}
-                                    </td>
-                                    <td class="text-center">{{
-                                        monthlyData.from1TotalDifference.toLocaleString() }}</td>
-                                    <td class="text-center">{{
-                                        monthlyData.from2TotalDifference.toLocaleString() }}</td>
-                                    <td class="text-center">
-                                        {{ monthlyData.from3TotalDifference.toLocaleString() }}</td>
-                                    <td class="text-center" :style="{
-                                        color: getColorForNumber((monthlyData.from1TotalDifference + monthlyData.from2TotalDifference +
-                                            monthlyData.from3TotalDifference) || 0)
-                                    }">
-                                        {{ (monthlyData.from1TotalDifference + monthlyData.from2TotalDifference +
-                                            monthlyData.from3TotalDifference).toLocaleString() }}</td>
-                                    <td class="text-center"><v-btn color="#5271ff"
-                                            @click="openStockPopup(group, 'month', month)" icon>
-                                            <v-icon>mdi-eye</v-icon></v-btn></td>
-                                    <td class="text-center"><v-btn color="#00bf63"
-                                            @click="exportForPerson(group.customer_no, 'month', month)" icon>
-                                            <v-icon>mdi-file-excel</v-icon></v-btn></td>
-                                </tr>
+                                <v-select v-model="searchType" :items="searchTypes" dense outlined
+                                    class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
+
+                                <v-autocomplete v-if="searchType === 'customer_no'" v-model="selectedCustomerIDs"
+                                    class="mx-2 search-size small-font" :items="getSearchItems('customer_no')"
+                                    label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
+                                </v-autocomplete>
+
+                                <v-autocomplete v-if="searchType === 'customer_name'" v-model="selectedCustomerNames"
+                                    class="mx-2 search-size small-font" :items="getSearchItems('customer_name')"
+                                    label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
+                                </v-autocomplete>
+
+                                <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
+                                    :close-on-content-click="false" transition="scale-transition" offset-y>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <div v-bind="attrs" v-on="on" class="date-picker-activator">
+                                            <v-icon class="small-label">mdi-calendar-start-outline</v-icon>
+                                            <date-picker v-model="startDateTime" format="YYYY-MM-DD HH:mm"
+                                                type="datetime" />
+                                        </div>
+                                    </template>
+                                </v-menu>
+
+                                <v-menu v-if="searchType === 'updated_date'" v-model="endDatePickerMenu"
+                                    :close-on-content-click="false" transition="scale-transition" offset-y>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
+                                            <v-icon class="small-label">mdi-calendar-end-outline</v-icon>
+                                            <date-picker v-model="endDateTime" format="YYYY-MM-DD HH:mm"
+                                                type="datetime" />
+                                        </div>
+                                    </template>
+                                </v-menu>
+
+                                <v-btn icon @click="addSearch">
+                                    <v-icon class="small-icon ">mdi-plus</v-icon>
+                                </v-btn>
+
+                                <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
+                                    <v-icon>mdi-file-excel</v-icon>
+                                </v-btn>
+                            </div>
+                        </v-col>
+                    </v-row>
+                </v-container>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
+                        <template v-slot:activator="{ on }">
+                            <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
+                                color="#85d7df">mdi-playlist-check</v-icon>
+                        </template>
+                        <v-list class="header-list">
+                            <v-list-item
+                                v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'action'&& header.value !== 'export')"
+                                :key="header.value" class="header-item">
+                                <v-list-item-content>
+                                    <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
+                                </v-list-item-content>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                    <div>
+                        <v-btn v-if="isSelectingItems && selectedItems.length > 0" color="red"
+                            @click="deleteSelectedItems" class="mb-4" style="font-size: 1.5 rem; margin-left: auto;">
+                            <v-icon left color="white">mdi-delete</v-icon> ลบ
+                        </v-btn>
+                    </div>
+                </div>
+                <v-data-table :headers="filteredHeaders" :items="details" :item-value="customer_no"
+                    item-key="customer_no">
+                    <template v-slot:body="{ items }">
+                        <template v-for="(group, index) in items" :key="group.customer_no + '-' + index">
+                            <tr>
+                                <td class="text-center" v-if="visibleColumns.includes('action')">
+                                    <v-icon style="color:#85d7df" @click="group.isOpen = !group.isOpen">
+                                        {{ group.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                                    </v-icon>
+                                </td>
+                                <td v-if="visibleColumns.includes('updated_date')" class="text-center">
+                                    {{ formatDateTime(group.updated_date) }}</td>
+                                <td class="text-center">
+                                    {{ getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ' }}</td>
+                                <td class="text-center">
+                                    {{ getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ' }}
+                                </td>
+                                <td class="text-center">
+                                    {{ (group.from1TotalDifference || 0).toLocaleString() }}</td>
+                                <td class="text-center">
+                                    {{ (group.from2TotalDifference || 0).toLocaleString() }}</td>
+                                <td class="text-center">
+                                    {{ (group.from3TotalDifference || 0).toLocaleString() }}</td>
+                                <td class="text-center" :style="{
+                                    color: getColorForNumber((group.from1TotalDifference + group.from2TotalDifference +
+                                        group.from3TotalDifference) || 0)
+                                }">
+                                    {{ ((group.from1TotalDifference + group.from2TotalDifference +
+                                        group.from3TotalDifference) || 0).toLocaleString() }}</td>
+                                <td class="text-center"><v-btn color="#5271ff" @click="openStockPopup(group, 'group')"
+                                        icon>
+                                        <v-icon>mdi-eye</v-icon></v-btn></td>
+                                <td class="text-center"><v-btn color="#00bf63"
+                                        @click="exportForPerson(group.customer_no, 'group', group)" icon>
+                                        <v-icon>mdi-file-excel</v-icon></v-btn></td>
+                            </tr>
+
+                            <template v-if="group.isOpen">
+                                <template v-for="(yearlyData, year) in group.yearlyDifferences" :key="year">
+                                    <tr>
+                                        <td class="text-center" v-if="visibleColumns.includes('action')"></td>
+                                        <td class="text-center">
+                                            <v-icon style="color:#85d7df"
+                                                @click="yearlyData.isOpen = !yearlyData.isOpen">
+                                                {{ yearlyData.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                                            </v-icon>
+                                        </td>
+                                        <td class="text-center">-</td>
+                                        <td class="text-center">{{ year }}</td>
+                                        <td class="text-center">
+                                            {{ yearlyData.from1TotalDifference.toLocaleString() }}</td>
+                                        <td class="text-center">
+                                            {{ yearlyData.from2TotalDifference.toLocaleString() }}</td>
+                                        <td class="text-center">
+                                            {{ yearlyData.from3TotalDifference.toLocaleString() }}</td>
+                                        <td class="text-center" :style="{
+                                            color: getColorForNumber((yearlyData.from1TotalDifference + yearlyData.from2TotalDifference +
+                                                yearlyData.from3TotalDifference) || 0)
+                                        }">
+                                            {{ (yearlyData.from1TotalDifference + yearlyData.from2TotalDifference +
+                                                yearlyData.from3TotalDifference).toLocaleString() }}</td>
+                                        <td class="text-center"><v-btn color="#5271ff"
+                                                @click="openStockPopup(group, 'year', year)" icon>
+                                                <v-icon>mdi-eye</v-icon>
+                                            </v-btn></td>
+                                        <td class="text-center"><v-btn color="#00bf63"
+                                                @click="exportForPerson(group.customer_no, 'year', year)" icon>
+                                                <v-icon>mdi-file-excel</v-icon></v-btn></td>
+                                    </tr>
+
+                                    <tr v-if="yearlyData.isOpen"
+                                        v-for="(monthlyData, month) in yearlyData.monthlyDifferences" :key="month">
+                                        <td class="text-center" v-if="visibleColumns.includes('action')"></td>
+                                        <td class="text-center"></td>
+                                        <td class="text-center">-</td>
+                                        <td class="text-center" :style="{ color: formatMonthName(month).color }">
+                                            {{ formatMonthName(month).name }}
+                                        </td>
+                                        <td class="text-center">{{
+                                            monthlyData.from1TotalDifference.toLocaleString() }}</td>
+                                        <td class="text-center">{{
+                                            monthlyData.from2TotalDifference.toLocaleString() }}</td>
+                                        <td class="text-center">
+                                            {{ monthlyData.from3TotalDifference.toLocaleString() }}</td>
+                                        <td class="text-center" :style="{
+                                            color: getColorForNumber((monthlyData.from1TotalDifference + monthlyData.from2TotalDifference +
+                                                monthlyData.from3TotalDifference) || 0)
+                                        }">
+                                            {{ (monthlyData.from1TotalDifference + monthlyData.from2TotalDifference +
+                                                monthlyData.from3TotalDifference).toLocaleString() }}</td>
+                                        <td class="text-center"><v-btn color="#5271ff"
+                                                @click="openStockPopup(group, 'month', month)" icon>
+                                                <v-icon>mdi-eye</v-icon></v-btn></td>
+                                        <td class="text-center"><v-btn color="#00bf63"
+                                                @click="exportForPerson(group.customer_no, 'month', month)" icon>
+                                                <v-icon>mdi-file-excel</v-icon></v-btn></td>
+                                    </tr>
+                                </template>
                             </template>
                         </template>
                     </template>
-                </template>
-            </v-data-table>
-
+                </v-data-table>
+            </v-card-text>
             <div class="text-center">
-                <v-btn class="mb-4" color="#e50211" @click="goToHome">
-                    <v-icon>mdi-home</v-icon>กลับไปหน้าหลัก
-                </v-btn>
+                <v-btn @click="dialog = false" class="mb-4" color="#e50211">ปิด</v-btn>
             </div>
         </v-card>
-    </div>
-
+    </v-dialog>
 </template>
 
 <script>
-
 import ExcelJS from 'exceljs';
 import moment from 'moment-timezone';
 import 'moment/locale/th'
 import DatePicker from 'vue2-datepicker';
 import 'vue2-datepicker/index.css';
-import Decimal from 'decimal.js';
 
 export default {
-
-    layout: 'user',
-    middleware: 'auth',
-
-    async mounted() {
-        await this.checkRank();
-        await this.fetchEmployeeData();
-        await this.fetchDetailData();
-        await this.fetchCustomerData();
-        await this.fetchStockData();
-        await this.fetchFromData();
-        await this.fetchCommissionData();
+    props: {
+        value: Boolean,
     },
 
     components: {
@@ -277,14 +278,18 @@ export default {
             modal: {
                 warning: {
                     open: false,
-                    message: 'การป้อนข้อมูลเวลาไม่ถูกต้อง',
+                    message: '',
+                },
+                error: {
+                    open: false,
+                    message: '',
                 },
                 confirm: {
                     open: false,
                 },
                 complete: {
                     open: false,
-                    message: 'สำเร็จ',
+                    message: '',
                 },
             },
 
@@ -294,58 +299,15 @@ export default {
             stocks: [],
             froms: [],
             commissions: [],
+            transactions: [],
 
-            showAllDialog: false,
-            showAllData: {},
-            selectedStockData: null,
-            dialogOpen: false,
-
-            showModalResult: false,
-            ResultDetailData: {},
-            sortBy: 'updated_date',
-            currentAction: '',
-            searchQuery: '',
-            searchType: 'customer_no',
-            selectedItemDetail: '',
-            startDateTime: '',
-            endDateTime: '',
-            editDialogOpen: false,
-            isSearchFieldVisible: false,
-            datePickerMenu: false,
-            endDatePickerMenu: false,
-            showSavedSearchesDialog: false,
-            showColumnSelector: false,
-            modalConfirmOpen: false,
-            dialog: false,
-            sortDesc: true,
-            selectedEmployee: null,
-            currentItem: null,
-            employeeNo: null,
-            actionType: null,
-            selectedTopics: [],
-            savedSearches: [],
-
-
-            searchQueries: {
-                'customer_no': [],
-                'customer_name': [],
-                'stock_no': [],
-                'emp_id': [],
-            },
+            selectedCustomerIDs: [],
+            selectedCustomerNames: [],
 
             searchTypes: [
                 { text: 'รหัสสมาชิก', value: 'customer_no' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
-                { text: 'ชื่อหุ้นที่ติด', value: 'stock_no' },
-                { text: 'ประเภทพอร์ต', value: 'port' },
                 { text: 'ข้อมูลวันที่', value: 'updated_date' }
-            ],
-
-            actionTopics: [
-                { text: 'ถือ', value: 'ถือ' },
-                { text: 'แก้เกมได้', value: 'แก้เกมได้' },
-                { text: 'ระวัง', value: 'ระวัง' },
-                { text: 'กำไร', value: 'กำไร' },
             ],
 
             visibleColumns: ['action', 'updated_date', 'customer_no', 'customer_name', 'base_stock', 'new_stock', 'tactic_stock', 'total', 'detail', 'export'],
@@ -430,46 +392,72 @@ export default {
                     cellClass: 'text-center',
                 },
             ],
+
+            showAllDialog: false,
+            showAllData: {},
+            selectedStockData: null,
+            dialogOpen: false,
+
+            showModalResult: false,
+            ResultDetailData: {},
+            sortBy: 'updated_date',
+            currentAction: '',
+            searchQuery: '',
+            searchType: 'customer_no',
+            selectedItemDetail: '',
+            startDateTime: '',
+            endDateTime: '',
+            editDialogOpen: false,
+            isSearchFieldVisible: false,
+            datePickerMenu: false,
+            endDatePickerMenu: false,
+            showSavedSearchesDialog: false,
+            showColumnSelector: false,
+            modalConfirmOpen: false,
+            dialog: false,
+            sortDesc: true,
+            currentItem: null,
+            employeeNo: null,
+            actionType: null,
+            savedSearches: [],
+
+            dialog: this.value,
         };
     },
 
-    computed: {
-        filtered() {
-            let filteredDetails = this.details.map(detail => {
-                const transactions = detail.transactions || [];
-                const type1Transactions = transactions.filter(t => t.stock_detail_no === detail.no);
-
-                return {
-                    ...detail,
-                    type1Transactions: type1Transactions
-                };
-            });
-
-            this.savedSearches.forEach(search => {
-                filteredDetails = filteredDetails.filter(detail => {
-                    return this.applySearchFilter(detail, search);
-                });
-            });
-
-            return filteredDetails;
+    watch: {
+        value(newValue) {
+            this.dialog = newValue;
         },
+        dialog(newValue) {
+            this.$emit('input', newValue);
+        },
+    },
 
+    computed: {
         filteredHeaders() {
             return this.headers.filter(header => this.visibleColumns.includes(header.value));
         },
     },
 
+    async mounted() {
+        await this.fetchEmployeeData();
+        await this.fetchDetailData();
+        await this.fetchCustomerData();
+        await this.fetchStockData();
+        await this.fetchFromData();
+        await this.fetchCommissionData();
+        await this.fetchTransactionData();
+    },
+
     methods: {
         openStockPopup(data, type, date = null) {
-            // ล้างค่าก่อนหน้า
             this.selectedStockData = [];
-            let filteredData = []; // ตั้งค่าเริ่มต้น
+            let filteredData = [];
 
             if (type === 'group') {
-                // หากเป็น group ให้ใช้ข้อมูลตามที่ส่งมา
                 filteredData = Array.isArray(data) ? JSON.parse(JSON.stringify(data)) : [JSON.parse(JSON.stringify(data))];
             } else if (type === 'year' && date) {
-                // หากเป็นปี ให้กรองข้อมูลตามปี
                 const targetYear = parseInt(date, 10);
                 filteredData = Array.isArray(data) ? JSON.parse(JSON.stringify(data)) : [JSON.parse(JSON.stringify(data))];
                 filteredData = filteredData.map(entry => {
@@ -497,7 +485,7 @@ export default {
 
             this.selectedStockData = filteredData.map(entry => ({
                 ...entry,
-                date, 
+                date,
             }));
 
             this.selectedDataType = type || '';
@@ -508,50 +496,26 @@ export default {
             item.isOpen = !item.isOpen;
         },
 
-        goToHome() {
-            this.$router.push('/app/home');
-        },
-
-        openEditAllDialog(detail) {
-            this.showAllData = detail;
-            this.showAllDialog = true;
-        },
-
         getSearchItems(type) {
-            if (type === 'stock_no') {
-                return this.details.map(detail => this.getStockByNo(detail.stock_no)?.stock);
-            } else if (type === 'customer_name') {
-                return this.details.map(detail => this.getCustomerByNo(detail.customer_no)?.nickname);
-            } else if (type === 'customer_no') {
-                return this.details.map(detail => this.getCustomerByNo(detail.customer_no)?.id);
-            } else if (type === 'emp_id') {
-                return this.details.map(detail => this.getEmployeeByNo(detail.emp_id)?.fname + ' ' + this.getEmployeeByNo(detail.emp_id)?.lname);
+            if (type === 'customer_no') {
+                return this.details
+                    .filter(detail => this.getCustomerByNo(detail.customer_no)?.id
+                    )
+                    .map(detail => this.getCustomerByNo(detail.customer_no).id);
+            }
+            else if (type === 'customer_name') {
+                return this.details
+                    .filter(detail => this.getCustomerByNo(detail.customer_no)?.nickname
+                    )
+                    .map(detail => this.getCustomerByNo(detail.customer_no).nickname);
             }
             return [];
         },
 
-        async checkRank() {
-            if (this.$auth.loggedIn) {
-                const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.rank_no.toString();
-                if (Status === '2') {
-                    this.$router.push('/');
-                    await this.$auth.logout();
-                }
-                else {
-                    if (RankID === '1') {
-                        this.$router.push('/app/data/result_stock');
-                    } else if (RankID === '2') {
-                        this.$router.push('/app/data/result_stock');
-                    } else if (RankID === '3') {
-                        this.$router.push('/app/data/result_stock');
-                    } else {
-                        this.$router.push('/auth');
-                    }
-                }
-            } else {
-                this.$router.push('/');
-            }
+        showConfirmDialog(action, item) {
+            this.currentAction = action;
+            this.currentItem = item;
+            this.modalConfirmOpen = true;
         },
 
         async fetchEmployeeData() {
@@ -566,17 +530,21 @@ export default {
             this.commissions = await this.$store.dispatch('api/commission/getCommission');
         },
 
+        async fetchTransactionData() {
+            this.transactions = await this.$store.dispatch('api/transaction/getTransaction');
+        },
+
         async fetchDetailData() {
             try {
                 await this.fetchStockData();
+                await this.fetchTransactionData();
                 this.details = await this.$store.dispatch('api/detail/getDetail');
 
                 if (Array.isArray(this.details) && this.details.length > 0) {
-                    const transactions = await this.$store.dispatch('api/transaction/getTransaction');
                     await this.fetchCommissionData();
 
                     const groupedDetails = this.details.reduce((acc, detail) => {
-                        const stockTransactions = transactions.filter(t => t.stock_detail_no === detail.no);
+                        const stockTransactions = this.transactions.filter(t => t.stock_detail_no === detail.no);
 
                         if (stockTransactions.length > 0) {
                             const customerId = detail.customer_no;
@@ -827,18 +795,6 @@ export default {
             return this.froms.find(from => from.no === fromNo);
         },
 
-        getFromText(from) {
-            if (from === 'หุ้นเก่า') {
-                return { text: 'หุ้นเก่า', color: '#ffc800' };
-            } else if (from === 'หุ้นใหม่') {
-                return { text: 'หุ้นใหม่', color: '#38b6ff' };
-            } else if (from === 'หุ้นแก้เกม') {
-                return { text: 'หุ้นแก้เกม', color: '#ff914d' };
-            } else {
-                return { text: '', color: 'inherit' };
-            }
-        },
-
         getColorForNumber(value) {
             const numericValue = parseFloat(value);
             if (numericValue < 0) {
@@ -852,9 +808,16 @@ export default {
 
         formatDateTime(date) {
             if (moment(date).isValid()) {
-                return moment(date).format('YYYY/MM/DD HH:mm');
+                return moment(date).format('YYYY-MM-DD HH:mm');
             }
             return 'ยังไม่ระบุวัน';
+        },
+
+        getDateColor(date) {
+            if (moment(date).isValid()) {
+                return '#ffcc64';
+            }
+            return '#f5464c';
         },
 
         openDetail(item) {
@@ -882,84 +845,72 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'port') {
-                this.addTopicToSearch();
-            } else if (this.searchType === 'stock_no' || this.searchType === 'customer_name' || this.searchType === 'customer_no' || this.searchType === 'emp_id') {
-                this.addTextToSearch();
+            if (this.searchType === 'customer_no' || this.searchType === 'customer_name') {
+                this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
                     query: this.searchQuery,
                     type: this.searchType,
-                    topic: this.selectedTopic,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
                 this.searchQuery = '';
-                this.selectedTopic = '';
                 this.startDateTime = '';
                 this.endDateTime = '';
             }
         },
 
-        addTextToSearch() {
-            const trimmedQuery = this.searchQuery.trim();
-            if (trimmedQuery) {
-                this.searchQueries[this.searchType].push(trimmedQuery);
+        addSearchItemsToSearch() {
+            const selectedItems =
+                this.searchType === 'customer_no' ? this.selectedCustomerIDs :
+                    this.searchType === 'customer_name' ? this.selectedCustomerNames : [];
+
+            if (selectedItems.length > 0) {
                 this.savedSearches.push({
-                    query: this.searchQueries[this.searchType],
+                    query: selectedItems,
                     type: this.searchType,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
-                this.searchQuery = '';
-            }
-        },
 
-        addTopicToSearch() {
-            this.savedSearches.push({
-                query: '',
-                type: 'port',
-                topics: [...this.selectedTopics],
-                start: this.startDateTime,
-                end: this.endDateTime
-            });
-            this.selectedTopics = [];
-            this.startDateTime = '';
-            this.endDateTime = '';
+                if (this.searchType === 'customer_no') {
+                    this.selectedCustomerIDs = [];
+                } else if (this.searchType === 'customer_name') {
+                    this.selectedCustomerNames = [];
+                }
+
+                this.startDateTime = '';
+                this.endDateTime = '';
+            }
         },
 
         applySearchFilter(detail, search) {
-            const field = detail[search.type];
             let queryMatched = true;
-            const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
-            if (search.type === 'customer_name') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(detail.customer_no);
-                    return cust.nickname.toLowerCase().includes(query.toLowerCase());
+
+            let field;
+            if (search.type === 'customer_no') {
+                field = this.getCustomerByNo(detail.customer_no).id;
+            } else if (search.type === 'customer_name') {
+                field = this.getCustomerByNo(detail.customer_no).nickname || 'ยังไม่ระบุ';
+            } else {
+                field = detail[search.type];
+            }
+
+            if (search.type === 'customer_no' || search.type === 'customer_name') {
+                queryMatched = search.query.some(query => {
+                    const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
+                    return lowerCaseField === query.toLowerCase();
                 });
-            } else if (search.type === 'customer_no') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(detail.customer_no);
-                    return cust.id.toLowerCase().includes(query.toLowerCase());
-                });
-            } else if (search.type === 'stock_no') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const st = this.getStockByNo(detail.stock_no);
-                    return st.name.toLowerCase().includes(query.toLowerCase());
-                });
-            } else if (search.type === 'emp_id') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const emp = this.getEmployeeByNo(detail.emp_id);
-                    return emp.fname.toLowerCase().includes(query.toLowerCase()) + ' ' + emp.lname.toLowerCase().includes(query.toLowerCase());
-                });
+            } else if (search.type === 'updated_date') {
+                return this.checkTimeRange(detail, search);
             } else {
                 const searchQuery = search.query.toLowerCase();
-                queryMatched = lowerCaseField.includes(searchQuery);
+                queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
-            const timeMatched = search.type === 'updated_date' ? this.checkTimeRange(detail, search) : true;
-            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getPortText(detail.total_percent).text) : true;
-            return queryMatched && timeMatched && topicMatched;
+
+            return queryMatched;
         },
+
 
         checkTimeRange(detail, search) {
             const detailTime = moment(detail.updated_date);
@@ -1399,13 +1350,11 @@ export default {
             });
         },
 
-
-        goToIndexStock() {
-            this.$router.push('/app/transaction/index_stock');
+        goBack() {
+            window.location.reload();
         },
     },
 };
-
 </script>
 
 <style scoped>
@@ -1529,7 +1478,7 @@ export default {
 }
 
 .header-item {
-    flex: 1 0 12%;
+    flex: 1 0 20%;
     box-sizing: border-box;
 }
 

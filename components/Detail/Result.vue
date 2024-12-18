@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="showModalResult" max-width="600px">
+    <v-dialog v-model="showModalResult" max-width="800px">
         <v-card>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-bank-check</v-icon>
@@ -66,7 +66,7 @@ export default {
                     from_name: from ? from.name : '',
                     stock_name: stock ? stock.name : '',
                     customer_no: customer.id,
-                    customer_name: customer.id,
+                    customer_name: customer.name,
                     created_date: detail.created_date || moment().format('YYYY-MM-DD HH:mm:ss'),
                 };
             });

@@ -1,5 +1,5 @@
 <template flat>
-    <v-dialog v-model="dialogOpen" persistent max-width="1000px">
+    <v-dialog v-model="dialogOpen" persistent max-width="800px">
         <v-card>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-cash-register</v-icon>

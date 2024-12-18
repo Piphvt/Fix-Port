@@ -12,6 +12,7 @@
                 <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-robot</v-icon>
                 <span class="headline">หุ้นจากบอท</span>
             </v-card-title>
+            
             <v-card-text>
                 <v-data-table :headers="headers" :items="follows" item-value="no" item-key="no" :items-per-page="5">
                     <template v-slot:item.stock_no="{ item }">

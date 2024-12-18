@@ -7,6 +7,7 @@
             :complete.sync="modal.complete.open" :method="goBack" />
         <CommissionData v-model="CommissionDataOpen" />
         <TransactionCreate :open="TransactionCreateOpen" @update:open="TransactionCreateOpen = false" />
+        <TransactionTotal v-model="TotalTransactionDataOpen" />
         <StockEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
 
         <v-card flat>
@@ -132,6 +133,10 @@
                     </v-list>
                 </v-menu>
                 <div>
+                    <v-btn @click="TotalTransactionDataOpen = true" class="tab-icon-three"
+                        style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#85d7df">mdi-cash-register</v-icon> สรุปผลการซื้อขายหุ้นของลูกค้า
+                    </v-btn>
                     <v-btn @click="CommissionDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-credit-card</v-icon> ค่าธรรมเนียม
@@ -342,6 +347,7 @@ export default {
 
             TransactionCreateOpen: false,
             CommissionDataOpen: false,
+            TotalTransactionDataOpen: false,
 
             sortBy: 'updated_date',
             currentAction: '',

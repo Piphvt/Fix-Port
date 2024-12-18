@@ -16,7 +16,7 @@
             <v-row>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-autocomplete v-model="formData.customer_id" :items="customers" :item-text="item => item.text"
+                <v-autocomplete v-model="formData.customer_no" :items="customers" :item-text="item => item.text"
                   :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดกรอกรหัสสมาชิก']" label="รหัสสมาชิก"
                   dense outlined clearable solo hide-no-data hide-details />
               </v-col>
@@ -34,13 +34,13 @@
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-autocomplete v-model="formData.stock_id" :items="stocks" :item-text="item => item.text"
+                <v-autocomplete v-model="formData.stock_no" :items="stocks" :item-text="item => item.text"
                   :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดกรอกชื่อหุ้น']" label="ชื่อหุ้น" dense outlined
                   clearable solo hide-no-data hide-details />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
-                <v-select v-model="formData.from_id" :items="fromOptions" :item-text="item => item.text"
+                <v-select v-model="formData.from_no" :items="fromOptions" :item-text="item => item.text"
                   :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกที่มาที่ไป']" label="ที่มาที่ไป"
                   dense outlined required>
                   <template v-slot:item="data">
@@ -71,7 +71,7 @@
 
         <v-card-actions class="card-title-center pa-0">
           <v-btn @click="confirm"
-            :disabled="!valid || !hasChanges || !formData.customer_id || !formData.stock_id || !formData.detailprice || !formData.detailamount || !formData.from_id"
+            :disabled="!valid || !hasChanges || !formData.customer_no || !formData.stock_no || !formData.detailprice || !formData.detailamount || !formData.from_no"
             depressed color="#24b224" class="font-weight-medium mr-2 mb-5">
             บันทึก
           </v-btn>
@@ -171,7 +171,7 @@ export default {
     },
     formData: {
       handler(newFormData) {
-        if (newFormData.stock_id) {
+        if (newFormData.stock_no) {
           this.fetchStockData();
         }
       },
@@ -203,10 +203,10 @@ export default {
           text: customer.id,
         }));
 
-        if (this.data && this.data.customer_id) {
-          const selectedType = this.customers.find(r => r.value === this.data.customer_id);
+        if (this.data && this.data.customer_no) {
+          const selectedType = this.customers.find(r => r.value === this.data.customer_no);
           this.customers = selectedType
-            ? [selectedType, ...this.customers.filter(r => r.value !== this.data.customer_id)]
+            ? [selectedType, ...this.customers.filter(r => r.value !== this.data.customer_no)]
             : this.customers;
         }
       } catch (warning) {
@@ -219,17 +219,13 @@ export default {
         const fetchedStocks = await this.$store.dispatch('api/stock/getStock');
         this.stocks = fetchedStocks.map(stock => ({
           value: stock.no,
-          text: stock.name,
-          closing_price: stock.closing_price,
+          text: stock.stock,
         }));
 
-        if (this.formData && this.formData.stock_id) {
-          const selectedType = this.stocks.find(r => r.value === this.formData.stock_id);
-          if (selectedType) {
-            this.formData.closing_price = selectedType.closing_price;
-          }
+        if (this.formData && this.formData.stock_no) {
+          const selectedType = this.stocks.find(r => r.value === this.formData.stock_no);
           this.stocks = selectedType
-            ? [selectedType, ...this.stocks.filter(r => r.value !== this.formData.stock_id)]
+            ? [selectedType, ...this.stocks.filter(r => r.value !== this.formData.stock_no)]
             : this.stocks;
         }
       } catch (warning) {
@@ -260,10 +256,10 @@ export default {
           return acc;
         }, []).concat(allTypes.filter(r => !prioritizedTypes.includes(r.text)));
 
-        if (this.data && this.data.from_id) {
-          const selectedType = this.fromOptions.find(r => r.value === this.data.from_id);
+        if (this.data && this.data.from_no) {
+          const selectedType = this.fromOptions.find(r => r.value === this.data.from_no);
           this.fromOptions = selectedType
-            ? [selectedType, ...this.fromOptions.filter(r => r.value !== this.data.from_id)]
+            ? [selectedType, ...this.fromOptions.filter(r => r.value !== this.data.from_no)]
             : this.fromOptions;
         }
       } catch (warning) {
@@ -337,14 +333,14 @@ export default {
 
     recordLogUpdate() {
       const changes = [];
-      const StockText = this.getStockName(this.formData.stock_id);
-      const originalStockText = this.getStockName(this.originalData.stock_id);
+      const StockText = this.getStockName(this.formData.stock_no);
+      const originalStockText = this.getStockName(this.originalData.stock_no);
       if (StockText !== originalStockText) {
         changes.push('ชื่อหุ้น : ' + StockText + '\n');
       }
 
-      const fromText = this.getFromName(this.formData.from_id);
-      const originalfromText = this.getFromName(this.originalData.from_id);
+      const fromText = this.getFromName(this.formData.from_no);
+      const originalfromText = this.getFromName(this.originalData.from_no);
       if (fromText !== originalfromText) {
         changes.push('ที่มาที่ไป : ' + fromText + '\n');
       }
@@ -358,7 +354,7 @@ export default {
       }
 
       const log = {
-        customer_id: this.getCustomerID(this.originalData.customer_id),
+        customer_no: this.getCustomerID(this.originalData.customer_no),
         emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
         emp_email: this.$auth.user.email,
         detail: changes.join(''),
