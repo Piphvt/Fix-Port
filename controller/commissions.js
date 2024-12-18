@@ -9,7 +9,7 @@ exports.getCommission = (req, res) => {
 exports.addCommission = async (req, res) => {
     try {
         const { commission, employee_no, created_date, updated_date } = req.body;
-        connection.query('SELECT * FROM `commissions` WHERE `commission` = ?', [commission], function (err, results) {
+        connection.query('SELECT * FROM `commissions` WHERE ROUND(`commission`, 2) = ROUND(?, 2)', [commission], function (err, results) {
             if (results.length > 0) {
                 return res.status(400).json({ message: "ค่าธรรมเนียมนี้มีอยู่แล้ว" });
             } else {

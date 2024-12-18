@@ -143,8 +143,8 @@ export default {
         async handleConfirm() {
             if (this.currentAction === 'delete') {
                 try {
-                    await this.$store.dispatch('api/set/deleteSet', this.currentItem.no);
-                    this.modal.complete.message = 'ลบประเภทหุ้นนี้เรียบร้อยแล้ว';
+                    await this.$store.dispatch('api/commission/deleteCommission', this.currentItem.no);
+                    this.modal.complete.message = 'ลบค่าธรรมเนียมนี้เรียบร้อยแล้ว';
                     this.modal.complete.open = true;
                     this.recordLog();
                 } catch (error) {

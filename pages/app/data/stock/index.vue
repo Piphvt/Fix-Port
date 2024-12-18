@@ -143,13 +143,16 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="StockUpdateOpen = true" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="StockUpdateOpen = true" class="tab-icon-three"
+                        style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-arrow-up</v-icon> อัพเดทหุ้น
                     </v-btn>
-                    <v-btn @click="SetDataOpen = true" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="SetDataOpen = true" class="tab-icon-three"
+                        style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-settings</v-icon> ประเภทหุ้น
                     </v-btn>
-                    <v-btn @click="StockCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="StockCreateOpen = true" class="tab-icon-two"
+                        style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#24b224">mdi-archive-plus</v-icon> เพิ่มหุ้น
                     </v-btn>
                 </div>
@@ -157,11 +160,6 @@
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
                 item-key="no" :items-per-page="5">
-                <template v-slot:item.picture="{ item }">
-                    <v-avatar size="40">
-                        <img :src="`http://localhost:3001/file/profile/${item.picture}`" alt="picture" />
-                    </v-avatar>
-                </template>
                 <template v-slot:item.select="{ item }">
                     <div class="text-center"
                         style="display: flex; justify-content: center; align-items: center; height: 100%;">
@@ -292,16 +290,16 @@ export default {
             selectedEmployees: [],
             selectedSets: [],
 
+            selectedItems: [],
+            handleConfirm: null,
+            isSelectingItems: false,
+
             selectedStockNo: null,
             DividendDataOpen: false,
             PriceDataOpen: false,
             SetDataOpen: false,
             StockUpdateOpen: false,
             StockCreateOpen: false,
-
-            selectedItems: [],
-            handleConfirm: null,
-            isSelectingItems: false,
 
             sortBy: 'updated_date',
             currentAction: '',
@@ -422,10 +420,6 @@ export default {
             return filteredStocks;
         },
 
-        formattedDetailLines() {
-            return this.selectedItemDetail.split('\n');
-        },
-
         filteredHeaders() {
             return this.headers.filter(header => this.visibleColumns.includes(header.value));
         },
@@ -507,11 +501,9 @@ export default {
             const currentYear = new Date().getFullYear();
 
             for (let stock of this.stocks) {
-
                 const filteredPrices = this.prices.filter(price => price.stock_no === stock.no);
 
                 if (filteredPrices.length > 0) {
-
                     const latestPrice = filteredPrices.reduce((latest, current) => {
                         const latestDate = new Date(latest.created_date);
                         const currentDate = new Date(current.created_date);
@@ -519,13 +511,10 @@ export default {
                         return currentDate > latestDate ? current : latest;
                     });
 
-
                     stock.price = latestPrice.price;
                 } else {
-
                     stock.price = null;
                 }
-
 
                 const totalDividend = this.dividends
                     .filter(dividend => dividend.stock_no === stock.no &&
@@ -535,6 +524,20 @@ export default {
                     }, new Decimal(0));
 
                 stock.dividend = totalDividend.toString();
+
+                const relatedDates = [
+                    stock.created_date,
+                    ...filteredPrices.map(price => price.created_date),
+                    ...this.dividends
+                        .filter(dividend => dividend.stock_no === stock.no)
+                        .map(dividend => dividend.created_date)
+                ];
+
+                const latestUpdatedDate = relatedDates
+                    .map(date => new Date(date))
+                    .reduce((latest, current) => (current > latest ? current : latest), new Date(0));
+
+                stock.updated_date = latestUpdatedDate.toISOString();
             }
         },
 
@@ -624,7 +627,7 @@ export default {
 
         formatDateTime(date) {
             if (moment(date).isValid()) {
-                return moment(date).format('YYYY/MM/DD HH:mm');
+                return moment(date).format('YYYY-MM-DD HH:mm');
             }
             return 'Invalid Date';
         },
@@ -701,7 +704,7 @@ export default {
 
             let field;
             if (search.type === 'employee_no') {
-                field = this.getEmployeeName(stock.type_no);
+                field = this.getEmployeeName(stock.employee_no);
             } else if (search.type === 'set_no') {
                 field = this.getSetName(stock.set_no) || 'ยังไม่ระบุ';
             } else {
@@ -720,7 +723,7 @@ export default {
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
 
-            return queryMatched && timeMatched;
+            return queryMatched;
         },
 
         checkTimeRange(stock, search) {
@@ -824,10 +827,6 @@ export default {
                 created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLog', log);
-        },
-
-        goToNewStock() {
-            this.$router.push('/app/stock/new_stock');
         },
     },
 };

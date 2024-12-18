@@ -31,10 +31,10 @@ export default {
         return {
             showModalResult: this.open,
             headers: [
-                { text: 'ไอดีลูกค้า', value: 'id' },
-                { text: 'ชื่อเล่น', value: 'nickname' },
-                { text: 'ประเภท', value: 'type_name' },
-                { text: 'ฐานทุน', value: 'base_name' },
+                { text: 'ไอดีลูกค้า', value: 'id', sortable: false, align: 'center' },
+                { text: 'ชื่อเล่น', value: 'nickname', sortable: false, align: 'center' },
+                { text: 'ประเภท', value: 'type_name', sortable: false, align: 'center' },
+                { text: 'ฐานทุน', value: 'base_name', sortable: false, align: 'center' },
             ],
         };
     },

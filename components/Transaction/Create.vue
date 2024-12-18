@@ -317,7 +317,7 @@ export default {
                 const stock = this.stocks.find(stock => stock.no === transaction.stock_no);
                 const stockDetailId = transaction.stock_detail_no;
 
-                let from_id = 3;
+                let from_no = 3;
                 if (transaction.type === 2) {
                     const matchingDetail = this.details.find(d => d.no === stockDetailId);
                     const matchingTransactions = this.transactions.filter(t => t.stock_detail_no === stockDetailId);
@@ -337,7 +337,7 @@ export default {
                     }
 
                     if (matchingDetail) {
-                        from_id = matchingDetail.from_id;
+                        from_no = matchingDetail.from_no;
                     }
                 }
 
@@ -348,8 +348,8 @@ export default {
                         price: parseFloat(transaction.price),
                         amount: parseFloat(transaction.amount),
                         commission_no: transaction.commission_no,
-                        from_id: from_id,
-                        emp_id: this.$auth.user.no,
+                        from_no: from_no,
+                        employee_no: this.$auth.user.no,
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                         updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                     });

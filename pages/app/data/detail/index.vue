@@ -74,13 +74,40 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType !== 'port' && searchType !== 'updated_date'"
-                                v-model="searchQuery" :items="getSearchItems(searchType)" label="ค้นหา" dense outlined
-                                append-icon="mdi-magnify" class="mx-2 same-size small-font" hide-no-data hide-details
-                                clearable></v-autocomplete>
+                            <v-autocomplete v-if="searchType === 'customer_no'" v-model="selectedCustomerIDs"
+                                class="mx-2 search-size small-font" :items="getSearchItems('customer_no')"
+                                label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
+                            </v-autocomplete>
 
-                            <v-select v-if="searchType === 'port'" v-model="selectedTopics" :items="actionTopics" dense
-                                outlined multiple class="mx-2 search-size small-font"></v-select>
+                            <v-autocomplete v-if="searchType === 'customer_name'" v-model="selectedCustomerNames"
+                                class="mx-2 search-size small-font" :items="getSearchItems('customer_name')"
+                                label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'stock_no'" v-model="selectedStocks"
+                                class="mx-2 search-size small-font" :items="getSearchItems('stock_no')"
+                                label="ค้นหาชื่อหุ้น" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'employee_no'" v-model="selectedEmployees"
+                                class="mx-2 search-size small-font" :items="getSearchItems('employee_no')"
+                                label="ค้นหาผู้ทำรายการ" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'port'" v-model="selectedPorts"
+                                class="mx-2 search-size small-font" :items="getSearchItems('port')"
+                                label="ค้นหาประเภทพอร์ต" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'customer_base'" v-model="selectedBases"
+                                class="mx-2 search-size small-font" :items="getSearchItems('customer_base')"
+                                label="ค้นหาฐานทุน" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'customer_type'" v-model="selectedTypes"
+                                class="mx-2 search-size small-font" :items="getSearchItems('customer_type')"
+                                label="ค้นหาประเภทลูกค้า" dense outlined clearable multiple>
+                            </v-autocomplete>
 
                             <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
@@ -123,7 +150,7 @@
                     </template>
                     <v-list class="header-list">
                         <v-list-item
-                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'action')"
+                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select')"
                             :key="header.value" class="header-item">
                             <v-list-item-content>
                                 <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
@@ -148,6 +175,11 @@
                 item-key="no" :items-per-page="5" style="overflow-x: auto; white-space: nowrap;">
                 <template v-slot:item="{ item }">
                     <tr>
+                        <td v-if="visibleColumns.includes('select')" class="text-center"
+                            style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                            <v-checkbox v-if="isSelectingItems" v-model="selectedItems" :value="item.no"
+                                style="transform: scale(1);" />
+                        </td>
                         <td class="text-center">
                             <v-icon style="color:#85d7df" @click="toggleOpen(item)">
                                 {{ item.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
@@ -214,7 +246,8 @@
                                         </v-list-item-icon>
                                         <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                     </v-list-item>
-                                    <v-list-item @click="showConfirmDialog('delete', item)" class="custom-list-item">
+
+                                    <v-list-item @click="toggleSelectItems" class="custom-list-item">
                                         <v-list-item-icon style="margin-right: 4px;">
                                             <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
                                         </v-list-item-icon>
@@ -226,6 +259,7 @@
                     </tr>
 
                     <tr v-if="item.isOpen">
+                        <td v-if="visibleColumns.includes('select')" class="text-center"></td>
                         <td class="text-center" style="color:#e6c56c">หุ้นเดิม</td>
                         <td v-if="visibleColumns.includes('updated_date')" class="text-center">
                             {{ formatDateTime(item.detailupdated_date) }}</td>
@@ -279,6 +313,7 @@
 
                     <tr v-if="item.transactions && item.isOpen" v-for="transaction in item.transactions"
                         :key="transaction.id">
+                        <td v-if="visibleColumns.includes('select')" class="text-center"></td>
                         <td class="text-center" style="color:#6ce69f">ซื้อเพิ่ม</td>
                         <td v-if="visibleColumns.includes('updated_date')" class="text-center">
                             {{ formatDateTime(transaction.updated_date) }}</td>
@@ -331,6 +366,7 @@
                     </tr>
 
                     <tr v-if="item.isOpen">
+                        <td v-if="visibleColumns.includes('select')" class="text-center"></td>
                         <td class="text-center" style="color:#cb6ce6">รวมหักปันผล</td>
                         <td v-if="visibleColumns.includes('updated_date')" class="text-center">
                             {{ formatDateTime(item.updated_date) }}</td>
@@ -383,7 +419,12 @@
                     </tr>
                 </template>
             </v-data-table>
-
+            <div class="text-center">
+                <v-btn v-if="isSelectingItems && selectedItems.length > 0" color="red" @click="deleteSelectedItems"
+                    class="mb-4" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-icon left color="white">mdi-delete</v-icon> ลบ
+                </v-btn>
+            </div>
         </v-card>
     </div>
 
@@ -444,6 +485,18 @@ export default {
 
             DetailCreateOpen: false,
 
+            selectedCustomerIDs: [],
+            selectedCustomerNames: [],
+            selectedStocks: [],
+            selectedEmployees: [],
+            selectedPorts: [],
+            selectedBases: [],
+            selectedTypes: [],
+
+            selectedItems: [],
+            handleConfirm: null,
+            isSelectingItems: false,
+
             showModalResult: false,
             ResultDetailData: {},
             sortBy: 'updated_date',
@@ -467,35 +520,30 @@ export default {
             currentItem: null,
             employeeNo: null,
             actionType: null,
-            selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-
-            searchQueries: {
-                'customer_no': [],
-                'customer_name': [],
-                'stock_no': [],
-                'employee_no': [],
-            },
 
             searchTypes: [
                 { text: 'รหัสสมาชิก', value: 'customer_no' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
-                { text: 'ชื่อหุ้นที่ติด', value: 'stock_no' },
+                { text: 'ชื่อหุ้น', value: 'stock_no' },
                 { text: 'ประเภทพอร์ต', value: 'port' },
+                { text: 'ประเภทลูกค้า', value: 'customer_type' },
+                { text: 'ฐานทุน', value: 'customer_base' },
+                { text: 'ทำรายการโดย', value: 'employee_no' },
                 { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
-            actionTopics: [
-                { text: 'ถือ', value: 'ถือ' },
-                { text: 'แก้เกมได้', value: 'แก้เกมได้' },
-                { text: 'ระวัง', value: 'ระวัง' },
-                { text: 'กำไร', value: 'กำไร' },
-            ],
-
-            visibleColumns: ['action', 'updated_date', 'customer_no', 'customer_name', 'stock_no', 'created_date', 'price', 'amount', 'money', 'dividend_amount', 'balance_dividend', 'closing_price', 'present_price', 'total', 'present_profit', 'percent', 'total_percent', 'port', 'from_no', 'type_no', 'base_no', 'comment', 'employee_no', 'detail'],
+            visibleColumns: ['select', 'action', 'updated_date', 'customer_no', 'customer_name', 'stock_no', 'created_date', 'price', 'amount', 'money', 'dividend_amount', 'balance_dividend', 'closing_price', 'present_price', 'total', 'present_profit', 'percent', 'total_percent', 'port', 'from_no', 'type_no', 'base_no', 'comment', 'employee_no', 'detail'],
 
             headers: [
+                {
+                    text: '',
+                    value: 'select',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
 
                 {
                     text: '',
@@ -710,6 +758,42 @@ export default {
     },
 
     methods: {
+        toggleSelectItems() {
+            this.isSelectingItems = !this.isSelectingItems;
+        },
+
+        getCurrentItem(id) {
+            return this.stocks.find(item => item.no === id);
+        },
+
+        async deleteSelectedItems() {
+            this.handleConfirm = async () => {
+                const selectedIds = this.selectedItems;
+
+                for (let i = 0; i < selectedIds.length; i++) {
+                    try {
+                        await this.$store.dispatch('api/detail/deleteDetail', selectedIds[i]);
+
+                        this.currentItem = this.getCurrentItem(selectedIds[i]);
+
+                        this.recordLog();
+                    } catch (error) {
+                        console.error(`Error deleting item with id ${selectedIds[i]}:`, error);
+                    }
+                }
+
+                this.$emit('updateItems');
+                this.selectedItems = [];
+                this.isSelectingItems = false;
+
+                this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
+                this.modal.complete.open = true;
+                this.modalConfirmOpen = false;
+            };
+
+            this.modalConfirmOpen = true;
+        },
+
         toggleOpen(item) {
             item.isOpen = !item.isOpen;
         },
@@ -741,6 +825,18 @@ export default {
                 return this.details
                     .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
                     .map(detail => this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname);
+            } else if (type === 'port') {
+                return this.details
+                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .map(detail => this.getPortText(detail.total_percent).text);
+            } else if (type === 'customer_base') {
+                return this.details
+                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .map(detail => this.getBaseByNo(this.getCustomerByNo(detail.customer_no)?.base_no)?.base || 'ยังไม่ระบุ');
+            } else if (type === 'customer_type') {
+                return this.details
+                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .map(detail => this.getTypeByNo(this.getCustomerByNo(detail.customer_no)?.type_no)?.type || 'ยังไม่ระบุ');
             }
             return [];
         },
@@ -749,21 +845,6 @@ export default {
             this.currentAction = action;
             this.currentItem = item;
             this.modalConfirmOpen = true;
-        },
-
-        async handleConfirm() {
-            if (this.currentAction === 'delete') {
-                try {
-                    await this.$store.dispatch('api/detail/deleteDetail', this.currentItem.no);
-                    this.modal.complete.message = 'ลบผู้ใช้งานนี้เรียบร้อยแล้ว';
-                    this.recordLog();
-                    this.modal.complete.open = true;
-                } catch (warning) {
-                    this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
-                    this.modal.complete.open = true;
-                }
-            }
-            this.modalConfirmOpen = false;
         },
 
         async checkRank() {
@@ -1152,84 +1233,99 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'port') {
-                this.addTopicToSearch();
-            } else if (this.searchType === 'stock_no' || this.searchType === 'customer_name' || this.searchType === 'customer_no' || this.searchType === 'employee_no') {
-                this.addTextToSearch();
+            if (this.searchType === 'customer_no' || this.searchType === 'customer_name' || this.searchType === 'stock_no'
+                || this.searchType === 'employee_no' || this.searchType === 'port' || this.searchType === 'customer_base' || this.searchType === 'customer_type') {
+                this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
                     query: this.searchQuery,
                     type: this.searchType,
-                    topic: this.selectedTopic,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
                 this.searchQuery = '';
-                this.selectedTopic = '';
                 this.startDateTime = '';
                 this.endDateTime = '';
             }
         },
 
-        addTextToSearch() {
-            const trimmedQuery = this.searchQuery.trim();
-            if (trimmedQuery) {
-                this.searchQueries[this.searchType].push(trimmedQuery);
+        addSearchItemsToSearch() {
+            const selectedItems =
+                this.searchType === 'customer_no' ? this.selectedCustomerIDs :
+                    this.searchType === 'customer_name' ? this.selectedCustomerNames :
+                        this.searchType === 'stock_no' ? this.selectedStocks :
+                            this.searchType === 'employee_no' ? this.selectedEmployees :
+                                this.searchType === 'port' ? this.selectedPorts :
+                                    this.searchType === 'customer_base' ? this.selectedBases :
+                                        this.searchType === 'customer_type' ? this.selectedTypes : [];
+
+            if (selectedItems.length > 0) {
                 this.savedSearches.push({
-                    query: this.searchQueries[this.searchType],
+                    query: selectedItems,
                     type: this.searchType,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
-                this.searchQuery = '';
-            }
-        },
 
-        addTopicToSearch() {
-            this.savedSearches.push({
-                query: '',
-                type: 'port',
-                topics: [...this.selectedTopics],
-                start: this.startDateTime,
-                end: this.endDateTime
-            });
-            this.selectedTopics = [];
-            this.startDateTime = '';
-            this.endDateTime = '';
+                if (this.searchType === 'customer_no') {
+                    this.selectedCustomerIDs = [];
+                } else if (this.searchType === 'customer_name') {
+                    this.selectedCustomerNames = [];
+                } else if (this.searchType === 'stock_no') {
+                    this.selectedStocks = [];
+                } else if (this.searchType === 'employee_no') {
+                    this.selectedEmployees = [];
+                } else if (this.searchType === 'port') {
+                    this.selectedPorts = [];
+                } else if (this.searchType === 'customer_base') {
+                    this.selectedBases = [];
+                } else if (this.searchType === 'customer_type') {
+                    this.selectedTypes = [];
+                }
+
+                this.startDateTime = '';
+                this.endDateTime = '';
+            }
         },
 
         applySearchFilter(detail, search) {
-            const field = detail[search.type];
             let queryMatched = true;
-            const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
-            if (search.type === 'customer_name') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(detail.customer_no);
-                    return cust.nickname.toLowerCase().includes(query.toLowerCase());
-                });
-            } else if (search.type === 'customer_no') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(detail.customer_no);
-                    return cust.id.toLowerCase().includes(query.toLowerCase());
-                });
+
+            let field;
+            if (search.type === 'customer_no') {
+                field = this.getCustomerByNo(detail.customer_no).id;
+            } else if (search.type === 'customer_name') {
+                field = this.getCustomerByNo(detail.customer_no).nickname || 'ยังไม่ระบุ';
             } else if (search.type === 'stock_no') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const st = this.getStockByNo(detail.stock_no);
-                    return st.name.toLowerCase().includes(query.toLowerCase());
-                });
+                field = this.getStockByNo(detail.stock_no).stock || 'ยังไม่ระบุ';
             } else if (search.type === 'employee_no') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const emp = this.getEmployeeByNo(detail.employee_no);
-                    return emp.fname.toLowerCase().includes(query.toLowerCase()) + ' ' + emp.lname.toLowerCase().includes(query.toLowerCase());
+                field = this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname || 'ยังไม่ระบุ';
+            } else if (search.type === 'port') {
+                field = this.getPortText(detail.total_percent).text || 'ยังไม่ระบุ';
+            } else if (search.type === 'customer_base') {
+                field = this.getBaseByNo(this.getCustomerByNo(detail.customer_no)?.base_no)?.base || 'ยังไม่ระบุ';
+            } else if (search.type === 'customer_type') {
+                field = this.getTypeByNo(this.getCustomerByNo(detail.customer_no)?.type_no)?.type || 'ยังไม่ระบุ';
+            } else {
+                field = detail[search.type];
+            }
+
+            if (search.type === 'customer_no' || search.type === 'customer_name' || search.type === 'stock_no' || search.type === 'employee_no'
+                || search.type === 'port' || search.type === 'customer_base' || search.type === 'customer_type') {
+                queryMatched = search.query.some(query => {
+                    const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
+                    return lowerCaseField === query.toLowerCase();
                 });
+            } else if (search.type === 'updated_date') {
+                return this.checkTimeRange(detail, search);
             } else {
                 const searchQuery = search.query.toLowerCase();
-                queryMatched = lowerCaseField.includes(searchQuery);
+                queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
-            const timeMatched = search.type === 'updated_date' ? this.checkTimeRange(detail, search) : true;
-            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getPortText(detail.total_percent).text) : true;
-            return queryMatched && timeMatched && topicMatched;
+
+            return queryMatched;
         },
+
 
         checkTimeRange(detail, search) {
             const detailTime = moment(detail.updated_date);

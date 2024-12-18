@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="showModalResult" max-width="600px">
+    <v-dialog v-model="showModalResult" max-width="800px">
         <v-card>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-cash-check</v-icon>
@@ -27,7 +27,7 @@ export default {
         type: Number,
         stocks: Array,
         customers: Array,
-        customer_id: Number,
+        customer_no: Number,
         customer_name: Number
     },
     data() {
@@ -37,33 +37,33 @@ export default {
             fetchcommissions: [],
             showModalResult: this.open,
             headers: [
-                { text: 'รหัสลูกค้า', value: 'customer_name' },
-                { text: 'ชื่อหุ้น', value: 'stock_name' },
-                { text: 'จำนวนที่ติด', value: 'price' },
-                { text: 'ราคาที่ติด', value: 'amount' },
-                { text: 'ค่าธรรมเนียม', value: 'commission' },
-                { text: 'การกระทำ', value: 'action' },
+                { text: 'รหัสลูกค้า', value: 'customer_no', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'ชื่อเล่น', value: 'customer_name', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'ชื่อหุ้น', value: 'stock_name', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'จำนวนที่ติด', value: 'price', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'ราคาที่ติด', value: 'amount', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'ค่าธรรมเนียม', value: 'commission', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'การกระทำ', value: 'action', sortable: false, align: 'center', cellClass: 'text-center' },
             ],
         };
     },
     computed: {
         formattedStocks() {
-            const stocks = this.stocks || [];
             const customers = this.customers || [];
 
             return this.detail_amount.map(detail => {
-                const detailName = this.getStockByDetail(detail.stock_id);
+                const detailName = this.getStockByDetail(detail.stock_no);
                 const stockName = this.getStockName(detailName)
-                const commissionAmount = this.getCommissionAmount(detail.commission_id)
+                const commissionAmount = this.getCommissionAmount(detail.commission_no)
 
-                const customer = customers.find(c => c.no === this.customer_id) ||
+                const customer = customers.find(c => c.no === this.customer_no) ||
                     customers.find(c => c.no === this.customer_name) ||
                     { name: '', id: '' };
 
                 return {
                     ...detail,
                     stock_name: stockName,
-                    customer_id: customer.id,
+                    customer_no: customer.id,
                     customer_name: customer.name,
                     action: this.getTypeText(detail.type),
                     commission: commissionAmount
@@ -90,7 +90,7 @@ export default {
 
         getStockName(stockId) {
             const stock = this.fetchstocks.find(s => s.no === stockId);
-            return stock ? stock.name : 'ยังไม่ระบุ';
+            return stock ? stock.stock : 'ยังไม่ระบุ';
         },
 
         async fetchCommissionData() {
@@ -108,7 +108,7 @@ export default {
 
         getStockByDetail(DetailId) {
             const detail = this.fetchdetails.find(d => d.no === DetailId);
-            return detail ? detail.stock_id : 'ยังไม่ระบุ';
+            return detail ? detail.stock_no : 'ยังไม่ระบุ';
         },
 
         getTypeText(value) {

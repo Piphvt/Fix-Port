@@ -30,10 +30,10 @@ export default {
             showModalResult: this.open,
             fetchstocks: [],
             headers: [
-                { text: 'ชื่อหุ้น', value: 'stockName' },
-                { text: 'Low Price', value: 'low_price' },
-                { text: 'Up Price', value: 'up_price' },
-                { text: 'หมายเหตุ', value: 'remark' },
+                { text: 'ชื่อหุ้น', value: 'stockName', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'Low Price', value: 'low_price', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'Up Price', value: 'up_price', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'หมายเหตุ', value: 'remark', sortable: false, align: 'center', cellClass: 'text-center' },
             ],
         };
     },

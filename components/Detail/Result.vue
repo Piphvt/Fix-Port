@@ -37,7 +37,8 @@ export default {
         return {
             showModalResult: this.open,
             headers: [
-                { text: 'รหัสลูกค้า', value: 'customer_name', sortable: false, align: 'center' },
+                { text: 'รหัสลูกค้า', value: 'customer_no', sortable: false, align: 'center' },
+                { text: 'ชื่อเล่นลูกค้า', value: 'customer_name', sortable: false, align: 'center' },
                 { text: 'ชื่อหุ้น', value: 'stock_name', sortable: false, align: 'center' },
                 { text: 'จำนวนที่ติด', value: 'price', sortable: false, align: 'center' },
                 { text: 'ราคาที่ติด', value: 'amount', sortable: false, align: 'center' },

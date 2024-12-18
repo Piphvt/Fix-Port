@@ -21,7 +21,7 @@
                     </v-row>
                     <v-row>
                         <v-col cols="12" class="text-center pa-0">
-                            <v-btn @click="confirm" :disabled="!isFormValid" color="#24b224" class="mb-5">
+                            <v-btn @click="confirm" :disabled="!isFormValid || !newStockType" color="#24b224" class="mb-5">
                                 ยืนยัน
                             </v-btn>
                             <v-btn @click="cancel" color="#e50211" class="ml-2 mb-5">
@@ -89,23 +89,23 @@ export default {
                 return;
             }
             try {
-                const emp_id = this.$auth.user.no;
+                const employee_no = this.$auth.user.no;
                 const created_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const updated_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const response = await this.$store.dispatch('api/commission/addCommission', {
                     commission: this.newStockType,
-                    emp_id,
+                    employee_no,
                     created_date,
                     updated_date,
                 });
 
-                this.modal.complete.message = 'เพิ่มประเภทหุ้นสำเร็จ';
+                this.modal.complete.message = 'เพิ่มค่าธรรมเนียมสำเร็จ';
                 this.modal.complete.open = true;
                 this.recordLog();
                 this.newStockType = '';
                 this.$emit('update:open', false);
             } catch (error) {
-                this.modal.error.message = 'มีชื่อประเภทหุ้นนี้แล้ว';
+                this.modal.error.message = 'มีค่าธรรมเนียมนี้แล้ว';
                 this.modal.error.open = true;
             }
         },

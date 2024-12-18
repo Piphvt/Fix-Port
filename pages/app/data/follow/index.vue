@@ -76,13 +76,15 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType !== 'set_id' && searchType !== 'created_date'"
-                                v-model="searchQuery" :items="getSearchItems(searchType)" label="ค้นหา" dense outlined
-                                append-icon="mdi-magnify" class="mx-2 same-size small-font" hide-no-data
-                                hide-details></v-autocomplete>
+                            <v-autocomplete v-if="searchType === 'stock_no'" v-model="selectedStocks"
+                                class="mx-2 search-size small-font" :items="getSearchItems('stock_no')"
+                                label="ค้นหาชื่อหุ้น" dense outlined clearable multiple>
+                            </v-autocomplete>
 
-                            <v-select v-if="searchType === 'set_id'" v-model="selectedTopics" :items="actionTopics"
-                                dense outlined multiple class="mx-2 search-size small-font"></v-select>
+                            <v-autocomplete v-if="searchType === 'employee_no'" v-model="selectedEmployees"
+                                class="mx-2 search-size small-font" :items="getSearchItems('employee_no')"
+                                label="ค้นหาชื่อ" dense outlined clearable multiple>
+                            </v-autocomplete>
 
                             <v-menu v-if="searchType === 'created_date'" v-model="datePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
@@ -124,7 +126,8 @@
                             color="#85d7df">mdi-playlist-check</v-icon>
                     </template>
                     <v-list class="header-list">
-                        <v-list-item v-for="header in headers.filter(header => header.value !== 'detail')"
+                        <v-list-item
+                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select')"
                             :key="header.value" class="header-item">
                             <v-list-item-content>
                                 <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
@@ -141,7 +144,8 @@
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-alert</v-icon> หุ้นที่ถึงเป้าแล้ว
                     </v-btn>
-                    <v-btn @click="FollowCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="FollowCreateOpen = true" class="tab-icon-two"
+                        style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#24b224">mdi-archive-star</v-icon> เพิ่มการเฝ้าหุ้น
                     </v-btn>
                 </div>
@@ -149,10 +153,12 @@
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
                 item-key="no" :items-per-page="5">
-                <template v-slot:item.picture="{ item }">
-                    <v-avatar size="40">
-                        <img :src="`http://localhost:3001/file/profile/${item.picture}`" alt="picture" />
-                    </v-avatar>
+                <template v-slot:item.select="{ item }">
+                    <div class="text-center"
+                        style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                        <v-checkbox v-if="isSelectingItems" v-model="selectedItems" :value="item.no"
+                            style="transform: scale(1);" />
+                    </div>
                 </template>
                 <template v-slot:item.type="{ item }">
                     <div class="text-center" :style="{ color: getTypeText(item.type).color }">
@@ -182,7 +188,7 @@
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item @click="showConfirmDialog('delete', item)" class="custom-list-item">
+                                <v-list-item @click="toggleSelectItems" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
                                     </v-list-item-icon>
@@ -193,6 +199,12 @@
                     </div>
                 </template>
             </v-data-table>
+            <div class="text-center">
+                <v-btn v-if="isSelectingItems && selectedItems.length > 0" color="red" @click="deleteSelectedItems"
+                    class="mb-4" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-icon left color="white">mdi-delete</v-icon> ลบ
+                </v-btn>
+            </div>
         </v-card>
 
         <v-dialog v-model="dialog" max-width="300px">
@@ -259,9 +271,16 @@ export default {
             employees: [],
             follows: [],
 
+            selectedStocks: [],
+            selectedEmployees: [],
+
             FollowCreateOpen: false,
             FollowReachDataOpen: false,
             FollowBotDataOpen: false,
+
+            selectedItems: [],
+            handleConfirm: null,
+            isSelectingItems: false,
 
             sortBy: 'created_date',
             currentAction: '',
@@ -287,12 +306,6 @@ export default {
             selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['created_date', 'stock_no', 'low_price', 'up_price', 'type', 'remark', 'employee_no', 'detail'],
-
-            searchQueries: {
-                'stock_no': [],
-                'employee_no': [],
-            },
 
             searchTypes: [
                 { text: 'ชื่อหุ้น', value: 'stock_no' },
@@ -300,17 +313,17 @@ export default {
                 { text: 'เวลา', value: 'created_date' }
             ],
 
-            actionTopics: [
-                { text: 'SET', value: 'SET' },
-                { text: 'SET50', value: 'SET50' },
-                { text: 'SET100', value: 'SET100' },
-                { text: 'ETF', value: 'ETF' },
-                { text: 'MAI', value: 'MAI' },
-                { text: 'Warrants', value: 'Warrants' },
-                { text: 'DR', value: 'DR' },
-            ],
+            visibleColumns: ['select', 'created_date', 'stock_no', 'low_price', 'up_price', 'type', 'remark', 'employee_no', 'detail'],
 
             headers: [
+                {
+                    text: '',
+                    value: 'select',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
                 {
                     text: 'เวลาที่เฝ้าหุ้น',
                     value: 'created_date',
@@ -380,16 +393,48 @@ export default {
             return filteredFollows;
         },
 
-        formattedDetailLines() {
-            return this.selectedItemDetail.split('\n');
-        },
-
         filteredHeaders() {
             return this.headers.filter(header => this.visibleColumns.includes(header.value));
         },
     },
 
     methods: {
+        toggleSelectItems() {
+            this.isSelectingItems = !this.isSelectingItems;
+        },
+
+        getCurrentItem(id) {
+            return this.stocks.find(item => item.no === id);
+        },
+
+        async deleteSelectedItems() {
+            this.handleConfirm = async () => {
+                const selectedIds = this.selectedItems;
+
+                for (let i = 0; i < selectedIds.length; i++) {
+                    try {
+                        await this.$store.dispatch('api/follow/deleteFollow', selectedIds[i]);
+
+                        this.currentItem = this.getCurrentItem(selectedIds[i]);
+
+                        this.recordLog();
+                    } catch (error) {
+                        console.error(`Error deleting item with id ${selectedIds[i]}:`, error);
+                    }
+                }
+
+                this.$emit('updateItems');
+                this.selectedItems = [];
+                this.isSelectingItems = false;
+
+                this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
+                this.modal.complete.open = true;
+                this.modalConfirmOpen = false;
+            };
+
+            this.modalConfirmOpen = true;
+        },
+
         async fetchSetData() {
             this.sets = await this.$store.dispatch('api/set/getSet')
         },
@@ -435,31 +480,15 @@ export default {
             if (type === 'stock_no') {
                 return this.follows.map(follow => this.getStockName(follow.stock_no));
             } else if (type === 'employee_no') {
-                return this.follows.map(emp => this.getEmployeeName(emp.employee_no));
+                return this.follows.map(follow => this.getEmployeeName(follow.employee_no));
             }
             return [];
-        }
-        ,
+        },
 
         showConfirmDialog(action, item) {
             this.currentAction = action;
             this.currentItem = item;
             this.modalConfirmOpen = true;
-        },
-
-        async handleConfirm() {
-            if (this.currentAction === 'delete') {
-                try {
-                    await this.$store.dispatch('api/follow/deleteFollow', this.currentItem.no);
-                    this.modal.complete.message = 'ลบหุ้นนี้เรียบร้อยแล้ว';
-                    this.recordLog();
-                    this.modal.complete.open = true;
-                } catch (warning) {
-                    this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
-                    this.modal.complete.open = true;
-                }
-            }
-            this.modalConfirmOpen = false;
         },
 
         async checkRank() {
@@ -486,16 +515,6 @@ export default {
             }
         },
 
-        getTypeText(type) {
-            if (type === 1) {
-                return { text: 'กรอบเล็ก', color: '#24b224' };
-            } else if (type === 2) {
-                return { text: 'กรอบใหญ่', color: '#ffc800' };
-            } else {
-                return { text: '', color: 'inherit' };
-            }
-        },
-
         formatDateTime(date) {
             if (moment(date).isValid()) {
                 return moment(date).format('YYYY-MM-DD HH:mm');
@@ -509,7 +528,7 @@ export default {
         },
 
         onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchSet !== 'created_date' && this.searchType !== 'set_id';
+            this.isSearchFieldVisible = this.searchSet !== 'created_date';
         },
 
         validateDateRange() {
@@ -527,78 +546,71 @@ export default {
             if (!this.validateDateRange()) {
                 return;
             }
-            if (this.searchType === 'set_id') {
-                this.addTopicToSearch();
-            } else if (this.searchType === 'stock_no' || this.searchType === 'employee_no') {
-                this.addTextToSearch();
+
+            if (this.searchType === 'stock_no' || this.searchType === 'employee_no') {
+                this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
                     query: this.searchQuery,
                     type: this.searchType,
-                    topic: this.selectedTopic,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
                 this.searchQuery = '';
-                this.selectedTopic = '';
                 this.startDateTime = '';
                 this.endDateTime = '';
             }
         },
 
-        addTextToSearch() {
-            if (typeof this.searchQuery === 'string') {
-                const trimmedQuery = this.searchQuery.trim();
-                if (trimmedQuery) {
-                    this.searchQueries[this.searchType].push(trimmedQuery);
-                    this.savedSearches.push({
-                        query: this.searchQueries[this.searchType],
-                        type: this.searchType,
-                        start: this.startDateTime,
-                        end: this.endDateTime
-                    });
-                    this.searchQuery = '';
-                }
-            } else {
-                console.error('searchQuery is not a string:', this.searchQuery);
-            }
-        },
+        addSearchItemsToSearch() {
+            const selectedItems =
+                this.searchType === 'stock_no' ? this.selectedStocks :
+                    this.searchType === 'employee_no' ? this.selectedEmployees : [];
 
-        addTopicToSearch() {
-            this.savedSearches.push({
-                query: '',
-                type: 'set_id',
-                topics: [...this.selectedTopics],
-                start: this.startDateTime,
-                end: this.endDateTime
-            });
-            this.selectedTopics = [];
-            this.startDateTime = '';
-            this.endDateTime = '';
+            if (selectedItems.length > 0) {
+                this.savedSearches.push({
+                    query: selectedItems,
+                    type: this.searchType,
+                    start: this.startDateTime,
+                    end: this.endDateTime
+                });
+
+                if (this.searchType === 'stock_no') {
+                    this.selectedStocks = [];
+                } else if (this.searchType === 'employee_no') {
+                    this.selectedEmployees = [];
+                }
+
+                this.startDateTime = '';
+                this.endDateTime = '';
+            }
         },
 
         applySearchFilter(follow, search) {
-            const field = follow[search.type];
             let queryMatched = true;
-            const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
+
+            let field;
             if (search.type === 'employee_no') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const empName = this.getEmployeeName(follow.employee_no);
-                    return empName.toLowerCase().includes(query.toLowerCase());
-                });
+                field = this.getEmployeeName(follow.employee_no);
+            } else if (search.type === 'stock_no') {
+                field = this.getStockName(follow.stock_no) || 'ยังไม่ระบุ';
+            } else {
+                field = follow[search.type];
             }
-            else if (search.type === 'stock_no') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const stockName = this.getStockName(follow.stock_no);
-                    return stockName.toLowerCase().includes(query.toLowerCase());
+
+            if (search.type === 'stock_no' || search.type === 'employee_no') {
+                queryMatched = search.query.some(query => {
+                    const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
+                    return lowerCaseField === query.toLowerCase();
                 });
+            } else if (search.type === 'created_date') {
+                return this.checkTimeRange(follow, search);
             } else {
                 const searchQuery = search.query.toLowerCase();
-                queryMatched = lowerCaseField.includes(searchQuery);
+                queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
-            const timeMatched = search.type === 'created_date' ? this.checkTimeRange(follow, search) : true;
-            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getSetName(follow.set_id)) : true;
-            return queryMatched && timeMatched && topicMatched;
+
+            return queryMatched;
         },
 
         checkTimeRange(follow, search) {
