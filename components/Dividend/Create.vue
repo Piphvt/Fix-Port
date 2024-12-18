@@ -96,6 +96,7 @@ export default {
         this.fetchStockData();
         window.addEventListener('keydown', this.handleKeydown);
     },
+
     beforeDestroy() {
         window.removeEventListener('keydown', this.handleKeydown);
     },
@@ -122,6 +123,7 @@ export default {
             this.isOpen = val;
             this.$emit('update:open', val);
         },
+
         goBack() {
             window.location.reload();
         },
@@ -155,6 +157,7 @@ export default {
                 this.modal.error.open = true;
             }
         },
+
         async confirm() {
             try {
                 this.modal.confirm.open = true;
@@ -162,10 +165,12 @@ export default {
                 this.modal.error.open = true;
             }
         },
+
         cancel() {
             this.dividend = '';
             this.$emit('update:open', false);
         },
+        
         recordLog() {
             const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
             const Employee_Email = this.$auth.user.email;

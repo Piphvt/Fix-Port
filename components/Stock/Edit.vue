@@ -17,7 +17,7 @@
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                 <v-text-field v-model="formData.stock" :rules="[
                   (v) => !!v || 'โปรดกรอกชื่อหุ้น'
-                ]" label="ชื่อหุ้น" dense outlined required maxlength="12" />
+                ]" label="ชื่อหุ้น" dense outlined required />
 
               </v-col>
 

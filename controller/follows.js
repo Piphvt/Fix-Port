@@ -49,13 +49,12 @@ exports.addFollow = async (req, res) => {
 
 exports.updateFollow = async (req, res) => {
     try {
-        const { stock_no, reach, up_price, closing_price, remark, employee_no } = req.body;
+        const { stock_no, low_price, up_price, remark, employee_no } = req.body;
         const stockId = req.params.no;
         const updatedData = {
             stock_no,
             low_price,
             up_price,
-            closing_price,
             remark,
             employee_no,
             created_date: new Date()

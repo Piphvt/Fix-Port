@@ -24,7 +24,6 @@ export default {
     props: {
         open: Boolean,
         stocks: Array,
-        sets: Array,
     },
     data() {
         return {
@@ -34,7 +33,6 @@ export default {
                 { text: 'ชื่อหุ้น', value: 'stockName' },
                 { text: 'Low Price', value: 'low_price' },
                 { text: 'Up Price', value: 'up_price' },
-                { text: 'ประเภท', value: 'type' },
                 { text: 'หมายเหตุ', value: 'remark' },
             ],
         };
@@ -51,7 +49,7 @@ export default {
             const sets = this.sets || [];
 
             return this.stocks.map(stock => {
-                const stockName = this.getStockName(stock.stock_id);
+                const stockName = this.getStockName(stock.stock_no);
                 return {
                     ...stock,
                     stockName: stockName,
@@ -73,7 +71,7 @@ export default {
         },
         getStockName(stockId) {
             const stock = this.fetchstocks.find(s => s.no === stockId);
-            return stock ? stock.name : 'ยังไม่ระบุ';
+            return stock ? stock.stock : 'ยังไม่ระบุ';
         },
         confirm() {
             this.$emit('confirm');

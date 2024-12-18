@@ -5,7 +5,9 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
-        <StockEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
+        <FollowCreate :open="FollowCreateOpen" @update:open="FollowCreateOpen = false" />
+        <FollowEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
+        <FollowReach v-model="FollowReachDataOpen" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -13,7 +15,7 @@
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
                             <v-icon class="little-icon" color="#85d7df">mdi-archive-search</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลการติดตามหุ้น</h3>
+                            <h3 class="mb-0">หุ้นที่กำลังเฝ้า</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">
@@ -130,12 +132,16 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="goToFollowResult" class="tab-icon-three"
+                    <v-btn @click="FollowReachDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-archive-alert</v-icon> ผลการติดตามหุ้น
+                        <v-icon left color="#85d7df">mdi-robot</v-icon> หุ้นจากบอท
                     </v-btn>
-                    <v-btn @click="goToNewStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-archive-star</v-icon> เพิ่มการติดตามหุ้น
+                    <v-btn @click="FollowReachDataOpen = true" class="tab-icon-three"
+                        style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#85d7df">mdi-archive-alert</v-icon> หุ้นที่ถึงเป้าแล้ว
+                    </v-btn>
+                    <v-btn @click="FollowCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#24b224">mdi-archive-star</v-icon> เพิ่มการเฝ้าหุ้น
                     </v-btn>
                 </div>
             </div>
@@ -251,6 +257,9 @@ export default {
             sets: [],
             employees: [],
             follows: [],
+
+            FollowCreateOpen: false,
+            FollowReachDataOpen: false,
 
             sortBy: 'created_date',
             currentAction: '',
@@ -671,14 +680,6 @@ export default {
                 time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLogs', log);
-        },
-
-        goToNewStock() {
-            this.$router.push('/app/stock/new_follow');
-        },
-
-        goToFollowResult() {
-            this.$router.push('/app/stock/result_follow');
         },
     },
 };

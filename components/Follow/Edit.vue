@@ -10,25 +10,10 @@
         <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
             content-class="rounded-xl">
             <v-card class="rounded-xl">
-                <v-card-title class="card-title-center mb-3">แก้ไขรายละเอียดเงินปันผล</v-card-title>
+                <v-card-title class="card-title-center mb-3">แก้ไขรายละเอียดการติดตามหุ้น</v-card-title>
                 <v-card-text>
                     <v-form ref="form" v-model="valid" lazy-validation>
                         <v-row>
-                            <v-col cols="5" sm="11" class="pa-0 ml-4">
-                                <v-menu ref="menu" v-model="menu" :close-on-content-click="false" :nudge-right="40"
-                                    :return-value.sync="formData.created_date" transition="scale-transition" offset-y
-                                    min-width="290px">
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-text-field v-model="formattedCreatedDate" label="วันที่จ่ายเงินปันผล"
-                                            outlined dense readonly v-bind="attrs" v-on="on"
-                                            :rules="[(v) => !!v || 'โปรดเลือกวันที่']"></v-text-field>
-                                    </template>
-                                    <v-date-picker v-model="formData.created_date" no-title scrollable
-                                        @input="onDateSelected" @change="onDateChange" :locale="'th'"
-                                        :first-day-of-week="1" />
-                                </v-menu>
-                            </v-col>
-
                             <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                                 <v-autocomplete v-model="formData.stock_no" :items="stocks" item-text="name"
                                     item-value="no" label="ชื่อหุ้น" outlined dense
@@ -37,16 +22,30 @@
                             </v-col>
 
                             <v-col cols="6" sm="5" class="pa-0">
-                                <v-text-field v-model="formData.dividend" :rules="[
-                                    (v) => !!v || 'โปรดกรอกเงินปันผล',
+                                <v-text-field v-model="formData.low_price" :rules="[
+                                    (v) => !!v || 'โปรดกรอก low price',
                                     (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
-                                ]" label="เงินปันผล" outlined dense required />
+                                ]" label="low price" outlined dense required />
+                            </v-col>
+
+                            <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
+                                <v-text-field v-model="formData.up_price" :rules="[
+                                    (v) => !!v || 'โปรดกรอก up price',
+                                    (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
+                                ]" label="up price" outlined dense required />
+                            </v-col>
+
+                            <v-col cols="6" sm="5" class="pa-0">
+                                <v-text-field v-model="formData.remark" :rules="[
+                                    (v) => !!v || 'โปรดกรอกหมายเหตุ'
+                                ]" label="หมายเหตุ" dense outlined required />
                             </v-col>
                         </v-row>
                     </v-form>
                     <v-card-actions class="card-title-center pa-0">
-                        <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.stock_no" depressed
-                            color="#24b224" class="font-weight-medium mr-2">
+                        <v-btn @click="confirm"
+                            :disabled="!valid || !hasChanges || !formData.stock_no || !formData.low_price || !formData.up_price || !formData.remark"
+                            depressed color="#24b224" class="font-weight-medium mr-2">
                             บันทึก
                         </v-btn>
                         <v-btn color="#e50211" @click="cancel" class="font-weight-medium">ยกเลิก
@@ -94,12 +93,9 @@ export default {
                 },
             },
 
-            menu: false,
-
-            formData: { ...this.data },
+            formData: {},
             valid: false,
-            setOptions: [],
-            details: [],
+
             stocks: [],
             originalData: {},
 
@@ -108,10 +104,7 @@ export default {
 
     computed: {
         hasChanges() {
-            const dateHasChanged = !moment(this.formData.created_date).isSame(this.originalData.created_date, 'day');
-            const stockNoHasChanged = this.formData.stock_no !== this.originalData.stock_no;
-            const dividendHasChanged = parseFloat(this.formData.dividend).toFixed(2) !== parseFloat(this.originalData.dividend).toFixed(2);
-            return dateHasChanged || stockNoHasChanged || dividendHasChanged;
+            return JSON.stringify(this.formData) !== JSON.stringify(this.originalData);
         }
     },
 
@@ -123,11 +116,6 @@ export default {
         this.fetchStockData();
         this.formData = JSON.parse(JSON.stringify(this.data));
         this.originalData = JSON.parse(JSON.stringify(this.data));
-        if (moment(this.formData.created_date).isValid()) {
-            this.formattedCreatedDate = moment(this.formData.created_date).format('DD-MM-YYYY');
-        } else {
-            this.formattedCreatedDate = '';
-        }
         document.addEventListener('keydown', this.handleKeydown);
     },
 
@@ -136,15 +124,10 @@ export default {
             handler(newData) {
                 this.formData = JSON.parse(JSON.stringify(newData));
                 this.originalData = JSON.parse(JSON.stringify(newData));
-                if (moment(this.formData.created_date).isValid()) {
-                    this.formattedCreatedDate = moment(this.formData.created_date).format('DD-MM-YYYY');
-                } else {
-                    this.formattedCreatedDate = '';
-                }
             },
             deep: true,
             immediate: true
-        },
+        }
     },
 
     beforeDestroy() {
@@ -152,22 +135,6 @@ export default {
     },
 
     methods: {
-        onDateSelected(date) {
-            if (moment(date).isValid()) {
-                this.formData.created_date = date;
-                this.formattedCreatedDate = moment(date).format('DD-MM-YYYY');
-                this.originalData.created_date = date;
-            } else {
-                this.formData.created_date = null;
-                this.formattedCreatedDate = '';
-            }
-            this.menu = false;
-        },
-
-        onDateChange() {
-            this.menu = false;
-        },
-
         async confirm() {
             this.modal.confirm.open = true;
             await new Promise((resolve) => {
@@ -186,11 +153,10 @@ export default {
 
         async updateData() {
             try {
-                this.formData.emp_id = this.$auth.user.no;
-                const req = await this.$store.dispatch('api/dividend/updateDividend', this.formData);
+                this.formData.employee_no = this.$auth.user.no;
+                const req = await this.$store.dispatch('api/follow/updateFollow', this.formData);
                 this.modal.complete.open = true;
-                this.data = { ...this.formData };
-                this.recordLogUpdate();
+                this.recordLog();
             } catch (warning) {
                 this.modal.warning.open = true;
             }
@@ -205,11 +171,6 @@ export default {
             } catch (error) {
                 console.error('Error fetching stocks:', error);
             }
-        },
-
-        getStockNameByNo(stockNo) {
-            const stock = this.stocks.find(item => item.no === stockNo);
-            return stock ? stock.stock : "ไม่พบข้อมูลหุ้น";
         },
 
         handleKeydown(event) {
@@ -232,24 +193,37 @@ export default {
             this.updateData();
         },
 
-        recordLogUpdate() {
+        recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
             const changes = [];
+            const formDataName = this.stocks.find(stock => stock.no === this.formData.stock_no)?.name || 'ยังไม่ระบุ';
+            const originalDataName = this.stocks.find(stock => stock.no === this.originalData.stock_no)?.name || 'ยังไม่ระบุ';
             if (this.formData.stock_no !== this.originalData.stock_no) {
-                changes.push('ชื่อ : ' + this.formData.stock_no + '\n');
+                changes.push('ชื่อหุ้น : ' + formDataName + '\n');
             }
 
-            if (this.formData.comment !== this.originalData.comment) {
-                changes.push('หมายเหตุ : ' + this.formData.comment + '\n');
+            if (this.formData.low_price !== this.originalData.low_price) {
+                changes.push('Low Price : ' + this.formData.low_price + '\n');
+            }
+
+            if (this.formData.up_price !== this.originalData.up_price) {
+                changes.push('Up Price : ' + this.formData.up_price + '\n');
+            }
+
+            if (this.formData.remark !== this.originalData.remark) {
+                changes.push('หมายเหตุ : ' + this.formData.remark + '\n');
             }
             const log = {
-                action_id: this.originalData.stock_no,
-                employee_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                employee_email: this.$auth.user.email,
-                employee_picture: this.$auth.user.picture || 'ไม่รู้จัก',
+                action: 'แก้ไขข้อมูลการติดตามหุ้น',
+                name: originalDataName,
                 detail: changes.join(''),
                 type: 2,
-                action: 'แก้ไขข้อมูลหุ้น',
-                created_date: moment(new Date()).format('DD-MM-YYYY HH:mm:ss'),
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLog', log);
         },
