@@ -32,7 +32,7 @@
                         </v-col>
                     </v-row>
                     <v-row class="mb-0 mt-0 pa-0" v-for="(item, index) in withdrawalItems" :key="index" align="center">
-                        <v-col cols="2" class="ml-6">
+                        <v-col cols="2" class="ml-3">
                             <v-autocomplete v-model="item.stock_no" :items="stocks" item-text="name" item-value="no"
                                 label="ชื่อหุ้นที่ติด" dense outlined :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']"
                                 clearable>

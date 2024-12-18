@@ -368,7 +368,7 @@ export default {
     },
 
     goToStockResult() {
-      this.$router.push('/app/transaction/result_stock');
+      this.$router.push('/app/data/result_stock');
     },
 
   },

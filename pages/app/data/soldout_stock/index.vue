@@ -719,11 +719,11 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/transaction/soldout_stock');
+                        this.$router.push('/app/data/soldout_stock');
                     } else if (RankID === '2') {
-                        this.$router.push('/app/transaction/soldout_stock');
+                        this.$router.push('/app/data/soldout_stock');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/transaction/soldout_stock');
+                        this.$router.push('/app/data/soldout_stock');
                     } else {
                         this.$router.push('/auth');
                     }

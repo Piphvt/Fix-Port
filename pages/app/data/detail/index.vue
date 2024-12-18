@@ -137,7 +137,8 @@
                         <v-icon left color="#85d7df">mdi-piggy-bank</v-icon> หุ้นที่ขายหมดแล้ว
                     </v-btn>
 
-                    <v-btn @click="DetailCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="DetailCreateOpen = true" class="tab-icon-two"
+                        style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#24b224">mdi-bank-plus</v-icon> เพิ่มข้อมูลหุ้น
                     </v-btn>
                 </div>
@@ -192,7 +193,8 @@
                             :style="{ color: getPortText(item.total_percent).color }">
                             {{ getPortText(item.total_percent).text }}</td>
                         <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                            {{ getEmployeeByNo(item.employee_no)?.fname + ' ' + getEmployeeByNo(item.employee_no)?.lname ||
+                            {{ getEmployeeByNo(item.employee_no)?.fname + ' ' + getEmployeeByNo(item.employee_no)?.lname
+                                ||
                                 'ยังไม่ระบุ' }}</td>
                         <td v-if="visibleColumns.includes('comment')" class="text-center">
                             {{ item.comment || '-' }}</td>
@@ -370,7 +372,8 @@
                             :style="{ color: getPortText(item.total_percent).color }">
                             {{ getPortText(item.total_percent).text }}</td>
                         <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                            {{ getEmployeeByNo(item.employee_no)?.fname + ' ' + getEmployeeByNo(item.employee_no)?.lname ||
+                            {{ getEmployeeByNo(item.employee_no)?.fname + ' ' + getEmployeeByNo(item.employee_no)?.lname
+                                ||
                                 'ไม่ทราบ' }}</td>
                         <td v-if="visibleColumns.includes('comment')" class="text-center">
                             {{ item.comment || '-' }}</td>
@@ -820,8 +823,20 @@ export default {
                     for (const detail of this.details) {
                         detail.isOpen = false;
                         if (detail.stock_no) {
-                            const stock = this.stocks.find(s => s.no === detail.stock_no);
-                            const closingPriceData = stock ? stock.closing_price : null;
+                            let closingPriceData = null;
+
+                            const prices = await this.$store.dispatch('api/price/getPrice', {
+                                stock_no: detail.stock_no
+                            });
+
+                            const priceData = prices.filter(p => p.stock_no === detail.stock_no);
+
+                            const latestPriceData = priceData.reduce((latest, current) => {
+                                return moment(current.created_date).isAfter(moment(latest.created_date)) ? current : latest;
+                            }, priceData[0]);
+
+                            closingPriceData = latestPriceData ? latestPriceData.price : null;
+
                             let detail_total_Dividend = new Decimal(0);
                             let balance_dividend = 0;
                             let transaction_total_Dividend = 0;
@@ -1348,12 +1363,8 @@ export default {
             this.$store.dispatch('api/log/addLogs', log);
         },
 
-        goToAddStock() {
-            this.$router.push('/app/transaction/add_stock');
-        },
-
         goToSoldOutStock() {
-            this.$router.push('/app/transaction/soldout_stock');
+            this.$router.push('/app/data/soldout_stock');
         },
     },
 };

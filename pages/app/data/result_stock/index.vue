@@ -482,7 +482,6 @@ export default {
                     return entry;
                 });
             } else if (type === 'month' && date) {
-                // หากเป็นเดือน ให้กรองข้อมูลตามปีและเดือน
                 const [targetYear, targetMonth] = date.split('-').map(val => parseInt(val, 10));
                 filteredData = Array.isArray(data) ? JSON.parse(JSON.stringify(data)) : [JSON.parse(JSON.stringify(data))];
                 filteredData = filteredData.map(entry => {
@@ -541,11 +540,11 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/transaction/result_stock');
+                        this.$router.push('/app/data/result_stock');
                     } else if (RankID === '2') {
-                        this.$router.push('/app/transaction/result_stock');
+                        this.$router.push('/app/data/result_stock');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/transaction/result_stock');
+                        this.$router.push('/app/data/result_stock');
                     } else {
                         this.$router.push('/auth');
                     }
