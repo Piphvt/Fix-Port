@@ -5,6 +5,7 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
+        <DetailCreate :open="DetailCreateOpen" @update:open="DetailCreateOpen = false" />
         <DetailEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
 
         <v-card flat>
@@ -136,7 +137,7 @@
                         <v-icon left color="#85d7df">mdi-piggy-bank</v-icon> หุ้นที่ขายหมดแล้ว
                     </v-btn>
 
-                    <v-btn @click="goToAddStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="DetailCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#24b224">mdi-bank-plus</v-icon> เพิ่มข้อมูลหุ้น
                     </v-btn>
                 </div>
@@ -437,6 +438,8 @@ export default {
             froms: [],
             bases: [],
             types: [],
+
+            DetailCreateOpen: false,
 
             showModalResult: false,
             ResultDetailData: {},

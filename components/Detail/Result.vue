@@ -20,6 +20,8 @@
 </template>
 
 <script>
+import moment from 'moment';
+
 export default {
     props: {
         open: Boolean,
@@ -27,7 +29,7 @@ export default {
         froms: Array,
         stocks: Array,
         customers: Array,
-        customer_id: Number,
+        customer_no: Number,
         customer_name: Number,
         created_date: String,
     },
@@ -51,10 +53,10 @@ export default {
             const customers = this.customers || [];
 
             return this.details.map(detail => {
-                const from = froms.find(f => f.no === detail.from_id);
-                const stock = stocks.find(s => s.no === detail.stock_id);
+                const from = froms.find(f => f.no === detail.from_no);
+                const stock = stocks.find(s => s.no === detail.stock_no);
 
-                const customer = customers.find(c => c.no === this.customer_id) ||
+                const customer = customers.find(c => c.no === this.customer_no) ||
                     customers.find(c => c.no === this.customer_name) ||
                     { name: '', id: '' };
 
@@ -62,10 +64,9 @@ export default {
                     ...detail,
                     from_name: from ? from.name : '',
                     stock_name: stock ? stock.name : '',
-                    customer_id: customer.id,
+                    customer_no: customer.id,
                     customer_name: customer.id,
-                    created_date: detail.created_date || 'ยังไม่ระบุ',
-                    
+                    created_date: detail.created_date || moment().format('YYYY-MM-DD HH:mm:ss'),
                 };
             });
         },

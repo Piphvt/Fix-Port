@@ -1,17 +1,17 @@
 <template>
-    <v-dialog v-model="TransactionCreateOpen" @close="updateOpen(false)" max-width="1000px">
+    <v-dialog v-model="DetailCreateOpen" @close="updateOpen(false)" max-width="1000px">
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <TransactionResult :open="showModalResult" :detail_amount="withdrawalItems"
-            :stocks="withdrawalItems.map(item => ({ stock_no: item.stock_no }))" :customers="customers"
-            :customer_no="customer_no" :customer_name="customer_name" :type="type" @confirm="confirmAndAddDetails"
-            @cancel="showModalResult = false" @update:open="showModalResult = $event" />
+        <DetailResult :open="showModalResult" :details="withdrawalItems" :froms="froms" :stocks="stocks"
+            :customers="customers" :customer_no="customer_no" :customer_name="customer_name"
+            :created_date="created_date" @confirm="confirmAndAddDetails" @cancel="showModalResult = false"
+            @update:open="showModalResult = $event" />
 
         <v-card flat>
             <v-card-title class="d-flex align-center justify-center mb-3">
                 <v-icon color="#24b224">mdi-cash-plus</v-icon>&nbsp;
-                <h2 class="custom-title">เพิ่มการซื้อขายหุ้นของลูกค้า</h2>
+                <h2 class="custom-title">เพิ่มหุ้นของลูกค้า</h2>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" lazy-validation>
@@ -31,38 +31,41 @@
                             </v-autocomplete>
                         </v-col>
                     </v-row>
-                    <v-row v-for="(item, index) in withdrawalItems" :key="index" align="center">
+                    <v-row class="mb-0 mt-0 pa-0" v-for="(item, index) in withdrawalItems" :key="index" align="center">
                         <v-col cols="2" class="ml-6">
-                            <v-autocomplete v-model="item.stock_no" :items="detail_amount" item-text="name"
-                                item-value="no" label="ชื่อหุ้น" dense outlined
-                                :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable @change="updateStockData(item)">
+                            <v-autocomplete v-model="item.stock_no" :items="stocks" item-text="name" item-value="no"
+                                label="ชื่อหุ้นที่ติด" dense outlined :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']"
+                                clearable>
                             </v-autocomplete>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-text-field v-model="item.price" label="ราคา" type="text" dense outlined
+                            <v-text-field v-model="item.price" label="ราคาที่ติด" type="text" dense outlined
                                 :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
                             </v-text-field>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-text-field v-model="item.amount" label="จำนวน" type="text" dense outlined
+                            <v-text-field v-model="item.amount" label="จำนวนที่ติด" type="text" dense outlined
                                 :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
                             </v-text-field>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-autocomplete v-model="item.commission_no" :items="commissions" item-text="name"
-                                item-value="no" label="ค่าธรรมเนียม" dense outlined clearable
-                                :rules="[(v) => !!v || 'กรุณากรอกค่าธรรมเนียม']">
-                            </v-autocomplete>
+                            <v-menu v-model="datePickerMenus[index]" :close-on-content-click="false"
+                                transition="scale-transition" offset-y min-width="auto">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-text-field v-model="item.created_date" label="วันที่ซื้อหุ้น" readonly
+                                        v-bind="attrs" v-on="on" outlined dense></v-text-field>
+                                </template>
+                                <v-date-picker v-model="item.created_date" @input="datePickerMenus[index] = false"
+                                    locale="th"></v-date-picker>
+                            </v-menu>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-select v-model="item.type"
-                                :items="[{ value: 1, text: 'ซื้อ' }, { value: 2, text: 'ขาย' }]" item-text="text"
-                                item-value="value" label="ซื้อ/ขาย" dense outlined clearable
-                                :rules="[(v) => !!v || 'กรุณาเลือกซื้อหรือขาย']">
+                            <v-select v-model="item.from_no" :items="froms" item-text="name" item-value="no"
+                                label="ที่มาที่ไป" dense outlined>
                             </v-select>
                         </v-col>
 
@@ -72,7 +75,7 @@
                                 <v-icon>mdi-delete</v-icon>
                             </v-btn>
                             <v-btn color="#24b224" @click="addProduct" text class="mb-6 ml-2">
-                                <v-icon left>mdi-cash-plus</v-icon> เพิ่ม
+                                <v-icon left>mdi-bank-plus</v-icon> เพิ่ม
                             </v-btn>
                         </v-col>
                     </v-row>
@@ -98,10 +101,7 @@ export default {
     async mounted() {
         await this.fetchCustomerData()
         await this.fetchStockData()
-        await this.fetchCommissionData()
-        await this.fetchDetailAmountData()
-        await this.fetchTransactionData();
-        await this.fetchDetailData();
+        await this.fetchFromData()
     },
 
     props: {
@@ -113,7 +113,7 @@ export default {
 
     data() {
         return {
-            TransactionCreateOpen: this.open,
+            DetailCreateOpen: this.open,
 
             modal: {
                 complete: { open: false, message: '' },
@@ -128,32 +128,25 @@ export default {
             customer_no: null,
             customer_name: null,
 
+            created_date: '',
+            datePickerMenus: [],
+            datePickerMenu: false,
+
             showModalResult: false,
             withdrawalItems: [{
-                stock_no: null, price: null, amount: null, type: 2, commission_no: 2,
+                stock_no: null, price: null, amount: null, from_no: 1, comment: null, created_date: null
             }],
 
             customers: [],
-            commissions: [],
             stocks: [],
-            detail_amount: [],
-            transactions: [],
-            details: []
+            froms: [],
         };
     },
 
     watch: {
         open(newVal) {
-            this.TransactionCreateOpen = newVal;
+            this.DetailCreateOpen = newVal;
         },
-        customer_no: {
-            handler: 'fetchDetailAmountData',
-            immediate: true
-        },
-        customer_name: {
-            handler: 'fetchDetailAmountData',
-            immediate: true
-        }
     },
 
     computed: {
@@ -168,7 +161,7 @@ export default {
                     this.isStockValid(item.stock_no) &&
                     this.isPriceValid(item.price) &&
                     this.isAmountValid(item.amount) &&
-                    this.isAmountValid(item.type)
+                    this.isFromValid(item.from_no)
                 )
             );
         },
@@ -177,10 +170,7 @@ export default {
     mounted() {
         this.fetchCustomerData()
         this.fetchStockData()
-        this.fetchCommissionData()
-        this.fetchDetailAmountData()
-        this.fetchTransactionData();
-        this.fetchDetailData();
+        this.fetchFromData()
         window.addEventListener('keydown', this.handleKeydown);
     },
 
@@ -189,61 +179,23 @@ export default {
     },
 
     methods: {
-        async fetchTransactionData() {
-            this.transactions = await this.$store.dispatch('api/transaction/getTransaction');
-        },
-
-        async fetchDetailData() {
-            this.details = await this.$store.dispatch('api/detail/getDetail');
+        async fetchFromData() {
+            try {
+                const response = await this.$store.dispatch('api/from/getFrom');
+                if (response) {
+                    this.froms = response.map(item => ({ no: item.no, name: item.from }));
+                }
+            } catch (error) {
+            }
         },
 
         async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStock');
-        },
-
-        async fetchDetailAmountData() {
-            this.detail_amount = [];
-            const customerIdentifier = this.customer_no || this.customer_name;
-            if (!customerIdentifier) return;
-
             try {
-                const response = await this.$store.dispatch('api/detail/getDetail', { customer_no: customerIdentifier });
-                this.detail_amount = response.filter(detail =>
-                    detail.customer_no === customerIdentifier || detail.customer_name === customerIdentifier
-                );
-
-                await this.fetchStockData();
-                await this.fetchTransactionData();
-
-                this.detail_amount = this.detail_amount.map(detail => {
-                    const stock = this.stocks.find(stock => stock.no === detail.stock_no);
-
-                    const relatedTransactions = this.transactions.filter(
-                        transaction => transaction.stock_detail_no === detail.no
-                    );
-
-                    const remainingAmount = relatedTransactions.reduce((total, transaction) => {
-                        if (transaction.type === 1) {
-                            return total + parseFloat(transaction.amount || 0);
-                        } else if (transaction.type === 2) {
-                            return total - parseFloat(transaction.amount || 0);
-                        }
-                        return total;
-                    }, parseFloat(detail.amount || 0));
-
-                    if (remainingAmount === 0) {
-                        return null;
-                    }
-
-                    return {
-                        ...detail,
-                        name: stock ? `${stock.stock} (${remainingAmount.toLocaleString(2)})` : 'ไม่พบหุ้น',
-                        remainingAmount,
-                    };
-                }).filter(detail => detail !== null);
-
+                const response = await this.$store.dispatch('api/stock/getStock');
+                if (response) {
+                    this.stocks = response.map(item => ({ no: item.no, name: item.stock }));
+                }
             } catch (error) {
-                this.detail_amount = [];
             }
         },
 
@@ -257,23 +209,13 @@ export default {
             }
         },
 
-        async fetchCommissionData() {
-            try {
-                const response = await this.$store.dispatch('api/commission/getCommission');
-                if (response) {
-                    this.commissions = response.map(item => ({ no: item.no, name: item.commission }));
-                }
-            } catch (error) {
-            }
+        getCustomerID(customerId) {
+            const customer = this.customers.find(c => c.no === customerId);
+            return customer ? customer.id : 'ไม่ทราบ';
         },
 
-        updateStockData(item) {
-            const stockDetail = this.detail_amount.find(d => d.no === item.stock_no);
-            if (stockDetail) {
-                item.stock_detail_no = stockDetail.no;
-            } else {
-                item.stock_detail_no = null;
-            }
+        isFromValid(from_no) {
+            return from_no !== null && from_no !== '';
         },
 
         isStockValid(stock_no) {
@@ -299,7 +241,7 @@ export default {
         },
 
         updateOpen(val) {
-            this.TransactionCreateOpen = val;
+            this.DetailCreateOpen = val;
             this.$emit('update:open', val);
         },
 
@@ -308,87 +250,51 @@ export default {
         },
 
         async confirmAndAddDetails() {
-            await this.fetchDetailData();
-            await this.fetchTransactionData();
-
-            let isTransactionAdded = false;
-
-            for (const transaction of this.withdrawalItems) {
-                const stock = this.stocks.find(stock => stock.no === transaction.stock_no);
-                const stockDetailId = transaction.stock_detail_no;
-
-                let from_id = 3;
-                if (transaction.type === 2) {
-                    const matchingDetail = this.details.find(d => d.no === stockDetailId);
-                    const matchingTransactions = this.transactions.filter(t => t.stock_detail_no === stockDetailId);
-
-                    const totalBuyAmount = matchingTransactions
-                        .filter(t => t.type === 1)
-                        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-
-                    const totalSellAmount = matchingTransactions
-                        .filter(t => t.type === 2)
-                        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-
-                    const remainingAmount = totalBuyAmount + parseFloat(matchingDetail?.amount || 0) - totalSellAmount;
-
-                    if (transaction.amount > remainingAmount) {
-                        continue;
-                    }
-
-                    if (matchingDetail) {
-                        from_id = matchingDetail.from_id;
-                    }
-                }
+            for (const item of this.withdrawalItems) {
+                const stock = this.stocks.find(stock => stock.no === item.stock_no);
+                const customerIdentifier = this.customer_no || this.customer_name;
 
                 try {
-                    await this.$store.dispatch('api/transaction/addTransaction', {
-                        stock_detail_no: stockDetailId,
-                        type: transaction.type,
-                        price: parseFloat(transaction.price),
-                        amount: parseFloat(transaction.amount),
-                        commission_no: transaction.commission_no,
-                        from_id: from_id,
-                        emp_id: this.$auth.user.no,
-                        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                    await this.$store.dispatch('api/detail/addDetail', {
+                        customer_no: customerIdentifier,
+                        stock_no: item.stock_no,
+                        price: item.price,
+                        amount: item.amount,
+                        from_no: item.from_no,
+                        employee_no: this.$auth.user.no,
+                        created_date: item.created_date || moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                         updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                     });
-
-                    isTransactionAdded = true;
                 } catch (error) {
-                    this.modal.error.message = `เกิดข้อผิดพลาด`;
+                    this.modal.error.message = `เกิดข้อผิดพลาดบางอย่าง : ${error}`;
                     this.modal.error.open = true;
                 }
             }
-
-            if (isTransactionAdded) {
-                this.modal.complete.message = 'เพิ่มการซื้อขายหุ้นเรียบร้อยแล้ว!';
-                this.modal.complete.open = true;
-            } else {
-                this.modal.error.message = `จำนวนหุ้นที่ขายมากกว่าจำนวนหุ้นที่มี`;
-                this.modal.error.open = true;
-            }
-
+            this.recordLog();
+            this.modal.complete.message = 'เพิ่มหุ้นของลูกค้าเรียบร้อยแล้ว!';
+            this.modal.complete.open = true;
             this.showModalResult = false;
         },
 
 
         findDuplicateIds(stocks) {
-            const names = stocks.map(stock => stock.name);
-            return names.filter((name, index) => names.indexOf(name) !== index && name);
+            const names = stocks.map(stock => stock.stock);
+            return names.filter((stock, index) => names.indexOf(stock) !== index && stock);
         },
 
         addProduct() {
             this.withdrawalItems.push({
                 stock_no: null,
-                name: '',
-                commission_no: 2,
-                type: 2,
+                from_no: 1,
+                created_date: null,
+                comment: null,
             });
+            this.datePickerMenus.push(false);
         },
 
         removeProduct(index) {
             this.withdrawalItems.splice(index, 1);
+            this.datePickerMenus.splice(index, 1);
         },
 
         cancel() {
