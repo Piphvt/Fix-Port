@@ -15,7 +15,7 @@
                 <v-container>
                     <v-row>
                         <v-col cols="5" sm="11" class="pa-0 ml-3">
-                            <v-text-field v-model="newStockType" label="ค่าธรรมเนียม" required outlined>
+                            <v-text-field v-model="newStockType" label="ค่าธรรมเนียม" dense required outlined>
                             </v-text-field>
                         </v-col>
                     </v-row>

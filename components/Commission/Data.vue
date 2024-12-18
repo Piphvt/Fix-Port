@@ -7,28 +7,28 @@
                 <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
                     :complete.sync="modal.complete.open" :method="goBack" />
                 <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-                <SetCreate :open="createSetOpen" @update:open="createSetOpen = false" />
-                <SetEdit :open="editSet" :data="editAllData" @update:edit="editSet = false" />
+                <CommissionCreate :open="createCommissionOpen" @update:open="createCommissionOpen = false" />
+                <CommissionEdit :open="editCommission" :data="editAllData" @update:edit="editCommission = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-archive-settings</v-icon>
-                <span class="headline">ข้อมูลประเภทหุ้น</span>
+                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-credit-card</v-icon>
+                <span class="headline">ข้อมูลค่าธรรมเนียม</span>
             </v-card-title>
             <v-card-text>
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                    <v-btn @click="createSetOpen = true" style="font-size: 1.5 rem; margin-left: auto;" color="#24b224">
-                        <v-icon left>mdi-archive-plus</v-icon> เพิ่ม
+                    <v-btn @click="createCommissionOpen = true" style="font-size: 1.5 rem; margin-left: auto;" color="#24b224">
+                        <v-icon left>mdi-credit-card-plus</v-icon> เพิ่ม
                     </v-btn>
                 </div>
-                <v-data-table :headers="headers" :items="sets" item-value="no" item-key="no" :items-per-page="5">
-                    <template v-slot:item.set="{ item }">
-                        <div class="text-center" :style="{ color: getSetText(item.set).color }">{{ item.set }}</div>
-                    </template>
+                <v-data-table :headers="headers" :items="commissions" item-value="no" item-key="no" :items-per-page="5">
                     <template v-slot:item.employee_no="{ item }">
                         <td class="text-center">{{ getEmployeeName(item.employee_no) }}</td>
                     </template>
                     <template v-slot:item.updated_date="{ item }">
                         <td class="text-center">{{ formatDateTime(item.updated_date) }}</td>
+                    </template>
+                    <template v-slot:item.commission="{ item }">
+                        <td class="text-center">{{ item.commission }}</td>
                     </template>
                     <template v-slot:item.detail="{ item }">
                         <div class="text-center">
@@ -87,21 +87,21 @@ export default {
                 },
             },
 
-            sets: [],
+            commissions: [],
             employees: [],
 
             currentAction: '',
             currentItem: null,
             modalConfirmOpen: false,
 
-            createSetOpen: false,
+            createCommissionOpen: false,
 
             editAllData: {},
-            editSet: false,
+            editCommission: false,
 
             headers: [
                 { text: 'ข้อมูลวันที่', value: 'updated_date', align: 'center', cellClass: 'text-center' },
-                { text: 'ชื่อประเภทหุ้น', value: 'set', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'ค่าธรรมเนียม', value: 'commission', sortable: false, align: 'center', cellClass: 'text-center' },
                 { text: 'ทำรายการโดย', value: 'employee_no', sortable: false, align: 'center', cellClass: 'text-center' },
                 { text: '', value: 'detail', sortable: false, align: 'center', cellClass: 'text-center' },
             ],
@@ -120,14 +120,14 @@ export default {
     },
 
     async mounted() {
-        await this.fetchSetData();
+        await this.fetchCommissionData();
         await this.fetchEmployeeData();
     },
 
     methods: {
-        openEditStock(dividend) {
-            this.editAllData = dividend;
-            this.editSet = true;
+        openEditStock(commission) {
+            this.editAllData = commission;
+            this.editCommission = true;
         },
 
         goBack() {
@@ -155,8 +155,8 @@ export default {
             this.modalConfirmOpen = false;
         },
 
-        async fetchSetData() {
-            this.sets = await this.$store.dispatch('api/set/getSet');
+        async fetchCommissionData() {
+            this.commissions = await this.$store.dispatch('api/commission/getCommission');
         },
 
         async fetchEmployeeData() {
@@ -174,28 +174,6 @@ export default {
             }
             return 'Invalid Date';
         },
-
-        getSetText(set) {
-            if (set === 'SET') {
-                return { text: 'SET', color: '#24b224' };
-            } else if (set === 'SET50') {
-                return { text: 'SET50', color: '#ffc800' };
-            } else if (set === 'SET100') {
-                return { text: 'SET100', color: '#38b6ff' };
-            } else if (set === 'ETF') {
-                return { text: 'ETF', color: '#8c52ff' };
-            } else if (set === 'MAI') {
-                return { text: 'MAI', color: '#ff914d' };
-            } else if (set === 'Warrants') {
-                return { text: 'Warrants', color: '#c1ff72' };
-            } else if (set === 'DR') {
-                return { text: 'DR', color: '#ff5757' };
-            } else if (set === 'Preferred Stock') {
-                return { text: 'Preferred Stock', color: '#ff66c4' };
-            } else {
-                return { text: '', color: 'inherit' };
-            }
-        },
         recordLog() {
             const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
             const Employee_Email = this.$auth.user.email;
@@ -208,7 +186,7 @@ export default {
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,
                 employee_picture: Employee_Picture,
-                updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLog', log);
         },

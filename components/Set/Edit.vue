@@ -162,7 +162,7 @@ export default {
       const log = {
         action: 'แก้ไขข้อมูลประเภทหุ้น',
         name: this.originalData.set,
-        detail: 'ชื่อ : '+this.formData.set,
+        detail: 'ชื่อ : ' + this.formData.set,
         type: 2,
         employee_name: Employee_Name,
         employee_email: Employee_Email,
