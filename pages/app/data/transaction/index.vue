@@ -6,6 +6,7 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <CommissionData v-model="CommissionDataOpen" />
+        <TransactionCreate :open="TransactionCreateOpen" @update:open="TransactionCreateOpen = false" />
         <StockEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
 
         <v-card flat>
@@ -135,7 +136,7 @@
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-credit-card</v-icon> ค่าธรรมเนียม
                     </v-btn>
-                    <v-btn @click="goToAddStock" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="TransactionCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#24b224">mdi-cash-plus</v-icon> เพิ่มการซื้อขายหุ้น
                     </v-btn>
                 </div>
@@ -339,6 +340,7 @@ export default {
             froms: [],
             commissions: [],
 
+            TransactionCreateOpen: false,
             CommissionDataOpen: false,
 
             sortBy: 'updated_date',
@@ -982,10 +984,6 @@ export default {
                 time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLogs', log);
-        },
-
-        goToAddStock() {
-            this.$router.push('/app/transaction/add_transaction');
         },
     },
 };

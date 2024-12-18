@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="StockCreateOpen" @close="updateOpen(false)" max-width="800px">
+    <v-dialog v-model="FollowCreateOpen" @close="updateOpen(false)" max-width="800px">
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
@@ -83,7 +83,7 @@ export default {
 
     data() {
         return {
-            StockCreateOpen: this.open,
+            FollowCreateOpen: this.open,
             modal: {
                 complete: { open: false, message: '' },
                 error: { open: false, message: '' },
@@ -99,7 +99,7 @@ export default {
 
     watch: {
         open(newVal) {
-            this.StockCreateOpen = newVal;
+            this.FollowCreateOpen = newVal;
         }
     },
 
@@ -143,7 +143,7 @@ export default {
         },
 
         updateOpen(val) {
-            this.StockCreateOpen = val;
+            this.FollowCreateOpen = val;
             this.$emit('update:open', val);
         },
 

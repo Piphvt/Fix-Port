@@ -1,40 +1,37 @@
 <template>
-    <div>
+    <v-dialog v-model="TransactionCreateOpen" @close="updateOpen(false)" max-width="1000px">
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <TransactionCreateResult :open="showModalResult" :detail_amount="withdrawalItems"
+        <TransactionResult :open="showModalResult" :detail_amount="withdrawalItems"
             :stocks="withdrawalItems.map(item => ({ stock_no: item.stock_no }))" :customers="customers"
             :customer_no="customer_no" :customer_name="customer_name" :type="type" @confirm="confirmAndAddDetails"
             @cancel="showModalResult = false" @update:open="showModalResult = $event" />
 
-        <v-card class="custom-card" flat>
-            <v-card-title class="d-flex align-center justify-center">
-                <v-icon class="little-icon" color="#24b224">mdi-cash-plus</v-icon> &nbsp;
-                <h3 class="mb-0">ข้อมูลการซื้อขายหุ้นของลูกค้าใหม่</h3>
+        <v-card flat>
+            <v-card-title class="d-flex align-center justify-center mb-3">
+                <v-icon color="#24b224">mdi-cash-plus</v-icon>&nbsp;
+                <h2 class="custom-title">การเฝ้าหุ้นใหม่</h2>
             </v-card-title>
-
-            <v-row class="mb-0 mt-0 pa-0 justify-center">
-                <v-col cols="2" class="ml-2">
-                    <v-select v-model="searchBy" :items="searchOptions" label="ค้นหาจาก" dense outlined>
-                    </v-select>
-                </v-col>
-                <v-col cols="3">
-                    <v-autocomplete v-if="searchBy === 'customer_name'" v-model="customer_name" :items="customers"
-                        item-text="name" item-value="no" label="ชื่อลูกค้า" dense outlined clearable
-                        :rules="[(v) => !!v || 'กรุณากรอกชื่อลูกค้า']">
-                    </v-autocomplete>
-                    <v-autocomplete v-else-if="searchBy === 'customer_no'" v-model="customer_no" :items="customers"
-                        item-text="id" item-value="no" label="รหัสลูกค้า" dense outlined clearable
-                        :rules="[(v) => !!v || 'กรุณากรอกรหัสลูกค้า']">
-                    </v-autocomplete>
-                </v-col>
-            </v-row>
-
-
-            <v-card-text class="mb-0 mt-0 pa-0">
-                <v-form>
-                    <v-row class="mb-0 mt-0 pa-0" v-for="(item, index) in withdrawalItems" :key="index" align="center">
+            <v-card-text>
+                <v-form ref="form" lazy-validation>
+                    <v-row class="mb-0 mt-0 pa-0 justify-center">
+                        <v-col cols="2" class="ml-2">
+                            <v-select v-model="searchBy" :items="searchOptions" label="ค้นหาจาก" dense outlined>
+                            </v-select>
+                        </v-col>
+                        <v-col cols="3">
+                            <v-autocomplete v-if="searchBy === 'customer_name'" v-model="customer_name"
+                                :items="customers" item-text="name" item-value="no" label="ชื่อลูกค้า" dense outlined
+                                clearable :rules="[(v) => !!v || 'กรุณากรอกชื่อลูกค้า']">
+                            </v-autocomplete>
+                            <v-autocomplete v-else-if="searchBy === 'customer_no'" v-model="customer_no"
+                                :items="customers" item-text="id" item-value="no" label="รหัสลูกค้า" dense outlined
+                                clearable :rules="[(v) => !!v || 'กรุณากรอกรหัสลูกค้า']">
+                            </v-autocomplete>
+                        </v-col>
+                    </v-row>
+                    <v-row v-for="(item, index) in withdrawalItems" :key="index" align="center">
                         <v-col cols="2" class="ml-6">
                             <v-autocomplete v-model="item.stock_no" :items="detail_amount" item-text="name"
                                 item-value="no" label="ชื่อหุ้น" dense outlined
@@ -69,9 +66,9 @@
                             </v-select>
                         </v-col>
 
-
                         <v-col cols="1" class="d-flex align-center">
-                            <v-btn icon color="#e50211" @click="removeProduct(index)" class="mb-6">
+                            <v-btn icon color="#e50211" @click="removeProduct(index)" class="mb-6"
+                                :disabled="withdrawalItems.length === 1">
                                 <v-icon>mdi-delete</v-icon>
                             </v-btn>
                             <v-btn color="#24b224" @click="addProduct" text class="mb-6 ml-2">
@@ -79,32 +76,26 @@
                             </v-btn>
                         </v-col>
                     </v-row>
-
-                    <div class="text-center">
-                        <v-btn color="#24b224" @click="showModalResult = true" :disabled="!isFormValid"
-                            class="mr-2 mb-3">
-                            บันทึก
-                        </v-btn>
-                        <v-btn color="#e50211" @click="goToStocksTransaction" class="mb-3">
-                            ย้อนกลับ
-                        </v-btn>
-                    </div>
                 </v-form>
+                <v-card-actions class="card-title-center pa-0">
+                    <v-btn color="#24b224" @click="showModalResult = true" :disabled="!isFormValid" class="mr-2">
+                        ยืนยัน
+                    </v-btn>
+                    <v-btn @click="cancel" color="#e50211">
+                        ยกเลิก
+                    </v-btn>
+                </v-card-actions>
             </v-card-text>
         </v-card>
-    </div>
+    </v-dialog>
 </template>
 
 <script>
-import moment from 'moment'
-moment.locale('th')
+import moment from 'moment';
 
 export default {
-    layout: 'user',
     middleware: 'auth',
-
     async mounted() {
-        await this.checkRank()
         await this.fetchCustomerData()
         await this.fetchStockData()
         await this.fetchCommissionData()
@@ -113,29 +104,22 @@ export default {
         await this.fetchDetailData();
     },
 
-    watch: {
-        customer_no: {
-            handler: 'fetchDetailAmountData',
-            immediate: true
+    props: {
+        open: {
+            type: Boolean,
+            required: true,
         },
-        customer_name: {
-            handler: 'fetchDetailAmountData',
-            immediate: true
-        }
     },
 
     data() {
         return {
+            TransactionCreateOpen: this.open,
+
             modal: {
-                complete: {
-                    open: false,
-                    message: ''
-                },
-                error: {
-                    open: false,
-                    message: ''
-                },
+                complete: { open: false, message: '' },
+                error: { open: false, message: '' },
             },
+
             searchBy: 'customer_no',
             searchOptions: [
                 { text: 'รหัสลูกค้า', value: 'customer_no' },
@@ -144,11 +128,9 @@ export default {
             customer_no: null,
             customer_name: null,
 
-            valid: false,
             showModalResult: false,
             withdrawalItems: [{
-                stock_no: null, dividend_amount: null, price: null, amount: null,
-                closing_price: null, type: 2, commission_no: 2,
+                stock_no: null, price: null, amount: null, type: 2, commission_no: 2,
             }],
 
             customers: [],
@@ -157,7 +139,20 @@ export default {
             detail_amount: [],
             transactions: [],
             details: []
+        };
+    },
 
+    watch: {
+        open(newVal) {
+            this.TransactionCreateOpen = newVal;
+        },
+        customer_no: {
+            handler: 'fetchDetailAmountData',
+            immediate: true
+        },
+        customer_name: {
+            handler: 'fetchDetailAmountData',
+            immediate: true
         }
     },
 
@@ -179,6 +174,20 @@ export default {
         },
     },
 
+    mounted() {
+        this.fetchCustomerData()
+        this.fetchStockData()
+        this.fetchCommissionData()
+        this.fetchDetailAmountData()
+        this.fetchTransactionData();
+        this.fetchDetailData();
+        window.addEventListener('keydown', this.handleKeydown);
+    },
+
+    beforeDestroy() {
+        window.removeEventListener('keydown', this.handleKeydown);
+    },
+
     methods: {
         async fetchTransactionData() {
             this.transactions = await this.$store.dispatch('api/transaction/getTransaction');
@@ -189,21 +198,7 @@ export default {
         },
 
         async fetchStockData() {
-            const stockData = await this.$store.dispatch('api/stock/getStock');
-            this.stocks = stockData;
-
-            this.withdrawalItems.forEach((item) => {
-                if (item.stock_no) {
-                    const stock = stockData.find(stock => stock.no === item.stock_no);
-                    if (stock) {
-                        item.dividend_amount = stock.dividend_amount;
-                        item.closing_price = stock.closing_price;
-                    } else {
-                        item.dividend_amount = null;
-                        item.closing_price = null;
-                    }
-                }
-            });
+            this.stocks = await this.$store.dispatch('api/stock/getStock');
         },
 
         async fetchDetailAmountData() {
@@ -252,6 +247,26 @@ export default {
             }
         },
 
+        async fetchCustomerData() {
+            try {
+                const response = await this.$store.dispatch('api/customer/getCustomer');
+                if (response) {
+                    this.customers = response.map(item => ({ no: item.no, id: item.id, name: item.nickname }));
+                }
+            } catch (error) {
+            }
+        },
+
+        async fetchCommissionData() {
+            try {
+                const response = await this.$store.dispatch('api/commission/getCommission');
+                if (response) {
+                    this.commissions = response.map(item => ({ no: item.no, name: item.commission }));
+                }
+            } catch (error) {
+            }
+        },
+
         updateStockData(item) {
             const stockDetail = this.detail_amount.find(d => d.no === item.stock_no);
             if (stockDetail) {
@@ -273,32 +288,23 @@ export default {
             return amount !== null && amount !== '';
         },
 
-        async checkRank() {
-            if (this.$auth.loggedIn) {
-                const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.rank_no.toString();
-                if (Status === '2') {
-                    this.$router.push('/');
-                    await this.$auth.logout();
-                }
-                else {
-                    if (RankID === '1') {
-                        this.$router.push('/app/transaction/add_transaction');
-                    } else if (RankID === '2') {
-                        this.$router.push('/app/transaction/add_transaction');
-                    } else if (RankID === '3') {
-                        this.$router.push('/app/transaction/add_transaction');
-                    } else {
-                        this.$router.push('/auth');
-                    }
-                }
-            } else {
-                this.$router.push('/');
+        openModal() {
+            this.showModalResult = true;
+        },
+
+        handleKeydown(event) {
+            if (event.key === 'Escape') {
+                this.cancel();
             }
         },
 
-        openModal() {
-            this.showModalResult = true;
+        updateOpen(val) {
+            this.TransactionCreateOpen = val;
+            this.$emit('update:open', val);
+        },
+
+        goBack() {
+            window.location.reload();
         },
 
         async confirmAndAddDetails() {
@@ -372,33 +378,11 @@ export default {
             return names.filter((name, index) => names.indexOf(name) !== index && name);
         },
 
-        async fetchCustomerData() {
-            try {
-                const response = await this.$store.dispatch('api/customer/getCustomer');
-                if (response) {
-                    this.customers = response.map(item => ({ no: item.no, id: item.id, name: item.nickname }));
-                }
-            } catch (error) {
-            }
-        },
-
-        async fetchCommissionData() {
-            try {
-                const response = await this.$store.dispatch('api/commission/getCommission');
-                if (response) {
-                    this.commissions = response.map(item => ({ no: item.no, name: item.commission }));
-                }
-            } catch (error) {
-            }
-        },
-
         addProduct() {
             this.withdrawalItems.push({
                 stock_no: null,
                 name: '',
                 commission_no: 2,
-                dividend_amount: null,
-                closing_price: null,
                 type: 2,
             });
         },
@@ -407,45 +391,47 @@ export default {
             this.withdrawalItems.splice(index, 1);
         },
 
-        goBack() {
-            this.$router.push('/app/transaction/customer_trade');
+        cancel() {
+            this.newStockType = '';
+            this.$emit('update:open', false);
         },
 
         recordLog() {
-            const detail_amount = this.withdrawalItems.map((item, index) => {
-                return `TRANSACTION ${index + 1}\nNAME ${item.name}\nTYPE ${setName}\nDIVIDEND ${item.dividend_amount}\nCLOSE ${item.closing_price}}`;
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
+            const details = this.withdrawalItems.map((item, index) => {
+                const stockName = this.stocks.find(stock => stock.no === item.stock_no)?.name || 'ยังไม่ระบุ';
+                return `หุ้นที่ ${index + 1}\n` +
+                    `ชื่อหุ้น : ${stockName || 'ยังไม่ระบุ'}\n` +
+                    `Up Price : ${item.low_price}\n` +
+                    `Low Price : ${item.up_price}\n` +
+                    `หมายเหตุ : ${item.remark || 'ยังไม่ระบุ'}`;
             }).join('\n\n');
-
             const log = {
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
-                detail: detail_amount.trim(),
-                type: 1,
-                picture: this.$auth.user.picture || 'Unknown',
-                action: 'เพิ่มหุ้นของลูกค้า',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                action: 'เพิ่มการติดตามหุ้นใหม่',
+                detail: details.trim(),
+                type: 2,
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-
-            this.$store.dispatch('api/log/addLogs', log);
-        },
-
-        goToStocksTransaction() {
-            this.$router.push('/app/transaction/customer_trade');
+            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };
 </script>
 
 <style scoped>
-.little-icon {
-    font-size: 3rem;
-    margin-right: 8px;
-    margin-left: 8px;
+.card-title-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
-.custom-card {
-    max-width: 1200px;
-    width: 100%;
-    margin: auto;
+.custom-title {
+    font-size: 1rem;
 }
 </style>
