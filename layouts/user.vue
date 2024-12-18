@@ -65,16 +65,7 @@
                 <v-icon class="icon-tab">mdi-archive-search</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title style="font-size: 0.8rem;">การติดตามหุ้น</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-
-            <v-list-item @click="goToStocksUpdate" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 5px;">
-                <v-icon class="icon-tab">mdi-archive-arrow-up</v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title style="font-size: 0.8rem;">อัพเดทหุ้น</v-list-item-title>
+                <v-list-item-title style="font-size: 0.8rem;">หุ้นที่กำลังเฝ้า</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>
@@ -365,10 +356,6 @@ export default {
 
     goToStocksFollow() {
       this.$router.push('/app/data/follow');
-    },
-
-    goToStocksUpdate() {
-      this.$router.push('/app/stock/update');
     },
 
 

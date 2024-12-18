@@ -1,69 +1,84 @@
 <template>
-    <div>
-        <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
-            :complete.sync="modal.complete.open" :method="goBack" />
-        <StockClosePrice :open.sync="isLoadingClosePrice" @cancel-fetch="cancelFetchClosePriceData" />
-        <StockDividendYield :open.sync="isLoadingDividendYield" @cancel-fetch="cancelFetchDividendYieldData" />
-        <v-card class="custom-card" flat>
-            <v-container>
-                <v-row justify="center" align="center">
-                    <v-col cols="auto">
-                        <v-card-title class="d-flex align-center justify-center">
-                            <v-icon class="little-icon" color="#85d7df">mdi-archive-arrow-up</v-icon>&nbsp;
-                            <h3>อัพเดทหุ้น</h3>
-                        </v-card-title>
-                    </v-col>
-                </v-row>
-            </v-container>
+    <v-dialog v-model="dialog" max-width="800px">
+        <v-card>
+            <div>
+                <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen"
+                    @update:confirm="modalConfirmOpen = false" />
+                <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
+                    :complete.sync="modal.complete.open" :method="goBack" />
+                <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
+                <StockClosePrice :open.sync="isLoadingClosePrice" @cancel-fetch="cancelFetchClosePriceData" />
+                <StockDividendYield :open.sync="isLoadingDividendYield" @cancel-fetch="cancelFetchDividendYieldData" />
+            </div>
 
-            <v-row justify="center">
-                <v-col cols="auto">
-                    <v-btn color="#ffc800" @click="fetchClosePriceData"
-                        :disabled="isLoadingClosePrice || csvData.length > 0" class="mr-2">
-                        <v-icon>mdi-upload</v-icon>อัพเดทราคาปิด
-                    </v-btn>
-                    <v-btn color="#38b6ff" @click="fetchDividendYieldData"
-                        :disabled="isLoadingDividendYield || csvData.length > 0" class="mr-2">
-                        <v-icon>mdi-upload</v-icon>อัพเดทจำนวนปันผล
-                    </v-btn>
-                </v-col>
-            </v-row>
-
-            <v-data-table v-if="true" :headers="isDataLoaded ? headers : []" :items="csvData" class="mt-4 elevation-1"
-                :items-per-page="5"></v-data-table>
-
-            <v-row justify="center" class="mt-4">
-                <v-col cols="auto">
-                    <v-btn color="#24b224" @click="saveUpdate" :disabled="csvData.length === 0 || isLoadingClosePrice">
-                        <v-icon>mdi-content-save</v-icon>บันทึก
-                    </v-btn>
-                </v-col>
-            </v-row>
+            <v-card class="custom-card" flat>
+                <v-card-title class="d-flex justify-center">
+                    <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-archive-arrow-up</v-icon>
+                    <span class="headline">อัพเดทหุ้น</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-form ref="form" lazy-validation>
+                        <v-row justify="center" align="center">
+                            <v-col cols="auto">
+                                <v-btn color="#ffc800" @click="fetchClosePriceData"
+                                    :disabled="isLoadingClosePrice || csvData.length > 0" class="mr-2">
+                                    <v-icon>mdi-upload</v-icon>อัพเดทราคาปิด
+                                </v-btn>
+                                <v-btn color="#38b6ff" @click="fetchDividendYieldData"
+                                    :disabled="isLoadingDividendYield || csvData.length > 0" class="mr-2">
+                                    <v-icon>mdi-upload</v-icon>อัพเดทจำนวนปันผล
+                                </v-btn>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col>
+                                <v-data-table v-if="true" :headers="isDataLoaded ? headers : []" :items="csvData"
+                                    class="mt-4 elevation-1" :items-per-page="5"></v-data-table>
+                            </v-col></v-row>
+                    </v-form>
+                    <v-card-actions class="card-title-center pa-0">
+                        <v-btn class="mt-3 mr-2" color="#24b224" @click="saveUpdate"
+                            :disabled="csvData.length === 0 || isLoadingClosePrice">
+                            <v-icon>mdi-content-save</v-icon>บันทึก
+                        </v-btn>
+                        <v-btn class="mt-3" @click="dialog = false" color="#e50211">ปิด</v-btn>
+                    </v-card-actions>
+                </v-card-text>
+            </v-card>
         </v-card>
-    </div>
+    </v-dialog>
 </template>
 
 <script>
-import Papa from 'papaparse';
 import moment from 'moment-timezone';
+import 'moment/locale/th';
+import Papa from 'papaparse';
 
 export default {
-    layout: 'user',
-    middleware: 'auth',
-
-    async mounted() {
-        await this.checkRank();
-        await this.fetchStockData();
+    props: {
+        value: Boolean,
     },
 
     data() {
         return {
             modal: {
+                error: {
+                    open: false,
+                    message: '',
+                },
+                confirm: {
+                    open: false,
+                },
                 complete: {
                     open: false,
-                    message: ''
+                    message: '',
                 },
             },
+
+            currentAction: '',
+            currentItem: null,
+            modalConfirmOpen: false,
+
             stocks: [],
             csvData: [],
             headers: [],
@@ -71,11 +86,27 @@ export default {
             isLoadingDividendYield: false,
             isDataLoaded: false,
             xhr: null,
+
+            dialog: this.value,
         };
     },
+
+    watch: {
+        value(newValue) {
+            this.dialog = newValue;
+        },
+        dialog(newValue) {
+            this.$emit('input', newValue);
+        },
+    },
+
+    async mounted() {
+        await this.fetchStockData();
+    },
+
     methods: {
         async fetchStockData() {
-            this.stocks = await this.$store.dispatch('api/stock/getStock');
+            this.stocks = await this.$store.dispatch('api/stock/getStock')
         },
 
         getStockByName(stockName) {
@@ -86,28 +117,35 @@ export default {
             window.location.reload();
         },
 
-        async checkRank() {
-            if (this.$auth.loggedIn) {
-                const Status = this.$auth.user.status.toString();
-                const RankID = this.$auth.user.rank_no.toString();
-                if (Status === '2') {
-                    this.$router.push('/');
-                    await this.$auth.logout();
+        showConfirmDialog(action, item) {
+            this.currentAction = action;
+            this.currentItem = item;
+            this.modalConfirmOpen = true;
+        },
+
+        async handleConfirm() {
+            try {
+                if (this.currentAction === 'approve') {
+                    await this.$store.dispatch('api/employee/updateEmployeeStatus', {
+                        no: this.currentItem.no,
+                        status: 1,
+                        employee_no: this.$auth.user.no
+                    });
+                    this.recordLog();
+                    this.modal.complete.message = 'อนุมัติผู้ใช้งานเรียบร้อยแล้ว';
+                } else if (this.currentAction === 'reject') {
+                    await this.$store.dispatch('api/employee/deleteEmployee', this.currentItem.no);
+                    this.modal.complete.message = 'ลบผู้ใช้งานนี้เรียบร้อยแล้ว';
+                    this.recordLog();
                 }
-                else {
-                    if (RankID === '1') {
-                        this.$router.push('/app/stock/update');
-                    } else if (RankID === '2') {
-                        this.$router.push('/app/home');
-                    } else if (RankID === '3') {
-                        this.$router.push('/app/stock/update');
-                    } else {
-                        this.$router.push('/auth');
-                    }
-                }
-            } else {
-                this.$router.push('/');
+
+                this.modal.complete.open = true;
+            } catch (error) {
+                this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
+                this.modal.complete.open = true;
             }
+
+            this.modalConfirmOpen = false;
         },
 
         fetchClosePriceData() {
@@ -171,7 +209,7 @@ export default {
 
         fetchDividendYieldData() {
             this.isLoadingDividendYield = true;
-            this.headers = [ 
+            this.headers = [
                 { text: 'วันที่', value: 'xdate' },
                 { text: 'ชื่อหุ้น', value: 'symbol' },
                 { text: 'จำนวนปันผล', value: 'dividend' },
@@ -266,7 +304,7 @@ export default {
                             .filter(item => {
                                 const dividend = parseFloat(item.dividend);
                                 const createdDate = moment(item.xdate).tz('Asia/Bangkok').format('YYYY-MM-DD');
-                                const stockId = this.getStockByName(item.symbol)?.no; 
+                                const stockId = this.getStockByName(item.symbol)?.no;
 
                                 return !isNaN(dividend) && !existingDividendSet.has(`${stockId}-${createdDate}`);
                             })
@@ -297,7 +335,7 @@ export default {
                 for (const stock of this.csvData) {
                     const stockData = JSON.parse(JSON.stringify(stock));
                     const symbol = stockData.symbol;
-                    
+
                     if (!symbol) {
                         continue;
                     }
@@ -355,35 +393,54 @@ export default {
             }
         },
 
+        formatDateTime(date) {
+            if (moment(date).isValid()) {
+                return moment(date).format('DD/MM/YYYY HH:mm');
+            }
+            return 'Invalid Date';
+        },
+
         recordLog() {
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
             const log = {
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
-                detail: 'ชื่อไฟล์.csv',
-                type: 2,
-                picture: this.$auth.user.picture || 'Unknown',
-                action: this.currentAction === 'delete'
-                    ? 'ลบประเภทหุ้น'
-                    : 'ลบประเภทหุ้น',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                action: this.currentAction === 'approve'
+                    ? 'อนุมัติผู้ใช้งาน'
+                    : 'ไม่อนุมัติผู้ใช้งาน',
+                name: this.currentItem.fname + ' ' + this.currentItem.lname,
+                detail: this.currentAction === 'approve'
+                    ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`
+                    : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`,
+                type: 4,
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLog', log);
         },
-
     },
 };
 </script>
 
-<style scoped>
-.little-icon {
-    font-size: 3rem;
-    margin-right: 8px;
-    margin-left: 8px;
+<style>
+.custom-list-item {
+    padding: 0.1px 8px;
 }
 
-.custom-card {
-    max-width: 800px;
-    width: 100%;
-    margin: auto;
+.custom-list {
+    padding: 0.4px 2px;
+}
+
+.card-title-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.custom-title {
+    font-size: 1rem;
 }
 </style>

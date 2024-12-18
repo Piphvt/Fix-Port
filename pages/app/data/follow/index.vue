@@ -8,6 +8,7 @@
         <FollowCreate :open="FollowCreateOpen" @update:open="FollowCreateOpen = false" />
         <FollowEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
         <FollowReach v-model="FollowReachDataOpen" />
+        <FollowBot v-model="FollowBotDataOpen" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -132,7 +133,7 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="FollowReachDataOpen = true" class="tab-icon-three"
+                    <v-btn @click="FollowBotDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-robot</v-icon> หุ้นจากบอท
                     </v-btn>
@@ -260,6 +261,7 @@ export default {
 
             FollowCreateOpen: false,
             FollowReachDataOpen: false,
+            FollowBotDataOpen: false,
 
             sortBy: 'created_date',
             currentAction: '',

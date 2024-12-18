@@ -7,6 +7,7 @@
             :complete.sync="modal.complete.open" :method="goBack" />
         <StockCreate :open="StockCreateOpen" @update:open="StockCreateOpen = false" />
         <StockEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
+        <StockUpdate v-model="StockUpdateOpen" />
         <DividendData :stockNo="selectedStockNo" v-model="DividendDataOpen" />
         <SetData v-model="SetDataOpen" />
 
@@ -141,6 +142,9 @@
                     </v-list>
                 </v-menu>
                 <div>
+                    <v-btn @click="StockUpdateOpen = true" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#85d7df">mdi-archive-arrow-up</v-icon> อัพเดทหุ้น
+                    </v-btn>
                     <v-btn @click="SetDataOpen = true" class="tab-icon-three" style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-settings</v-icon> ประเภทหุ้น
                     </v-btn>
@@ -287,6 +291,7 @@ export default {
             selectedStockNo: null,
             DividendDataOpen: false,
             SetDataOpen: false,
+            StockUpdateOpen: false,
             StockCreateOpen: false,
 
             selectedItems: [],
