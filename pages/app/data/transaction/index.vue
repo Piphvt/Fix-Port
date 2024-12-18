@@ -5,6 +5,7 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
+        <CommissionData v-model="CommissionDataOpen" />
         <StockEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
 
         <v-card flat>
@@ -130,7 +131,7 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="goToCommission" class="tab-icon-three"
+                    <v-btn @click="CommissionDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-credit-card</v-icon> ค่าธรรมเนียม
                     </v-btn>
@@ -337,6 +338,8 @@ export default {
             stocks: [],
             froms: [],
             commissions: [],
+
+            CommissionDataOpen: false,
 
             sortBy: 'updated_date',
             currentAction: '',
@@ -983,10 +986,6 @@ export default {
 
         goToAddStock() {
             this.$router.push('/app/transaction/add_transaction');
-        },
-
-        goToCommission() {
-            this.$router.push('/app/transaction/commission');
         },
     },
 };
