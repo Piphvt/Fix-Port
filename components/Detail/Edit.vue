@@ -301,9 +301,10 @@ export default {
       try {
         this.formData.emp_id = this.$auth.user.no;
         this.formData.created_date = this.formattedCreatedDate
+        this.formData.price = this.formData.detailprice
+        this.formData.amount = this.formData.detailamount
         const req = await this.$store.dispatch('api/detail/updateDetail', this.formData);
         this.modal.complete.open = true;
-        this.data = { ...this.formData };
         this.recordLogUpdate();
       } catch (warning) {
         this.modal.warning.open = true;
@@ -363,7 +364,7 @@ export default {
         action: 'แก้ไขข้อมูลหุ้นของลูกค้า',
         time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
-      this.$store.dispatch('api/log/addLogs', log);
+      this.$store.dispatch('api/log/addLog', log);
     },
   },
 };

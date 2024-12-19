@@ -314,59 +314,89 @@ export default {
             let isTransactionAdded = false;
 
             for (const transaction of this.withdrawalItems) {
-                const stock = this.stocks.find(stock => stock.no === transaction.stock_no);
                 const stockDetailId = transaction.stock_detail_no;
 
-                let from_no = 3;
-                if (transaction.type === 2) {
-                    const matchingDetail = this.details.find(d => d.no === stockDetailId);
-                    const matchingTransactions = this.transactions.filter(t => t.stock_detail_no === stockDetailId);
+                const matchingDetail = this.details.find(detail => detail.no === stockDetailId);
 
-                    const totalBuyAmount = matchingTransactions
-                        .filter(t => t.type === 1)
-                        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                const relatedTransactions = this.transactions
+                    .filter(t => t.stock_detail_no === stockDetailId)
+                    .sort((a, b) => new Date(a.updated_date) - new Date(b.updated_date));
 
-                    const totalSellAmount = matchingTransactions
-                        .filter(t => t.type === 2)
-                        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                let totalBuyAmount = relatedTransactions
+                    .filter(t => t.type === 1)
+                    .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
-                    const remainingAmount = totalBuyAmount + parseFloat(matchingDetail?.amount || 0) - totalSellAmount;
+                let totalSellAmount = relatedTransactions
+                    .filter(t => t.type === 2)
+                    .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
-                    if (transaction.amount > remainingAmount) {
-                        continue;
+                let remainingBuyAmount = totalBuyAmount - totalSellAmount;
+
+                let sellAmount = parseFloat(transaction.amount);
+
+                while (sellAmount > 0) {
+                    if (remainingBuyAmount > 0) {
+                        const deductionAmount = Math.min(sellAmount, remainingBuyAmount);
+
+                        try {
+                            await this.$store.dispatch('api/transaction/addTransaction', {
+                                stock_detail_no: stockDetailId,
+                                type: transaction.type,
+                                price: parseFloat(transaction.price),
+                                amount: deductionAmount,
+                                commission_no: transaction.commission_no,
+                                from_no: 3,
+                                employee_no: this.$auth.user.no,
+                                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                                updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                            });
+
+                            isTransactionAdded = true;
+                        } catch (error) {
+                            this.modal.error.message = `เกิดข้อผิดพลาด`;
+                            this.modal.error.open = true;
+                        }
+
+                        sellAmount -= deductionAmount;
+                        remainingBuyAmount -= deductionAmount;
+                    } else if (matchingDetail && matchingDetail.amount > 0) {
+                        const deductionAmount = Math.min(sellAmount, parseFloat(matchingDetail.amount));
+
+                        try {
+                            await this.$store.dispatch('api/transaction/addTransaction', {
+                                stock_detail_no: stockDetailId,
+                                type: transaction.type,
+                                price: parseFloat(transaction.price),
+                                amount: deductionAmount,
+                                commission_no: transaction.commission_no,
+                                from_no: matchingDetail.from_no || 3,
+                                employee_no: this.$auth.user.no,
+                                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                                updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                            });
+
+                            isTransactionAdded = true;
+                        } catch (error) {
+                            this.modal.error.message = `เกิดข้อผิดพลาด`;
+                            this.modal.error.open = true;
+                        }
+
+                        sellAmount -= deductionAmount;
+
+                        if (matchingDetail) {
+                            matchingDetail.amount = parseFloat(matchingDetail.amount) - deductionAmount;
+                        }
+                    } else {
+                        this.modal.error.message = `จำนวนหุ้นที่ขายมากกว่าจำนวนหุ้นที่มี`;
+                        this.modal.error.open = true;
+                        break;
                     }
-
-                    if (matchingDetail) {
-                        from_no = matchingDetail.from_no;
-                    }
-                }
-
-                try {
-                    await this.$store.dispatch('api/transaction/addTransaction', {
-                        stock_detail_no: stockDetailId,
-                        type: transaction.type,
-                        price: parseFloat(transaction.price),
-                        amount: parseFloat(transaction.amount),
-                        commission_no: transaction.commission_no,
-                        from_no: from_no,
-                        employee_no: this.$auth.user.no,
-                        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-                        updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-                    });
-
-                    isTransactionAdded = true;
-                } catch (error) {
-                    this.modal.error.message = `เกิดข้อผิดพลาด`;
-                    this.modal.error.open = true;
                 }
             }
 
             if (isTransactionAdded) {
                 this.modal.complete.message = 'เพิ่มการซื้อขายหุ้นเรียบร้อยแล้ว!';
                 this.modal.complete.open = true;
-            } else {
-                this.modal.error.message = `จำนวนหุ้นที่ขายมากกว่าจำนวนหุ้นที่มี`;
-                this.modal.error.open = true;
             }
 
             this.showModalResult = false;

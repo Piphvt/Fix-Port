@@ -97,15 +97,6 @@
                 <v-list-item-title style="font-size: 0.8rem;">การซื้อขายหุ้นของลูกค้า</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
-
-            <v-list-item @click="goToStockResult" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 5px;">
-                <v-icon class="icon-tab">mdi-cash-register</v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title style="font-size: 0.8rem;">สรุปผลการซื้อขายหุ้น</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
           </v-list>
         </v-menu>
 
@@ -365,10 +356,6 @@ export default {
 
     goToStockTrade() {
       this.$router.push('/app/data/transaction');
-    },
-
-    goToStockResult() {
-      this.$router.push('/app/data/result_stock');
     },
 
   },

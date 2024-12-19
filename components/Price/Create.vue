@@ -165,7 +165,7 @@ export default {
                     updated_date,
                 });
 
-                this.modal.complete.message = 'เพิ่มจำนวนปันผลสำเร็จ';
+                this.modal.complete.message = 'เพิ่มราคาปิดสำเร็จ';
                 this.modal.complete.open = true;
                 this.recordLog();
                 this.stock_no = '';
