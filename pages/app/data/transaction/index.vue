@@ -8,7 +8,7 @@
         <CommissionData v-model="CommissionDataOpen" />
         <TransactionCreate :open="TransactionCreateOpen" @update:open="TransactionCreateOpen = false" />
         <TransactionTotal v-model="TotalTransactionDataOpen" />
-        <StockEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
+        <TransactionEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
 
         <v-card flat>
             <v-container>
@@ -1019,7 +1019,7 @@ export default {
                     : 'ไม่ลบข้อมูลหุ้นของลูกค้า',
                 time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

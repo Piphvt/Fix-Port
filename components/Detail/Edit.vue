@@ -54,16 +54,16 @@
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                 <v-text-field v-model="formData.detailprice" :rules="[
-                  (v) => !!v || 'โปรดกรอกราคาที่ติด',
+                  (v) => !!v || 'โปรดกรอกราคา',
                   (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
-                ]" label="ราคาที่ติด" dense outlined required />
+                ]" label="ราคา" dense outlined required />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-text-field v-model="formData.detailamount" :rules="[
-                  (v) => !!v || 'โปรดกรอกจำนวนที่ติด',
+                  (v) => !!v || 'โปรดกรอกจำนวน',
                   (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
-                ]" label="จำนวนที่ติด" dense outlined required />
+                ]" label="จำนวน" dense outlined required />
               </v-col>
             </v-row>
           </v-form>
