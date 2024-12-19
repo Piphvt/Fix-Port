@@ -498,16 +498,10 @@ export default {
 
         getSearchItems(type) {
             if (type === 'customer_no') {
-                return this.details
-                    .filter(detail => this.getCustomerByNo(detail.customer_no)?.id
-                    )
-                    .map(detail => this.getCustomerByNo(detail.customer_no).id);
+                return this.details.map(detail => this.getCustomerByNo(detail.customer_no)?.id);
             }
             else if (type === 'customer_name') {
-                return this.details
-                    .filter(detail => this.getCustomerByNo(detail.customer_no)?.nickname
-                    )
-                    .map(detail => this.getCustomerByNo(detail.customer_no).nickname);
+                return this.details.map(detail => this.getCustomerByNo(detail.customer_no)?.nickname);
             }
             return [];
         },

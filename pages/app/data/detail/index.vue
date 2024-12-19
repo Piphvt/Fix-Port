@@ -110,6 +110,11 @@
                                 label="ค้นหาประเภทลูกค้า" dense outlined clearable multiple>
                             </v-autocomplete>
 
+                            <v-autocomplete v-if="searchType === 'stock_from'" v-model="selectedFroms"
+                                class="mx-2 search-size small-font" :items="getSearchItems('stock_from')"
+                                label="ค้นหาประเภทลูกค้า" dense outlined clearable multiple>
+                            </v-autocomplete>
+
                             <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
                                 <template v-slot:activator="{ on, attrs }">
@@ -494,6 +499,7 @@ export default {
             selectedPorts: [],
             selectedBases: [],
             selectedTypes: [],
+            selectedFroms: [],
 
             selectedItems: [],
             handleConfirm: null,
@@ -529,6 +535,7 @@ export default {
                 { text: 'รหัสสมาชิก', value: 'customer_no' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
                 { text: 'ชื่อหุ้น', value: 'stock_no' },
+                { text: 'ที่มาที่ไป', value: 'stock_from' },
                 { text: 'ประเภทพอร์ต', value: 'port' },
                 { text: 'ประเภทลูกค้า', value: 'customer_type' },
                 { text: 'ฐานทุน', value: 'customer_base' },
@@ -829,16 +836,20 @@ export default {
                     .map(detail => this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname);
             } else if (type === 'port') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => detail.amount > 0 && this.getPortText(detail.total_percent).text)
                     .map(detail => this.getPortText(detail.total_percent).text);
             } else if (type === 'customer_base') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => detail.amount > 0 && this.getBaseByNo(this.getCustomerByNo(detail.customer_no)?.base_no)?.base)
                     .map(detail => this.getBaseByNo(this.getCustomerByNo(detail.customer_no)?.base_no)?.base || 'ยังไม่ระบุ');
             } else if (type === 'customer_type') {
                 return this.details
-                    .filter(detail => detail.amount > 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => detail.amount > 0 && this.getTypeByNo(this.getCustomerByNo(detail.customer_no)?.type_no)?.type)
                     .map(detail => this.getTypeByNo(this.getCustomerByNo(detail.customer_no)?.type_no)?.type || 'ยังไม่ระบุ');
+            } else if (type === 'stock_from') {
+                return this.details
+                    .filter(detail => detail.amount > 0 && this.getFromByNo(detail.from_no)?.from)
+                    .map(detail => this.getFromByNo(detail.from_no)?.from || 'ยังไม่ระบุ');
             }
             return [];
         },
@@ -1235,7 +1246,7 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'customer_no' || this.searchType === 'customer_name' || this.searchType === 'stock_no'
+            if (this.searchType === 'customer_no' || this.searchType === 'customer_name' || this.searchType === 'stock_no' || this.searchType === 'stock_from'
                 || this.searchType === 'employee_no' || this.searchType === 'port' || this.searchType === 'customer_base' || this.searchType === 'customer_type') {
                 this.addSearchItemsToSearch();
             } else {
@@ -1256,10 +1267,11 @@ export default {
                 this.searchType === 'customer_no' ? this.selectedCustomerIDs :
                     this.searchType === 'customer_name' ? this.selectedCustomerNames :
                         this.searchType === 'stock_no' ? this.selectedStocks :
-                            this.searchType === 'employee_no' ? this.selectedEmployees :
-                                this.searchType === 'port' ? this.selectedPorts :
-                                    this.searchType === 'customer_base' ? this.selectedBases :
-                                        this.searchType === 'customer_type' ? this.selectedTypes : [];
+                            this.searchType === 'stock_from' ? this.selectedFroms :
+                                this.searchType === 'employee_no' ? this.selectedEmployees :
+                                    this.searchType === 'port' ? this.selectedPorts :
+                                        this.searchType === 'customer_base' ? this.selectedBases :
+                                            this.searchType === 'customer_type' ? this.selectedTypes : [];
 
             if (selectedItems.length > 0) {
                 this.savedSearches.push({
@@ -1275,6 +1287,8 @@ export default {
                     this.selectedCustomerNames = [];
                 } else if (this.searchType === 'stock_no') {
                     this.selectedStocks = [];
+                } else if (this.searchType === 'stock_from') {
+                    this.selectedFroms = [];
                 } else if (this.searchType === 'employee_no') {
                     this.selectedEmployees = [];
                 } else if (this.searchType === 'port') {
@@ -1308,12 +1322,14 @@ export default {
                 field = this.getBaseByNo(this.getCustomerByNo(detail.customer_no)?.base_no)?.base || 'ยังไม่ระบุ';
             } else if (search.type === 'customer_type') {
                 field = this.getTypeByNo(this.getCustomerByNo(detail.customer_no)?.type_no)?.type || 'ยังไม่ระบุ';
+            } else if (search.type === 'stock_from') {
+                field = this.getFromByNo(detail.from_no)?.from || 'ยังไม่ระบุ';
             } else {
                 field = detail[search.type];
             }
 
-            if (search.type === 'customer_no' || search.type === 'customer_name' || search.type === 'stock_no' || search.type === 'employee_no'
-                || search.type === 'port' || search.type === 'customer_base' || search.type === 'customer_type') {
+            if (search.type === 'customer_no' || search.type === 'customer_name' || search.type === 'stock_no' || search.type === 'stock_from'
+                || search.type === 'employee_no' || search.type === 'port' || search.type === 'customer_base' || search.type === 'customer_type') {
                 queryMatched = search.query.some(query => {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField === query.toLowerCase();

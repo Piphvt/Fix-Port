@@ -76,13 +76,35 @@
                             <v-select v-model="searchType" :items="searchTypes" dense outlined
                                 class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
 
-                            <v-autocomplete v-if="searchType !== 'port' && searchType !== 'updated_date'"
-                                v-model="searchQuery" :items="getSearchItems(searchType)" label="ค้นหา" dense outlined
-                                append-icon="mdi-magnify" class="mx-2 same-size small-font" hide-no-data hide-details
-                                clearable></v-autocomplete>
+                            <v-autocomplete v-if="searchType === 'customer_no'" v-model="selectedCustomerIDs"
+                                class="mx-2 search-size small-font" :items="getSearchItems('customer_no')"
+                                label="ค้นหารหัสสมาชิก" dense outlined clearable multiple>
+                            </v-autocomplete>
 
-                            <v-select v-if="searchType === 'port'" v-model="selectedTopics" :items="actionTopics" dense
-                                outlined multiple class="mx-2 search-size small-font"></v-select>
+                            <v-autocomplete v-if="searchType === 'customer_name'" v-model="selectedCustomerNames"
+                                class="mx-2 search-size small-font" :items="getSearchItems('customer_name')"
+                                label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'stock_no'" v-model="selectedStocks"
+                                class="mx-2 search-size small-font" :items="getSearchItems('stock_no')"
+                                label="ค้นหาชื่อหุ้น" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'employee_no'" v-model="selectedEmployees"
+                                class="mx-2 search-size small-font" :items="getSearchItems('employee_no')"
+                                label="ค้นหาผู้ทำรายการ" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'action'" v-model="selectedActions"
+                                class="mx-2 search-size small-font" :items="getSearchItems('action')"
+                                label="ค้นหาการซื้อ/ขาย" dense outlined clearable multiple>
+                            </v-autocomplete>
+
+                            <v-autocomplete v-if="searchType === 'from_no'" v-model="selectedFroms"
+                                class="mx-2 search-size small-font" :items="getSearchItems('from_no')"
+                                label="ค้นหาที่มาที่ไป" dense outlined clearable multiple>
+                            </v-autocomplete>
 
                             <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
                                 :close-on-content-click="false" transition="scale-transition" offset-y>
@@ -141,7 +163,8 @@
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-credit-card</v-icon> ค่าธรรมเนียม
                     </v-btn>
-                    <v-btn @click="TransactionCreateOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-btn @click="TransactionCreateOpen = true" class="tab-icon-two"
+                        style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#24b224">mdi-cash-plus</v-icon> เพิ่มการซื้อขายหุ้น
                     </v-btn>
                 </div>
@@ -159,7 +182,7 @@
                 </template>
                 <template v-slot:item.customer_no="{ item }">
                     <div class="text-center">
-                        {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}
+                        {{ getCustomerByNo(item.customer_no)?.id || 'ยังไม่ระบุ' }}
                     </div>
                 </template>
 
@@ -221,7 +244,7 @@
 
                 <template v-slot:item.customer_name="{ item }">
                     <div class="text-center">
-                        {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}
+                        {{ getCustomerByNo(item.customer_no)?.nickname || 'ยังไม่ระบุ' }}
                     </div>
                 </template>
                 <template v-slot:item.detail_amount="{ item }">
@@ -231,18 +254,18 @@
                 </template>
                 <template v-slot:item.stock_no="{ item }">
                     <div class="text-center">
-                        {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}
+                        {{ getStockByNo(item.stock_no)?.stock || 'ยังไม่ระบุ' }}
                     </div>
                 </template>
                 <template v-slot:item.commission="{ item }">
                     <div class="text-center" style="color:#38b6ff">
-                        {{ item.commission || 'N/A' }}
+                        {{ item.commission || 'ยังไม่ระบุ' }}
                     </div>
                 </template>
                 <template v-slot:item.from_no="{ item }">
                     <div class="text-center">
                         <span :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
-                            {{ getFromByNo(item.from_no)?.from || 'N/A' }}
+                            {{ getFromByNo(item.from_no)?.from || 'ยังไม่ระบุ' }}
                         </span>
                     </div>
                 </template>
@@ -345,6 +368,13 @@ export default {
             froms: [],
             commissions: [],
 
+            selectedCustomerIDs: [],
+            selectedCustomerNames: [],
+            selectedStocks: [],
+            selectedEmployees: [],
+            selectedActions: [],
+            selectedFroms: [],
+
             TransactionCreateOpen: false,
             CommissionDataOpen: false,
             TotalTransactionDataOpen: false,
@@ -370,33 +400,20 @@ export default {
             currentItem: null,
             employeeNo: null,
             actionType: null,
-            selectedTopics: [],
             savedSearches: [],
             editAllData: {},
-            visibleColumns: ['updated_date', 'customer_no', 'customer_name', 'stock_no', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_no', 'employee_no', 'detail'],
-
-            searchQueries: {
-                'customer_no': [],
-                'customer_name': [],
-                'stock_no': [],
-                'employee_no': [],
-            },
 
             searchTypes: [
                 { text: 'รหัสสมาชิก', value: 'customer_no' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
-                { text: 'ชื่อหุ้นที่ติด', value: 'stock_no' },
+                { text: 'ชื่อหุ้น', value: 'stock_no' },
                 { text: 'ทำรายการโดย', value: 'employee_no' },
-                { text: 'ประเภทพอร์ต', value: 'port' },
-                { text: 'เวลา', value: 'updated_date' }
+                { text: 'ซื้อ/ขาย', value: 'action' },
+                { text: 'ที่มาที่ไป', value: 'from_no' },
+                { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
-            actionTopics: [
-                { text: 'ถือ', value: 'ถือ' },
-                { text: 'แก้เกมได้', value: 'แก้เกมได้' },
-                { text: 'ระวัง', value: 'ระวัง' },
-                { text: 'กำไร', value: 'กำไร' },
-            ],
+            visibleColumns: ['updated_date', 'customer_no', 'customer_name', 'stock_no', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_no', 'employee_no', 'detail'],
 
             headers: [
                 {
@@ -574,7 +591,7 @@ export default {
                             amountType2 += t.amount || 0;
                         }
                     });
-                    
+
                     transaction.resultamount = (detail.amount || 0) + amountType1 - amountType2;
                 } else {
                     transaction.resultamount = 0;
@@ -601,14 +618,18 @@ export default {
         },
 
         getSearchItems(type) {
-            if (type === 'stock_no') {
-                return this.stocks.map(stock => stock.stock);
+            if (type === 'customer_no') {
+                return this.transactions.map(transaction => this.getCustomerByNo(transaction.customer_no)?.id);
             } else if (type === 'customer_name') {
-                return this.customers.map(customer => customer.nickname);
-            } else if (type === 'customer_no') {
-                return this.customers.map(customer => customer.id);
+                return this.transactions.map(transaction => this.getCustomerByNo(transaction.customer_no)?.nickname);
+            } else if (type === 'stock_no') {
+                return this.transactions.map(transaction => this.getStockByNo(transaction.stock_no)?.stock);
             } else if (type === 'employee_no') {
-                return this.employees.map(employee => employee.fname + ' ' + employee.lname);
+                return this.transactions.map(transaction => this.getEmployeeByNo(transaction.employee_no).fname + ' ' + this.getEmployeeByNo(transaction.employee_no).lname);
+            } else if (type === 'action') {
+                return this.transactions.map(transaction => this.getTypeText(transaction.type).text);
+            } else if (type === 'from_no') {
+                return this.transactions.map(transaction => this.getFromByNo(transaction.from_no)?.from);
             }
             return [];
         },
@@ -793,83 +814,92 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'port') {
-                this.addTopicToSearch();
-            } else if (this.searchType === 'stock_no' || this.searchType === 'customer_name' || this.searchType === 'customer_no' || this.searchType === 'employee_no') {
-                this.addTextToSearch();
+            if (this.searchType === 'customer_no' || this.searchType === 'customer_name' || this.searchType === 'stock_no'
+                || this.searchType === 'employee_no' || this.searchType === 'action' || this.searchType === 'from_no') {
+                this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
                     query: this.searchQuery,
                     type: this.searchType,
-                    topic: this.selectedTopic,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
                 this.searchQuery = '';
-                this.selectedTopic = '';
                 this.startDateTime = '';
                 this.endDateTime = '';
             }
         },
 
-        addTextToSearch() {
-            const trimmedQuery = this.searchQuery.trim();
-            if (trimmedQuery) {
-                this.searchQueries[this.searchType].push(trimmedQuery);
+        addSearchItemsToSearch() {
+            const selectedItems =
+                this.searchType === 'customer_no' ? this.selectedCustomerIDs :
+                    this.searchType === 'customer_name' ? this.selectedCustomerNames :
+                        this.searchType === 'stock_no' ? this.selectedStocks :
+                            this.searchType === 'employee_no' ? this.selectedEmployees :
+                                this.searchType === 'action' ? this.selectedActions :
+                                        this.searchType === 'from_no' ? this.selectedFroms : [];
+
+            if (selectedItems.length > 0) {
                 this.savedSearches.push({
-                    query: this.searchQueries[this.searchType],
+                    query: selectedItems,
                     type: this.searchType,
                     start: this.startDateTime,
                     end: this.endDateTime
                 });
-                this.searchQuery = '';
-            }
-        },
 
-        addTopicToSearch() {
-            this.savedSearches.push({
-                query: '',
-                type: 'port',
-                topics: [...this.selectedTopics],
-                start: this.startDateTime,
-                end: this.endDateTime
-            });
-            this.selectedTopics = [];
-            this.startDateTime = '';
-            this.endDateTime = '';
+                if (this.searchType === 'customer_no') {
+                    this.selectedCustomerIDs = [];
+                } else if (this.searchType === 'customer_name') {
+                    this.selectedCustomerNames = [];
+                } else if (this.searchType === 'stock_no') {
+                    this.selectedStocks = [];
+                } else if (this.searchType === 'employee_no') {
+                    this.selectedEmployees = [];
+                } else if (this.searchType === 'action') {
+                    this.selectedActions = [];
+                } else if (this.searchType === 'from_no') {
+                    this.selectedFroms = [];
+                }
+
+                this.startDateTime = '';
+                this.endDateTime = '';
+            }
         },
 
         applySearchFilter(transaction, search) {
-            const field = transaction[search.type];
             let queryMatched = true;
-            const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
-            if (search.type === 'customer_name') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(transaction.customer_no);
-                    return cust.nickname.toLowerCase().includes(query.toLowerCase());
-                });
-            } else if (search.type === 'customer_no') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const cust = this.getCustomerByNo(transaction.customer_no);
-                    return cust.id.toLowerCase().includes(query.toLowerCase());
-                });
+
+            let field;
+            if (search.type === 'customer_no') {
+                field = this.getCustomerByNo(transaction.customer_no).id;
+            } else if (search.type === 'customer_name') {
+                field = this.getCustomerByNo(transaction.customer_no).nickname || 'ยังไม่ระบุ';
             } else if (search.type === 'stock_no') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const st = this.getStockByNo(transaction.stock_no);
-                    return st.name.toLowerCase().includes(query.toLowerCase());
-                });
+                field = this.getStockByNo(transaction.stock_no).stock || 'ยังไม่ระบุ';
             } else if (search.type === 'employee_no') {
-                queryMatched = this.searchQueries[search.type].some(query => {
-                    const emp = this.getEmployeeByNo(transaction.employee_no);
-                    return emp.fname.toLowerCase().includes(query.toLowerCase()) + ' ' + emp.lname.toLowerCase().includes(query.toLowerCase());
+                field = this.getEmployeeByNo(transaction.employee_no)?.fname + ' ' + this.getEmployeeByNo(transaction.employee_no)?.lname || 'ยังไม่ระบุ';
+            } else if (search.type === 'action') {
+                field = this.getTypeText(transaction.type).text || 'ยังไม่ระบุ';
+            } else if (search.type === 'from_no') {
+                field = this.getFromByNo(transaction.from_no)?.from || 'ยังไม่ระบุ';
+            } else {
+                field = transaction[search.type];
+            }
+
+            if (search.type === 'customer_no' || search.type === 'customer_name' || search.type === 'stock_no'
+                || search.type === 'employee_no' || search.type === 'action' || search.type === 'from_no') {
+                queryMatched = search.query.some(query => {
+                    const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
+                    return lowerCaseField === query.toLowerCase();
                 });
+            } else if (search.type === 'updated_date') {
+                return this.checkTimeRange(transaction, search);
             } else {
                 const searchQuery = search.query.toLowerCase();
-                queryMatched = lowerCaseField.includes(searchQuery);
+                queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
-            const timeMatched = search.type === 'updated_date' ? this.checkTimeRange(transaction, search) : true;
-            const topicMatched = search.topics ? search.topics.some(topic => topic === this.getTypeText(transaction.total_percent).text) : true;
-            return queryMatched && timeMatched && topicMatched;
+
+            return queryMatched;
         },
 
         checkTimeRange(transaction, search) {
