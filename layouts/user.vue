@@ -5,10 +5,10 @@
       @update:confirmLogout="(value) => (modal.confirmLogout.open = value)"
       @update:message="(value) => (modal.confirmLogout.message = value)" :method="sign_out" />
 
-    <v-app :class="appBackground">
+      <v-app :class="appBackground" :style="appBackgroundStyle">
       <v-app-bar :clipped-left="clipped" fixed app :color="navBarColor" dark>
         <v-toolbar-title class="d-flex align-center" @click="home">
-          <v-img src="http://localhost:3001/file/default/logo.png" max-width="120" contain class="logo-img" />
+          <v-img :src="`${$config.API_URL}/file/default/logo.png`" max-width="120" contain class="logo-img" />
         </v-toolbar-title>
 
         <v-menu bottom right :offset-y="true" :nudge-top="8" :nudge-right="8" class="user-menu">
@@ -216,7 +216,7 @@ import moment from 'moment';
 moment.locale('th');
 
 export default {
-  async mounted() {
+  async fetch() {
     await this.fetchEmployeeData();
     await this.fetchPendingEmployeeCount();
     setInterval(async () => {
@@ -226,7 +226,7 @@ export default {
 
   data() {
     return {
-      profileImage: `http://localhost:3001/file/profile/${this.$auth.user.picture}`,
+      profileImage: `${this.$config.API_URL}/file/profile/${this.$auth.user.picture}`,
       employees: [],
       pendingEmployeesCount: 0,
       clipped: false,
@@ -260,7 +260,7 @@ export default {
     },
 
     onImageError() {
-      this.profileImage = `http://localhost:3001/file/default/${this.$auth.user.picture}`;
+      this.profileImage = `${this.$config.API_URL}/file/default/${this.$auth.user.picture}`;
     },
 
     gotoProfile() {
@@ -369,12 +369,21 @@ export default {
       return this.$vuetify.theme.dark ? 'login-btn-night' : 'login-btn-day';
     },
 
-    appBackground() {
-      return this.$vuetify.theme.dark ? 'background-dark' : 'background-light';
-    },
-
     navBarColor() {
       return this.$vuetify.theme.dark ? '#545454' : '#fff6ea';
+    },
+
+    appBackground() {
+      const backgroundUrl = `${this.$config.API_URL}/file/default/background.png`;
+      return this.$vuetify.theme.dark
+        ? `background-dark`
+        : `background-light custom-background`;
+    },
+
+    appBackgroundStyle() {
+      return {
+        backgroundImage: `url(${this.$config.API_URL}/file/default/background.png)`,
+      };
     },
   }
 };
@@ -411,7 +420,6 @@ export default {
 
 .background-dark {
   background-color: #545454 !important;
-  background-image: url('http://localhost:3001/file/default/background.png') !important;
   background-size: 45% !important;
   background-position: center;
   background-repeat: no-repeat;
@@ -419,7 +427,6 @@ export default {
 
 .background-light {
   background-color: #fff6ea !important;
-  background-image: url('http://localhost:3001/file/default/background.png') !important;
   background-size: 45% !important;
   background-position: center;
   background-repeat: no-repeat;

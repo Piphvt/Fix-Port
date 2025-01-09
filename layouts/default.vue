@@ -1,11 +1,9 @@
 <template>
-  
   <div>
-    <v-app :class="appBackground">
+    <v-app :style="appBackgroundStyle">
       <v-app-bar :clipped-left="clipped" fixed app :color="navBarColor" dark>
         <v-toolbar-title class="d-flex align-center" @click="home">
-          <v-img src="http://localhost:3001/file/default/logo.png" max-width="120" contain
-            class="logo-img" />
+          <v-img :src="`${$config.API_URL}/file/default/logo.png`" max-width="120" contain class="logo-img" />
         </v-toolbar-title>
 
         <v-spacer />
@@ -30,13 +28,10 @@
       </v-main>
     </v-app>
   </div>
-
 </template>
 
 <script>
-
 export default {
-
   data() {
     return {
       clipped: false,
@@ -67,20 +62,25 @@ export default {
       return this.$vuetify.theme.dark ? 'login-btn-night' : 'login-btn-day';
     },
 
-    appBackground() {
-      return this.$vuetify.theme.dark ? 'background-dark' : 'background-light';
-    },
-
     navBarColor() {
       return this.$vuetify.theme.dark ? '#545454' : '#fff6ea';
-    }
-  }
-};
+    },
 
+    appBackgroundStyle() {
+      const backgroundUrl = `${this.$config.API_URL}/file/default/background.png`;
+      return {
+        backgroundColor: this.$vuetify.theme.dark ? '#545454' : '#fff6ea',
+        backgroundImage: `url('${backgroundUrl}')`,
+        backgroundSize: '45%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      };
+    },
+  },
+};
 </script>
 
 <style scoped>
-
 .logo-img {
   cursor: pointer;
 }
@@ -107,22 +107,4 @@ export default {
   background-color: #000000 !important;
   color: #ffc800 !important;
 }
-
-.background-dark {
-  background-color: #545454 !important;
-  background-image: url('http://localhost:3001/file/default/background.png') !important;
-  background-size: 45% !important;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.background-light {
-  background-color: #fff6ea !important;
-  background-image: url('http://localhost:3001/file/default/background.png') !important;
-  background-size: 45% !important;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-
 </style>
