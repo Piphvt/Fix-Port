@@ -299,7 +299,7 @@ export default {
 
     async updateData() {
       try {
-        this.formData.emp_id = this.$auth.user.no;
+        this.formData.employee_no = this.$auth.user.no;
         this.formData.created_date = this.formattedCreatedDate
         this.formData.price = this.formData.detailprice
         this.formData.amount = this.formData.detailamount

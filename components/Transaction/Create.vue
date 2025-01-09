@@ -34,36 +34,49 @@
                     <v-row v-for="(item, index) in withdrawalItems" :key="index" align="center">
                         <v-col cols="2" class="ml-6">
                             <v-autocomplete v-model="item.stock_no" :items="detail_amount" item-text="name"
-                                item-value="no" label="ชื่อหุ้น" dense outlined
-                                :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable @change="updateStockData(item)">
-                            </v-autocomplete>
+                                item-value="no" label="ชื่อหุ้น" dense outlined :disabled="!isSearchValid"
+                                :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable
+                                @change="updateStockData(item)" />
                         </v-col>
 
                         <v-col cols="2">
                             <v-text-field v-model="item.price" label="ราคา" type="text" dense outlined
-                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
-                            </v-text-field>
+                                :disabled="!canEditItem(item)"
+                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v.replace(/,/g, '')) || 'กรุณากรอกตัวเลข']"
+                                @input="item.price = removeCommas(item.price)" />
                         </v-col>
 
                         <v-col cols="2">
                             <v-text-field v-model="item.amount" label="จำนวน" type="text" dense outlined
-                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
-                            </v-text-field>
+                                :disabled="!canEditItem(item)" :rules="[
+                                    (v) => !v || /^[0-9]*\.?[0-9]+$/.test(v.replace(/,/g, '')) || 'กรุณากรอกตัวเลข',
+                                    (v) => {
+                                        const stockDetail = detail_amount.find(detail => detail.no === item.stock_no);
+                                        if (!stockDetail) return true;
+
+                                        const totalAmount = withdrawalItems
+                                            .filter(wItem => wItem.stock_no === item.stock_no)
+                                            .reduce((sum, wItem) => sum + (parseFloat(wItem.amount || 0) || 0), 0);
+
+                                        return (
+                                            totalAmount <= parseFloat(stockDetail.remainingAmount) ||
+                                            `จำนวนรวม (${totalAmount}) มากกว่าจำนวนที่มีอยู่ (${stockDetail.remainingAmount})`
+                                        );
+                                    },
+                                ]" @input="item.amount = removeCommas(item.amount)" />
                         </v-col>
 
                         <v-col cols="2">
                             <v-autocomplete v-model="item.commission_no" :items="commissions" item-text="name"
                                 item-value="no" label="ค่าธรรมเนียม" dense outlined clearable
-                                :rules="[(v) => !!v || 'กรุณากรอกค่าธรรมเนียม']">
-                            </v-autocomplete>
+                                :disabled="!canEditItem(item)" :rules="[(v) => !!v || 'กรุณากรอกค่าธรรมเนียม']" />
                         </v-col>
 
                         <v-col cols="2">
                             <v-select v-model="item.type"
                                 :items="[{ value: 1, text: 'ซื้อ' }, { value: 2, text: 'ขาย' }]" item-text="text"
                                 item-value="value" label="ซื้อ/ขาย" dense outlined clearable
-                                :rules="[(v) => !!v || 'กรุณาเลือกซื้อหรือขาย']">
-                            </v-select>
+                                :disabled="!canEditItem(item)" :rules="[(v) => !!v || 'กรุณาเลือกซื้อหรือขาย']" />
                         </v-col>
 
                         <v-col cols="1" class="d-flex align-center">
@@ -78,7 +91,8 @@
                     </v-row>
                 </v-form>
                 <v-card-actions class="card-title-center pa-0">
-                    <v-btn color="#24b224" @click="showModalResult = true" :disabled="!isFormValid" class="mr-2">
+                    <v-btn color="#24b224" @click="showModalResult = true" :disabled="!isFormValid || !isSearchValid || !isOverAmount"
+                        class="mr-2">
                         ยืนยัน
                     </v-btn>
                     <v-btn @click="cancel" color="#e50211">
@@ -168,9 +182,42 @@ export default {
                     this.isStockValid(item.stock_no) &&
                     this.isPriceValid(item.price) &&
                     this.isAmountValid(item.amount) &&
-                    this.isAmountValid(item.type)
+                    this.isTypeValid(item.type)
                 )
             );
+        },
+        
+        isSearchValid() {
+            return (
+                this.searchBy &&
+                (this.searchBy === 'customer_name' ? this.customer_name : this.customer_no)
+            );
+        },
+
+        canEditItem() {
+            return (item) => this.isSearchValid && !!item.stock_no;
+        },
+
+        totalAmountForStock() {
+            return this.withdrawalItems.reduce((acc, item) => {
+                const stockDetail = this.detail_amount.find(detail => detail.no === item.stock_no);
+                if (stockDetail) {
+                    const currentAmount = parseFloat(item.amount || 0);
+                    const totalAmount = acc[item.stock_no] || 0;
+                    acc[item.stock_no] = totalAmount + currentAmount;
+                }
+                return acc;
+            }, {});
+        },
+
+        isOverAmount() {
+            return this.withdrawalItems.every(item => {
+                const stockDetail = this.detail_amount.find(detail => detail.no === item.stock_no);
+                if (!stockDetail) return false;
+
+                const totalAmount = this.totalAmountForStock[item.stock_no] || 0;
+                return totalAmount <= parseFloat(stockDetail.remainingAmount);
+            });
         },
     },
 
@@ -189,6 +236,10 @@ export default {
     },
 
     methods: {
+        removeCommas(value) {
+            return value.replace(/,/g, '');
+        },
+
         async fetchTransactionData() {
             this.transactions = await this.$store.dispatch('api/transaction/getTransaction');
         },
@@ -284,6 +335,10 @@ export default {
             return price !== null && price !== '';
         },
 
+        isTypeValid(type) {
+            return type !== null && type !== '';
+        },
+
         isAmountValid(amount) {
             return amount !== null && amount !== '';
         },
@@ -313,83 +368,119 @@ export default {
 
             let isTransactionAdded = false;
 
+            const remainingAmounts = {};
+
             for (const transaction of this.withdrawalItems) {
                 const stockDetailId = transaction.stock_detail_no;
 
-                const matchingDetail = this.details.find(detail => detail.no === stockDetailId);
+                if (!remainingAmounts[stockDetailId]) {
+                    const matchingDetail = this.details.find(detail => detail.no === stockDetailId);
 
-                const relatedTransactions = this.transactions
-                    .filter(t => t.stock_detail_no === stockDetailId)
-                    .sort((a, b) => new Date(a.updated_date) - new Date(b.updated_date));
+                    const totalBuyAmount = this.transactions
+                        .filter(t => t.stock_detail_no === stockDetailId && t.type === 1)
+                        .reduce((sum, t) => sum + parseFloat(t.amount), parseFloat(matchingDetail?.amount || 0));
 
-                let totalBuyAmount = relatedTransactions
-                    .filter(t => t.type === 1)
-                    .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                    const totalSellAmount = this.transactions
+                        .filter(t => t.stock_detail_no === stockDetailId && t.type === 2)
+                        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
-                let totalSellAmount = relatedTransactions
-                    .filter(t => t.type === 2)
-                    .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                    remainingAmounts[stockDetailId] = {
+                        total: totalBuyAmount - totalSellAmount,
+                        detailAmount: parseFloat(matchingDetail?.amount || 0),
+                        transactionAmount: totalBuyAmount - parseFloat(matchingDetail?.amount || 0),
+                    };
+                }
 
-                let remainingBuyAmount = totalBuyAmount - totalSellAmount;
+                let { total: remainingTotal, detailAmount, transactionAmount } = remainingAmounts[stockDetailId];
+                let amountToProcess = parseFloat(transaction.amount);
 
-                let sellAmount = parseFloat(transaction.amount);
+                if (transaction.type === 1) {
+                    try {
+                        await this.$store.dispatch('api/transaction/addTransaction', {
+                            stock_detail_no: stockDetailId,
+                            type: transaction.type,
+                            price: parseFloat(transaction.price),
+                            amount: amountToProcess,
+                            commission_no: transaction.commission_no,
+                            from_no: 3,
+                            employee_no: this.$auth.user.no,
+                            created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                            updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                        });
+                        isTransactionAdded = true;
 
-                while (sellAmount > 0) {
-                    if (remainingBuyAmount > 0) {
-                        const deductionAmount = Math.min(sellAmount, remainingBuyAmount);
+                        let remainingTotal = remainingAmounts[stockDetailId]?.total || 0;
+                        let detailAmount = remainingAmounts[stockDetailId]?.detailAmount || 0;
+                        let transactionAmount = remainingAmounts[stockDetailId]?.transactionAmount || 0;
 
-                        try {
-                            await this.$store.dispatch('api/transaction/addTransaction', {
-                                stock_detail_no: stockDetailId,
-                                type: transaction.type,
-                                price: parseFloat(transaction.price),
-                                amount: deductionAmount,
-                                commission_no: transaction.commission_no,
-                                from_no: 3,
-                                employee_no: this.$auth.user.no,
-                                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-                                updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-                            });
+                        remainingTotal += amountToProcess;
+                        transactionAmount += amountToProcess;
+                        remainingAmounts[stockDetailId] = {
+                            total: remainingTotal,
+                            detailAmount,
+                            transactionAmount,
+                        };
 
-                            isTransactionAdded = true;
-                        } catch (error) {
-                            this.modal.error.message = `เกิดข้อผิดพลาด`;
+                    } catch (error) {
+                        console.error('Error adding purchase transaction:', error);
+                    }
+                } else if (transaction.type === 2) {
+                    while (amountToProcess > 0) {
+                        if (transactionAmount > 0) {
+                            const deduction = Math.min(amountToProcess, transactionAmount);
+                            try {
+                                await this.$store.dispatch('api/transaction/addTransaction', {
+                                    stock_detail_no: stockDetailId,
+                                    type: transaction.type,
+                                    price: parseFloat(transaction.price),
+                                    amount: deduction,
+                                    commission_no: transaction.commission_no,
+                                    from_no: 3,
+                                    employee_no: this.$auth.user.no,
+                                    created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                                    updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                                });
+                                isTransactionAdded = true;
+                            } catch (error) {
+                                console.error('Error adding sell transaction:', error);
+                            }
+
+                            amountToProcess -= deduction;
+                            transactionAmount -= deduction;
+                        } else if (detailAmount > 0) {
+                            const deduction = Math.min(amountToProcess, detailAmount);
+
+                            const matchingDetail = this.details.find(detail => detail.no === stockDetailId);
+                            const fromNo = matchingDetail?.from_no || 3;
+
+                            try {
+                                await this.$store.dispatch('api/transaction/addTransaction', {
+                                    stock_detail_no: stockDetailId,
+                                    type: transaction.type,
+                                    price: parseFloat(transaction.price),
+                                    amount: deduction,
+                                    commission_no: transaction.commission_no,
+                                    from_no: fromNo,
+                                    employee_no: this.$auth.user.no,
+                                    created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                                    updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                                });
+                                isTransactionAdded = true;
+                            } catch (error) {
+                                console.error('Error adding sell transaction:', error);
+                            }
+
+                            amountToProcess -= deduction;
+                            detailAmount -= deduction;
+                        } else {
+                            console.error('Error: Not enough shares to sell.');
+                            this.modal.error.message = `จำนวนหุ้นที่ขายมากกว่าจำนวนหุ้นที่มี`;
                             this.modal.error.open = true;
+                            break;
                         }
 
-                        sellAmount -= deductionAmount;
-                        remainingBuyAmount -= deductionAmount;
-                    } else if (matchingDetail && matchingDetail.amount > 0) {
-                        const deductionAmount = Math.min(sellAmount, parseFloat(matchingDetail.amount));
-
-                        try {
-                            await this.$store.dispatch('api/transaction/addTransaction', {
-                                stock_detail_no: stockDetailId,
-                                type: transaction.type,
-                                price: parseFloat(transaction.price),
-                                amount: deductionAmount,
-                                commission_no: transaction.commission_no,
-                                from_no: matchingDetail.from_no || 3,
-                                employee_no: this.$auth.user.no,
-                                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-                                updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-                            });
-
-                            isTransactionAdded = true;
-                        } catch (error) {
-                            this.modal.error.message = `เกิดข้อผิดพลาด`;
-                            this.modal.error.open = true;
-                        }
-
-                        sellAmount -= deductionAmount;
-
-                        if (matchingDetail) {
-                            matchingDetail.amount = parseFloat(matchingDetail.amount) - deductionAmount;
-                        }
-                    } else {
-                        this.modal.error.message = `จำนวนหุ้นที่ขายมากกว่าจำนวนหุ้นที่มี`;
-                        this.modal.error.open = true;
-                        break;
+                        remainingTotal -= transaction.amount;
+                        remainingAmounts[stockDetailId] = { total: remainingTotal, detailAmount, transactionAmount };
                     }
                 }
             }
@@ -411,7 +502,8 @@ export default {
         addProduct() {
             this.withdrawalItems.push({
                 stock_no: null,
-                name: '',
+                amount: null,
+                price: null,
                 commission_no: 2,
                 type: 2,
             });

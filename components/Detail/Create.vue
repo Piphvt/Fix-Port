@@ -34,19 +34,20 @@
                     <v-row class="mb-0 mt-0 pa-0" v-for="(item, index) in withdrawalItems" :key="index" align="center">
                         <v-col cols="2" class="ml-3">
                             <v-autocomplete v-model="item.stock_no" :items="stocks" item-text="name" item-value="no"
-                                label="ชื่อหุ้นที่ติด" dense outlined :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']"
-                                clearable>
+                                label="ชื่อหุ้นที่ติด" dense outlined :disabled="!isSearchValid" :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable>
                             </v-autocomplete>
                         </v-col>
 
                         <v-col cols="2">
                             <v-text-field v-model="item.price" label="ราคาที่ติด" type="text" dense outlined
+                                :disabled="!canEditItem(item)"
                                 :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
                             </v-text-field>
                         </v-col>
 
                         <v-col cols="2">
                             <v-text-field v-model="item.amount" label="จำนวนที่ติด" type="text" dense outlined
+                                :disabled="!canEditItem(item)"
                                 :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
                             </v-text-field>
                         </v-col>
@@ -56,7 +57,8 @@
                                 transition="scale-transition" offset-y min-width="auto">
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-text-field v-model="item.created_date" label="วันที่ซื้อหุ้น" readonly
-                                        v-bind="attrs" v-on="on" outlined dense></v-text-field>
+                                        v-bind="attrs" v-on="on" outlined dense
+                                        :disabled="!canEditItem(item)"></v-text-field>
                                 </template>
                                 <v-date-picker v-model="item.created_date" @input="datePickerMenus[index] = false"
                                     locale="th"></v-date-picker>
@@ -65,7 +67,7 @@
 
                         <v-col cols="2">
                             <v-select v-model="item.from_no" :items="froms" item-text="name" item-value="no"
-                                label="ที่มาที่ไป" dense outlined>
+                                label="ที่มาที่ไป" dense outlined :disabled="!canEditItem(item)">
                             </v-select>
                         </v-col>
 
@@ -81,7 +83,8 @@
                     </v-row>
                 </v-form>
                 <v-card-actions class="card-title-center pa-0">
-                    <v-btn color="#24b224" @click="showModalResult = true" :disabled="!isFormValid" class="mr-2">
+                    <v-btn color="#24b224" @click="showModalResult = true" :disabled="!isFormValid || !isSearchValid"
+                        class="mr-2">
                         ยืนยัน
                     </v-btn>
                     <v-btn @click="cancel" color="#e50211">
@@ -164,6 +167,17 @@ export default {
                     this.isFromValid(item.from_no)
                 )
             );
+        },
+
+        isSearchValid() {
+            return (
+                this.searchBy &&
+                (this.searchBy === 'customer_name' ? this.customer_name : this.customer_no)
+            );
+        },
+
+        canEditItem() {
+            return (item) => this.isSearchValid && !!item.stock_no;
         },
     },
 
@@ -285,9 +299,11 @@ export default {
         addProduct() {
             this.withdrawalItems.push({
                 stock_no: null,
+                price: null,
+                amount: null,
                 from_no: 1,
-                created_date: null,
                 comment: null,
+                created_date: null
             });
             this.datePickerMenus.push(false);
         },

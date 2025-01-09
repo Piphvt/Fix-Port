@@ -37,7 +37,7 @@ exports.addDetail = async (req, res) => {
 
 exports.updateDetail = async (req, res) => {
     try {
-        const { customer_no, stock_no, price, amount, from_no, comment, employee_no, created_date, updated_date} = req.body;
+        const { customer_no, stock_no, price, amount, from_no, comment, employee_no, created_date} = req.body;
         const detailNo = req.params.no;
         const updatedData = {
             customer_no,
@@ -48,7 +48,6 @@ exports.updateDetail = async (req, res) => {
             comment,
             employee_no,
             created_date,
-            updated_date
         };
 
         connection.query("UPDATE `stocks_detail` SET ? WHERE `no` = ?", [updatedData, detailNo], (err, results) => {
