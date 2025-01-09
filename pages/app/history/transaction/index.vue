@@ -140,7 +140,7 @@
                 item-key="no" :items-per-page="5">
                 <template v-slot:item.employee_picture="{ item }">
                     <v-avatar size="40">
-                        <img :src="`http://localhost:3001/file/profile/${item.employee_picture}`" alt="picture" />
+                        <img :src="`${$config.API_URL}/file/profile/${item.employee_picture}`" alt="picture" />
                     </v-avatar>
                 </template>
                 <template v-slot:item.select="{ item }">
@@ -205,13 +205,7 @@
                 </v-card-title>
                 <v-card-text>
                     <div v-for="(line, index) in formattedDetailLines" :key="`${line}-${index}`">
-                        <template v-if="line.includes('.jpg') || line.includes('.png') || line.includes('.jpeg')">
-                            <div class="image-container">
-                                <img :src="`http://localhost:3001/file/profile/${line}`" alt="detail image" width="100"
-                                    height="100" />
-                            </div>
-                        </template>
-                        <template v-else-if="line.includes('หุ้นที่ ')">
+                        <template v-if="line.includes('หุ้นที่ ')">
                             <span style="color: green">หุ้นที่ </span>{{ line.replace('หุ้นที่', '').trim()
                             }}
                         </template>
