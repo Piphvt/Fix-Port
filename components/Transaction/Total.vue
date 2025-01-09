@@ -132,7 +132,7 @@
                         </template>
                         <v-list class="header-list">
                             <v-list-item
-                                v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'action'&& header.value !== 'export')"
+                                v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'export')"
                                 :key="header.value" class="header-item">
                                 <v-list-item-content>
                                     <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
@@ -393,6 +393,8 @@ export default {
                 },
             ],
 
+            filtered: [],
+
             showAllDialog: false,
             showAllData: {},
             selectedStockData: null,
@@ -434,13 +436,17 @@ export default {
         },
     },
 
+    mounted() {
+        this.filtered = this.details;
+    },
+
     computed: {
         filteredHeaders() {
             return this.headers.filter(header => this.visibleColumns.includes(header.value));
         },
     },
 
-    async mounted() {
+    async fetch() {
         await this.fetchEmployeeData();
         await this.fetchDetailData();
         await this.fetchCustomerData();
@@ -451,6 +457,10 @@ export default {
     },
 
     methods: {
+        filterData() {
+            this.filtered = this.details.filter(item => item.someCondition === true);
+        },
+
         openStockPopup(data, type, date = null) {
             this.selectedStockData = [];
             let filteredData = [];
@@ -932,7 +942,7 @@ export default {
 
             const worksheet = workbook.addWorksheet('สรุปโดยรวม');
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'detail' && header.value !== 'action')
+                .filter(header => header.value !== 'export' && header.value !== 'action' && header.value !== 'detail')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -962,87 +972,12 @@ export default {
                         rowData[header.value] = (group.from3TotalDifference || 0).toLocaleString();
                     } else if (header.value === 'total') {
                         rowData[header.value] = ((group.from1TotalDifference + group.from2TotalDifference + group.from3TotalDifference) || 0).toLocaleString();
-                    } else if (header.value !== 'detail' && header.value !== 'action') {
+                    } else if (header.value !== 'export' && header.value !== 'action' && header.value !== 'detail') {
                         rowData[header.value] = group[header.value] || '';
                     }
                 });
 
                 worksheet.addRow(rowData);
-            });
-
-            const yearlyWorksheet = workbook.addWorksheet('สรุปรายปี');
-            yearlyWorksheet.columns = [
-                { header: 'ปี', key: 'year', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'รหัสสมาชิก', key: 'customer_no', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'หุ้นแก้เกม', key: 'from3TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'รวม', key: 'total', style: { font: { name: 'Angsana New', size: 16 } } }
-            ];
-
-            this.filtered.forEach((group) => {
-                if (group.yearlyDifferences && Object.keys(group.yearlyDifferences).length > 0) {
-                    Object.keys(group.yearlyDifferences).forEach((year) => {
-                        const yearlyData = group.yearlyDifferences[year];
-                        const customer = this.getCustomerByNo(group.customer_no);
-                        const rowData = {
-                            year: year,
-                            customer_no: customer ? customer.id : 'ยังไม่ระบุ',
-                            customer_name: customer ? customer.nickname : 'ยังไม่ระบุ',
-                            from1TotalDifference: (yearlyData.from1TotalDifference || 0).toLocaleString(),
-                            from2TotalDifference: (yearlyData.from2TotalDifference || 0).toLocaleString(),
-                            from3TotalDifference: (yearlyData.from3TotalDifference || 0).toLocaleString(),
-                            total: ((yearlyData.from1TotalDifference + yearlyData.from2TotalDifference + yearlyData.from3TotalDifference) || 0).toLocaleString()
-                        };
-                        yearlyWorksheet.addRow(rowData);
-                    });
-                } else {
-                    console.log(`No yearlyDifferences data found for group: ${JSON.stringify(group)}`);
-                }
-            });
-
-            const monthlyWorksheet = workbook.addWorksheet('สรุปรายเดือน');
-            monthlyWorksheet.columns = [
-                { header: 'เดือน', key: 'month', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'รหัสสมาชิก', key: 'customer_no', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'หุ้นแก้เกม', key: 'from3TotalDifference', style: { font: { name: 'Angsana New', size: 16 } } },
-                { header: 'รวม', key: 'total', style: { font: { name: 'Angsana New', size: 16 } } }
-            ];
-
-            this.filtered.forEach((year) => {
-                if (year.yearlyDifferences && Object.keys(year.yearlyDifferences).length > 0) {
-                    Object.keys(year.yearlyDifferences).forEach((yearKey) => {
-                        const yearlyData = year.yearlyDifferences[yearKey];
-
-                        // Check if monthlyDifferences exist within the yearly data
-                        if (yearlyData.monthlyDifferences && Object.keys(yearlyData.monthlyDifferences).length > 0) {
-                            Object.keys(yearlyData.monthlyDifferences).forEach((month) => {
-                                const monthlyData = yearlyData.monthlyDifferences[month];
-                                const customer = this.getCustomerByNo(year.customer_no);
-                                const months = this.formatMonthYearName(month).name;
-
-                                const rowData = {
-                                    month: months,
-                                    customer_no: customer ? customer.id : 'ยังไม่ระบุ',
-                                    customer_name: customer ? customer.nickname : 'ยังไม่ระบุ',
-                                    from1TotalDifference: (monthlyData.from1TotalDifference || 0).toLocaleString(),
-                                    from2TotalDifference: (monthlyData.from2TotalDifference || 0).toLocaleString(),
-                                    from3TotalDifference: (monthlyData.from3TotalDifference || 0).toLocaleString(),
-                                    total: ((monthlyData.from1TotalDifference + monthlyData.from2TotalDifference + monthlyData.from3TotalDifference) || 0).toLocaleString()
-                                };
-                                monthlyWorksheet.addRow(rowData);
-                            });
-                        } else {
-                            console.log(`No monthlyDifferences data found for year: ${yearKey}`);
-                        }
-                    });
-                } else {
-                    console.log(`No yearlyDifferences data found for group: ${JSON.stringify(year)}`);
-                }
             });
 
             const styleWorksheet = (worksheet) => {
@@ -1064,8 +999,6 @@ export default {
             };
 
             styleWorksheet(worksheet);
-            styleWorksheet(yearlyWorksheet);
-            styleWorksheet(monthlyWorksheet);
 
             const currentDate = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
             workbook.xlsx.writeBuffer().then(buffer => {
@@ -1109,8 +1042,9 @@ export default {
                 });
             };
 
+            //All
             const createOverallSheet = () => {
-                const worksheet = workbook.addWorksheet('สรุปโดยรวม');
+                const allWorksheet = workbook.addWorksheet('สรุปโดยรวม');
 
                 const headers = this.filteredHeaders
                     .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'export')
@@ -1120,7 +1054,7 @@ export default {
                         style: { font: { name: 'Angsana New', size: 16 } }
                     }));
 
-                worksheet.columns = headers;
+                allWorksheet.columns = headers;
 
                 let filteredData = this.filtered.filter(group => group.customer_no === customerId);
 
@@ -1145,23 +1079,23 @@ export default {
                             rowData[header.value] = group[header.value] || '';
                         }
                     });
-                    worksheet.addRow(rowData);
+                    allWorksheet.addRow(rowData);
                 });
 
-                styleWorksheet(worksheet);
+                styleWorksheet(allWorksheet);
 
-                worksheet.addRow([]);
+                allWorksheet.addRow([]);
 
                 const newHeaders = [
                     { header: 'ข้อมูลวันที่', key: 'updated_date' },
-                    { header: 'รหัสลูกค้า', key: 'customer_no' },
+                    { header: 'รหัสสมาชิก', key: 'customer_no' },
                     { header: 'ชื่อหุ้น', key: 'customer_name' },
                     { header: 'มูลค่าซื้อ', key: 'base_stock' },
                     { header: 'มูลค่าขาย', key: 'new_stock' },
                     { header: 'กำไร/ขาดทุน', key: 'tactic_stock' },
                     { header: 'ที่มาที่ไป', key: 'total' }
                 ];
-                const headerRow = worksheet.addRow(newHeaders.map(h => h.header));
+                const headerRow = allWorksheet.addRow(newHeaders.map(h => h.header));
 
                 headerRow.eachCell((cell) => {
                     cell.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -1175,10 +1109,10 @@ export default {
                 });
 
                 filteredData.forEach((group) => {
-                    if (group.stocks && Array.isArray(group.stocks)) {  // ตรวจสอบว่า stocks เป็น array
-                        group.stocks.forEach((stock) => {  // ใช้ forEach เพื่อวนลูปผ่านแต่ละ stock
+                    if (group.stocks && Array.isArray(group.stocks)) {
+                        group.stocks.forEach((stock) => {
                             const rowData = {
-                                updated_date: this.formatDateTime(stock.updated_date),  // ฟังก์ชันนี้แปลงเวลา
+                                updated_date: this.formatDateTime(stock.updated_date),
                                 customer_no: this.getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ',
                                 customer_name: this.getStockByNo(stock.stock_no)?.stock || 'ยังไม่ระบุ',
                                 base_stock: (stock.Buy || 0).toLocaleString(),
@@ -1186,24 +1120,26 @@ export default {
                                 tactic_stock: (stock.Total || 0).toLocaleString(),
                                 total: this.getFromByNo(stock.from_no)?.from || 'ยังไม่ระบุ',
                             };
-                            worksheet.addRow(rowData);
+                            allWorksheet.addRow(rowData);
                         });
                     }
                 });
 
-                styleWorksheet(worksheet);
+                styleWorksheet(allWorksheet);
             };
 
+            //Yearly
             const createYearlySheet = () => {
                 const yearlyWorksheet = workbook.addWorksheet('สรุปรายปี');
+
                 yearlyWorksheet.columns = [
-                    { header: 'ปี', key: 'year', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'รหัสสมาชิก', key: 'customer_no', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'หุ้นแก้เกม', key: 'from3TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'รวม', key: 'total', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } }
+                    { header: 'ปี', key: 'updated_date', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'รหัสสมาชิก', key: 'customer_no', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'หุ้นเก่า', key: 'base_stock', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'หุ้นใหม่', key: 'new_stock', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'หุ้นแก้เกม', key: 'tactic_stock', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'รวม', key: 'total', style: { font: { name: 'Angsana New', size: 16 } } }
                 ];
 
                 let filteredData = this.filtered.filter(group => {
@@ -1235,30 +1171,79 @@ export default {
                     if (group.yearlyDifferences) {
                         Object.values(group.yearlyDifferences).forEach((yearlyData) => {
                             const rowData = {
-                                year: date,
+                                updated_date: date,
                                 customer_no: this.getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ',
                                 customer_name: this.getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ',
-                                from1TotalDifference: (yearlyData.from1TotalDifference || 0).toLocaleString(),
-                                from2TotalDifference: (yearlyData.from2TotalDifference || 0).toLocaleString(),
-                                from3TotalDifference: (yearlyData.from3TotalDifference || 0).toLocaleString(),
+                                base_stock: (yearlyData.from1TotalDifference || 0).toLocaleString(),
+                                new_stock: (yearlyData.from2TotalDifference || 0).toLocaleString(),
+                                tactic_stock: (yearlyData.from3TotalDifference || 0).toLocaleString(),
                                 total: ((yearlyData.from1TotalDifference + yearlyData.from2TotalDifference + yearlyData.from3TotalDifference) || 0).toLocaleString()
                             };
                             yearlyWorksheet.addRow(rowData);
+
+                            yearlyWorksheet.addRow([]);
+
+                            const newHeaders = [
+                                { header: 'ข้อมูลวันที่', key: 'updated_date' },
+                                { header: 'รหัสสมาชิก', key: 'customer_no' },
+                                { header: 'ชื่อหุ้น', key: 'customer_name' },
+                                { header: 'มูลค่าซื้อ', key: 'base_stock' },
+                                { header: 'มูลค่าขาย', key: 'new_stock' },
+                                { header: 'กำไร/ขาดทุน', key: 'tactic_stock' },
+                                { header: 'ที่มาที่ไป', key: 'total' }
+                            ];
+                            const headerRow = yearlyWorksheet.addRow(newHeaders.map(h => h.header));
+
+                            headerRow.eachCell((cell) => {
+                                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                                cell.font = { bold: true, name: 'Angsana New', size: 18 };
+                                cell.border = {
+                                    top: { style: 'thin' },
+                                    left: { style: 'thin' },
+                                    bottom: { style: 'thin' },
+                                    right: { style: 'thin' },
+                                };
+                            });
+
+                            filteredData.forEach((group) => {
+                                if (group.stocks && Array.isArray(group.stocks)) {
+                                    group.stocks.forEach((stock) => {
+                                        const stockYear = new Date(stock.updated_date).getFullYear();
+
+                                        if (stockYear === parseInt(date)) {
+                                            const rowData = {
+                                                updated_date: this.formatDateTime(stock.updated_date),
+                                                customer_no: this.getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ',
+                                                customer_name: this.getStockByNo(stock.stock_no)?.stock || 'ยังไม่ระบุ',
+                                                base_stock: (stock.Buy || 0).toLocaleString(),
+                                                new_stock: (stock.Sale || 0).toLocaleString(),
+                                                tactic_stock: (stock.Total || 0).toLocaleString(),
+                                                total: this.getFromByNo(stock.from_no)?.from || 'ยังไม่ระบุ',
+                                            };
+                                            yearlyWorksheet.addRow(rowData);
+                                        }
+                                    });
+                                }
+                            });
+
+                            styleWorksheet(yearlyWorksheet);
                         });
                     }
                 });
             };
 
+            //Monthly
             const createMonthlySheet = () => {
+
                 const monthlyWorksheet = workbook.addWorksheet('สรุปรายเดือน');
                 monthlyWorksheet.columns = [
-                    { header: 'เดือน', key: 'month', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'รหัสสมาชิก', key: 'customer_no', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'หุ้นเก่า', key: 'from1TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'หุ้นใหม่', key: 'from2TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'หุ้นแก้เกม', key: 'from3TotalDifference', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } },
-                    { header: 'รวม', key: 'total', style: { font: { name: 'Angsana New', size: 16, bold: true }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { top: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } } } }
+                    { header: 'เดือน', key: 'updated_date', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'รหัสสมาชิก', key: 'customer_no', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'ชื่อเล่น', key: 'customer_name', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'หุ้นเก่า', key: 'base_stock', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'หุ้นใหม่', key: 'new_stock', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'หุ้นแก้เกม', key: 'tactic_stock', style: { font: { name: 'Angsana New', size: 16 } } },
+                    { header: 'รวม', key: 'total', style: { font: { name: 'Angsana New', size: 16 } } }
                 ];
 
                 let filteredData = this.filtered.filter(group => {
@@ -1307,16 +1292,66 @@ export default {
                             if (yearlyData.monthlyDifferences) {
                                 Object.keys(yearlyData.monthlyDifferences).forEach((month) => {
                                     const monthlyData = yearlyData.monthlyDifferences[month];
+
                                     const rowData = {
-                                        month: this.formatMonthYearName(month).name,
+                                        updated_date: this.formatMonthYearName(month).name,
                                         customer_no: this.getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ',
                                         customer_name: this.getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ',
-                                        from1TotalDifference: (monthlyData.from1TotalDifference || 0).toLocaleString(),
-                                        from2TotalDifference: (monthlyData.from2TotalDifference || 0).toLocaleString(),
-                                        from3TotalDifference: (monthlyData.from3TotalDifference || 0).toLocaleString(),
-                                        total: ((monthlyData.from1TotalDifference + monthlyData.from2TotalDifference + monthlyData.from3TotalDifference) || 0).toLocaleString()
+                                        base_stock: (monthlyData.from1TotalDifference || 0).toLocaleString(),
+                                        new_stock: (monthlyData.from2TotalDifference || 0).toLocaleString(),
+                                        tactic_stock: (monthlyData.from3TotalDifference || 0).toLocaleString(),
+                                        total: ((monthlyData.from1TotalDifference + monthlyData.from2TotalDifference + monthlyData.from3TotalDifference) || 0).toLocaleString() // Total
                                     };
+
                                     monthlyWorksheet.addRow(rowData);
+
+                                    monthlyWorksheet.addRow([]);
+
+                                    const newHeaders = [
+                                        { header: 'ข้อมูลวันที่', key: 'updated_date' },
+                                        { header: 'รหัสสมาชิก', key: 'customer_no' },
+                                        { header: 'ชื่อหุ้น', key: 'customer_name' },
+                                        { header: 'มูลค่าซื้อ', key: 'base_stock' },
+                                        { header: 'มูลค่าขาย', key: 'new_stock' },
+                                        { header: 'กำไร/ขาดทุน', key: 'tactic_stock' },
+                                        { header: 'ที่มาที่ไป', key: 'total' }
+                                    ];
+                                    const headerRow = monthlyWorksheet.addRow(newHeaders.map(h => h.header));
+
+                                    headerRow.eachCell((cell) => {
+                                        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                                        cell.font = { bold: true, name: 'Angsana New', size: 18 };
+                                        cell.border = {
+                                            top: { style: 'thin' },
+                                            left: { style: 'thin' },
+                                            bottom: { style: 'thin' },
+                                            right: { style: 'thin' },
+                                        };
+                                    });
+
+                                    filteredData.forEach((group) => {
+                                        if (group.stocks && Array.isArray(group.stocks)) {
+                                            group.stocks.forEach((stock) => {
+                                                const stockYear = new Date(stock.updated_date);
+                                                const stockYearMonth = stockYear.getFullYear() + '-' + (stockYear.getMonth() + 1).toString().padStart(2, '0');
+
+                                                if (stockYearMonth === date) {
+                                                    const rowData = {
+                                                        updated_date: this.formatDateTime(stock.updated_date),
+                                                        customer_no: this.getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ',
+                                                        customer_name: this.getStockByNo(stock.stock_no)?.stock || 'ยังไม่ระบุ',
+                                                        base_stock: (stock.Buy || 0).toLocaleString(),
+                                                        new_stock: (stock.Sale || 0).toLocaleString(),
+                                                        tactic_stock: (stock.Total || 0).toLocaleString(),
+                                                        total: this.getFromByNo(stock.from_no)?.from || 'ยังไม่ระบุ',
+                                                    };
+                                                    monthlyWorksheet.addRow(rowData);
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                    styleWorksheet(monthlyWorksheet);
                                 });
                             }
                         });
@@ -1324,20 +1359,23 @@ export default {
                 });
             };
 
+            let levelLabel = '';
             if (level === 'group') {
                 createOverallSheet();
+                levelLabel = 'โดยรวม';
             } else if (level === 'year') {
                 createYearlySheet();
+                levelLabel = 'ปี ' + date + ' ';
             } else if (level === 'month') {
                 createMonthlySheet();
+                levelLabel = 'เดือน' + this.formatMonthYearName(date).name + ' ';
             }
 
-            const currentDate = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
             workbook.xlsx.writeBuffer().then(buffer => {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `Export-${level}-Customer-${customerId}-${currentDate}.xlsx`);
+                link.setAttribute('download', `สรุปผลการซื้อขายหุ้นของลูกค้า${levelLabel}ของลูกค้ารหัส ${this.getCustomerByNo(customerId)?.id}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
