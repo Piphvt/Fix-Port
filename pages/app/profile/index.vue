@@ -12,8 +12,8 @@
                     editUploadDialog = true
                 editUploadData = employee
                     " :src="employee.picture
-                        ? `http://localhost:3001/file/profile/${employee.picture}`
-                        : 'http://localhost:3001/file/profile/person-icon.jpg'
+                        ? `${$config.API_URL}/file/profile/${employee.picture}`
+                        : `${this.$config.API_URL}/file/default/${employee.picture}`
                         ">
                 </v-img>
                 <v-card-title class="card-title-center">
@@ -49,7 +49,7 @@
             </v-card>
         </v-col>
     </div>
-    
+
 </template>
 
 <script>
@@ -62,7 +62,7 @@ export default {
     layout: 'user',
     middleware: 'auth',
 
-    async mounted() {
+    async fetch() {
         await this.checkRank()
         await this.fetchEmployeeData()
         await this.fetchRankData()
@@ -123,8 +123,9 @@ export default {
         },
 
         async fetchEmployeeData() {
-            const empID = this.$auth.user.no
-            this.employees = await this.$store.dispatch('api/employee/getEmployee', empID)
+            const empID = this.$auth.user.no;
+            const allEmployees = await this.$store.dispatch('api/employee/getEmployee');
+            this.employees = allEmployees.filter(employee => employee.no === empID);
         },
 
         async fetchRankData() {
@@ -149,7 +150,6 @@ export default {
 </script>
 
 <style scoped>
-
 .card-title-center {
     display: flex;
     justify-content: center;
