@@ -329,7 +329,7 @@ export default {
     layout: 'user',
     middleware: 'auth',
 
-    async mounted() {
+    async fetch() {
         await this.checkRank();
         await this.fetchEmployeeData();
         await this.fetchDetailData();

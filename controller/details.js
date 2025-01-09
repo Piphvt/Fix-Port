@@ -37,25 +37,33 @@ exports.addDetail = async (req, res) => {
 
 exports.updateDetail = async (req, res) => {
     try {
-        const { customer_no, stock_no, price, amount, from_no, comment, employee_no, created_date } = req.body;
+        const { customer_no, stock_no, price, amount, from_no, comment, employee_no, created_date, updated_date} = req.body;
         const detailNo = req.params.no;
+        const updatedData = {
+            customer_no,
+            stock_no,
+            price,
+            amount,
+            from_no,
+            comment,
+            employee_no,
+            created_date,
+            updated_date
+        };
 
-        connection.query(
-            'UPDATE `stocks_detail` SET `customer_no`= ?, `stock_no`= ?, `price`= ?, `amount`= ?, `from_no`= ?, `comment`= ?, `employee_no`= ?, `created_date`= ?, `updated_date`= NOW() WHERE no = ?',
-            [customer_no, stock_no, price, amount, from_no, comment, employee_no, created_date, detailNo],
-            function (err, results) {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).json({ message: "เกิดข้อผิดพลาดในการอัปเดตรายละเอียด" });
-                }
-                res.json({ message: "อัปเดตรายละเอียดสำเร็จ", results });
+        connection.query("UPDATE `stocks_detail` SET ? WHERE `no` = ?", [updatedData, detailNo], (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ message: "เกิดข้อผิดพลาดในการอัปเดตรายละเอียด" });
             }
-        );
+            res.json({ message: "อัปเดตรายละเอียดสำเร็จ", results });
+        });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์" });
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
-};
+}
 
 exports.deleteDetail = (req, res) => {
     try {

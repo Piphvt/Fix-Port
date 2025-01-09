@@ -17,16 +17,16 @@
 
                             <v-col cols="5" sm="11" class="pa-0 ml-4">
                                 <v-menu ref="menu" v-model="menu" :close-on-content-click="false" :nudge-right="40"
-                                    :return-value.sync="formData.created_date" transition="scale-transition" offset-y
+                                    :return-value.sync="formData.updated_date" transition="scale-transition" offset-y
                                     min-width="290px">
                                     <template v-slot:activator="{ on, attrs }">
-                                        <v-text-field v-model="formattedCreatedDate" label="ข้อมูลวันที่" outlined dense
-                                            readonly v-bind="attrs" v-on="on" :rules="[
+                                        <v-text-field v-model="formattedUpdatedDate" label="วันที่ซื้อ/ขายหุ้น" outlined
+                                            dense readonly v-bind="attrs" v-on="on" :rules="[
                                                 (v) => !!v || 'โปรดเลือกวันที่',
                                                 (v) => moment(v).isValid() || 'วันที่ไม่ถูกต้อง'
                                             ]"></v-text-field>
                                     </template>
-                                    <date-picker v-model="formData.created_date" no-title scrollable
+                                    <date-picker v-model="formData.updated_date" no-title scrollable
                                         @input="onDateSelected" @change="onDateChange" format="YYYY-MM-DD HH:mm"
                                         type="datetime" :locale="'th'" />
                                 </v-menu>
@@ -91,7 +91,7 @@
 
                 <v-card-actions class="card-title-center pa-0">
                     <v-btn @click="confirm"
-                        :disabled="!valid || !hasChanges || !formData.customer_no || !formData.stock_no || !formData.price || !formData.amount || !formData.type  || !formData.from_no"
+                        :disabled="!valid || !hasChanges || !formData.customer_no || !formData.stock_no || !formData.price || !formData.amount || !formData.type || !formData.from_no"
                         depressed color="#24b224" class="font-weight-medium mr-2 mb-5">
                         บันทึก
                     </v-btn>
@@ -163,7 +163,7 @@ export default {
 
     computed: {
         hasChanges() {
-            const dateHasChanged = !moment(this.formData.created_date).isSame(this.originalData.created_date);
+            const dateHasChanged = !moment(this.formData.updated_date).isSame(this.originalData.updated_date);
             const stockNoHasChanged = this.formData.stock_no !== this.originalData.stock_no;
             const priceHasChanged = parseFloat(this.formData.price).toFixed(2) !== parseFloat(this.originalData.price).toFixed(2);
             const amountHasChanged = parseFloat(this.formData.amount).toFixed(2) !== parseFloat(this.originalData.amount).toFixed(2);
@@ -185,10 +185,10 @@ export default {
 
         this.formData = JSON.parse(JSON.stringify(this.data));
         this.originalData = JSON.parse(JSON.stringify(this.data));
-        if (moment(this.formData.created_date).isValid()) {
-            this.formattedCreatedDate = moment(this.formData.created_date).format('YYYY-MM-DD HH:mm');
+        if (moment(this.formData.updated_date).isValid()) {
+            this.formattedUpdatedDate = moment(this.formData.updated_date).format('YYYY-MM-DD HH:mm');
         } else {
-            this.formattedCreatedDate = '';
+            this.formattedUpdatedDate = '';
         }
         document.addEventListener('keydown', this.handleKeydown);
     },
@@ -198,10 +198,10 @@ export default {
             handler(newData) {
                 this.formData = JSON.parse(JSON.stringify(newData));
                 this.originalData = JSON.parse(JSON.stringify(newData));
-                if (moment(this.formData.created_date).isValid()) {
-                    this.formattedCreatedDate = moment(this.formData.created_date).format('YYYY-MM-DD HH:mm');
+                if (moment(this.formData.updated_date).isValid()) {
+                    this.formattedUpdatedDate = moment(this.formData.updated_date).format('YYYY-MM-DD HH:mm');
                 } else {
-                    this.formattedCreatedDate = '';
+                    this.formattedUpdatedDate = '';
                 }
             },
             deep: true,
@@ -224,11 +224,22 @@ export default {
     methods: {
         onDateSelected(date) {
             if (moment(date).isValid()) {
-                this.formData.created_date = moment(date).toDate();
-                this.formattedCreatedDate = moment(date).format('YYYY-MM-DD HH:mm');
+                this.formData.updated_date = moment(date).toDate();
+                this.formattedUpdatedDate = moment(date).format('YYYY-MM-DD HH:mm');
             } else {
-                this.formData.created_date = null;
-                this.formattedCreatedDate = '';
+                this.formData.updated_date = null;
+                this.formattedUpdatedDate = '';
+            }
+            this.menu = false;
+        },
+
+        onDateChange(date) {
+            if (moment(date).isValid()) {
+                this.formData.updated_date = moment(date).toDate();
+                this.formattedUpdatedDate = moment(date).format('YYYY-MM-DD HH:mm');
+            } else {
+                this.formData.updated_date = null;
+                this.formattedUpdatedDate = '';
             }
             this.menu = false;
         },
@@ -338,7 +349,7 @@ export default {
         async updateData() {
             try {
                 this.formData.employee_no = this.$auth.user.no;
-                this.formData.created_date = moment(this.formData.created_date).format('YYYY-MM-DD HH:mm:ss');
+                this.formData.updated_date = moment(this.formData.updated_date).format('YYYY-MM-DD HH:mm:ss');
                 const req = await this.$store.dispatch('api/transaction/updateTransaction', this.formData);
                 this.modal.complete.open = true;
                 this.recordLogUpdate();

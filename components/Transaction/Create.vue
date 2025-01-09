@@ -95,7 +95,7 @@ import moment from 'moment';
 
 export default {
     middleware: 'auth',
-    async mounted() {
+    async fetch() {
         await this.fetchCustomerData()
         await this.fetchStockData()
         await this.fetchCommissionData()

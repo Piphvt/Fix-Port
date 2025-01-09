@@ -25,7 +25,7 @@
                 <v-menu ref="menu" v-model="menu" :close-on-content-click="false" :nudge-right="40"
                   :return-value.sync="formData.created_date" transition="scale-transition" offset-y min-width="290px">
                   <template v-slot:activator="{ on, attrs }">
-                    <v-text-field v-model="formattedCreatedDate" label="วันที่" dense outlined readonly v-bind="attrs"
+                    <v-text-field v-model="formattedCreatedDate" label="วันที่ซื้อหุ้น" dense outlined readonly v-bind="attrs"
                       v-on="on" :rules="[(v) => !!v || 'โปรดเลือกวันที่']"></v-text-field>
                   </template>
                   <v-date-picker v-model="formData.created_date" no-title scrollable @input="onDateSelected"
