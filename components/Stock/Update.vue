@@ -157,7 +157,7 @@ export default {
             ];
 
             this.xhr = new XMLHttpRequest();
-            this.xhr.open('GET', 'http://localhost:3001/run-close-price', true);
+            this.xhr.open('GET', `${this.$config.API_URL}/run-close-price`, true);
             this.xhr.responseType = 'blob';
 
             this.xhr.onload = () => {
@@ -191,7 +191,7 @@ export default {
             }
             this.isLoadingClosePrice = false;
 
-            fetch('http://localhost:3001/cancel-close-price', {
+            fetch(`${this.$config.API_URL}/cancel-close-price`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -216,7 +216,7 @@ export default {
             ];
 
             this.xhr = new XMLHttpRequest();
-            this.xhr.open('GET', 'http://localhost:3001/run-dividend-yield', true);
+            this.xhr.open('GET', `${this.$config.API_URL}/run-dividend-yield`, true);
             this.xhr.responseType = 'blob';
 
             this.xhr.onload = () => {
@@ -250,7 +250,7 @@ export default {
             }
             this.isLoadingDividendYield = false;
 
-            fetch('http://localhost:3001/cancel-dividend-yield', {
+            fetch(`${this.$config.API_URL}/cancel-dividend-yield`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
