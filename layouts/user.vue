@@ -141,7 +141,7 @@
                 <v-icon class="icon-tab">mdi-home-clock</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title style="font-size: 0.8rem;">ประวัติพนักงาน</v-list-item-title>
+                <v-list-item-title style="font-size: 0.8rem;">ประวัติสมาชิก</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>

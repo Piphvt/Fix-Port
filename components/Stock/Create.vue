@@ -9,7 +9,7 @@
         <v-card flat>
             <v-card-title class="d-flex align-center justify-center mb-3">
                 <v-icon color="#24b224">mdi-archive-plus</v-icon>&nbsp;
-                <h2 class="custom-title">เพิ่มประเภทหุ้น</h2>
+                <h2 class="custom-title">เพิ่มหุ้น</h2>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" lazy-validation>

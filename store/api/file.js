@@ -6,7 +6,7 @@ export const actions = {
     },    
     async viewProfile({ getters }, data) {
         return await this.$axios
-        .get('file/profile/:picture', data)
+        .get('file/profile/'+data)
         .then((res) => res.data)
     },
     async viewDefault({ getters }, data) {

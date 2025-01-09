@@ -37,10 +37,16 @@ export default {
     '@nuxtjs/axios',
     '@nuxtjs/auth-next',
   ],
+  
   axios: {
-    baseURL: 'http://localhost:3001',
+    baseURL: process.env.API_URL,
     credentials: true,
   },
+
+  publicRuntimeConfig: {
+    API_URL: process.env.API_URL
+  },
+
   auth: {
     redirect: {
       login: '/auth',

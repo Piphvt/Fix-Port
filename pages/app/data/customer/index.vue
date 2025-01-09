@@ -147,11 +147,6 @@
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
                 item-key="no" :items-per-page="5">
-                <template v-slot:item.picture="{ item }">
-                    <v-avatar size="40">
-                        <img :src="`http://localhost:3001/file/profile/${item.picture}`" alt="picture" />
-                    </v-avatar>
-                </template>
                 <template v-slot:item.select="{ item }">
                     <div class="text-center"
                         style="display: flex; justify-content: center; align-items: center; height: 100%;">

@@ -151,7 +151,7 @@
                 item-key="no" :items-per-page="5">
                 <template v-slot:item.picture="{ item }">
                     <v-avatar size="40">
-                        <img :src="`http://localhost:3001/file/profile/${item.picture}`"
+                        <img :src="`${$config.API_URL}/file/profile/${item.picture}`"
                             @error="onImageError($event, item)" alt="picture" />
                     </v-avatar>
                 </template>
@@ -239,7 +239,7 @@ export default {
     layout: 'user',
     middleware: 'auth',
 
-    async mounted() {
+    async fetch(){
         await this.checkRank();
         await this.fetchEmployeeData();
         await this.fetchRanks();
@@ -407,7 +407,7 @@ export default {
 
     methods: {
         onImageError(event, item) {
-            event.target.src = `http://localhost:3001/file/default/${item.picture}`;
+            event.target.src = `${this.$config.API_URL}/file/default/${item.picture}`;
         },
 
         getEmployeeById(empId) {
