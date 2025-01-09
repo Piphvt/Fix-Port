@@ -5,7 +5,7 @@
       @update:confirmLogout="(value) => (modal.confirmLogout.open = value)"
       @update:message="(value) => (modal.confirmLogout.message = value)" :method="sign_out" />
 
-      <v-app :class="appBackground" :style="appBackgroundStyle">
+    <v-app :class="appBackground" :style="appBackgroundStyle">
       <v-app-bar :clipped-left="clipped" fixed app :color="navBarColor" dark>
         <v-toolbar-title class="d-flex align-center" @click="home">
           <v-img :src="`${$config.API_URL}/file/default/logo.png`" max-width="120" contain class="logo-img" />
@@ -216,7 +216,7 @@ import moment from 'moment';
 moment.locale('th');
 
 export default {
-  async fetch() {
+  async mounted() {
     await this.fetchEmployeeData();
     await this.fetchPendingEmployeeCount();
     setInterval(async () => {
@@ -244,20 +244,30 @@ export default {
 
   methods: {
     async fetchPendingEmployeeCount() {
-      try {
-        const response = await this.$store.dispatch('api/employee/getEmployeeByStatus', '2');
-        const newCount = response.length;
+  try {
+    // เริ่มต้นการตรวจสอบว่ามีคำขอเดิมที่ยังรอการตอบสนอง
+    if (this.isFetching) {
+      return;  // ถ้ามีการเรียก API อยู่แล้ว ให้หยุดการทำงาน
+    }
 
-        if (newCount !== this.pendingEmployeesCount) {
-          this.pendingEmployeesCount = newCount;
+    this.isFetching = true;  // ตั้งค่าการกำลังโหลด
 
-          this.snackbarText = `มีคำร้องขอสมัครสมาชิก : ${this.pendingEmployeesCount} คน`;
-          this.snackbar = true;
-        }
-      } catch (error) {
-        console.error('Error fetching pending employees:', error);
-      }
-    },
+    const response = await this.$store.dispatch('api/employee/getEmployeeByStatus', '2');
+    const newCount = response.length;
+
+    if (newCount !== this.pendingEmployeesCount) {
+      this.pendingEmployeesCount = newCount;
+      this.snackbarText = `มีคำร้องขอสมัครสมาชิก : ${this.pendingEmployeesCount} คน`;
+      this.snackbar = true;
+    }
+  } catch (error) {
+    console.error('Error fetching pending employees:', error);
+    // หากเกิดข้อผิดพลาด ให้แสดงข้อความที่เกี่ยวข้องหรือการจัดการเพิ่มเติม
+  } finally {
+    this.isFetching = false;  // หยุดสถานะการกำลังโหลด
+  }
+}
+,
 
     onImageError() {
       this.profileImage = `${this.$config.API_URL}/file/default/${this.$auth.user.picture}`;

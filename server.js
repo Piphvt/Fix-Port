@@ -7,7 +7,7 @@ const cors = require('cors');
 const path = require('path');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const port = process.env.PORT || 3001;
+const port = process.env.PORT;
 const DB_NAME = process.env.DB_NAME;
 
 const app = express();
@@ -90,12 +90,18 @@ app.get('/run-close-price', (req, res) => {
                     console.error('ข้อผิดพลาดในการอ่านไฟล์ CSV:', err);
                     return res.status(500).send('ข้อผิดพลาดในการอ่านไฟล์ CSV');
                 }
-                res.setHeader('Content-Type', 'text/csv');
-                res.send(data);
+                if (!res.headersSent) { // ตรวจสอบว่า header ถูกตั้งค่าหรือยัง
+                    res.setHeader('Content-Type', 'text/csv');
+                    res.send(data); // ส่งคำตอบแค่ครั้งเดียว
+                } else {
+                    console.log('Headers already sent, skipping response');
+                }
             });
         } else {
             console.error(`ข้อผิดพลาด: สคริปต์ Python เสร็จสิ้นด้วยรหัส ${code}`);
-            res.status(500).send('ข้อผิดพลาดในการรันสคริปต์ Python');
+            if (!res.headersSent) {
+                res.status(500).send('ข้อผิดพลาดในการรันสคริปต์ Python');
+            }
         }
     });
 });

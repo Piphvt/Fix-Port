@@ -123,9 +123,9 @@ exports.deleteEmployee = (req, res) => {
 
 // ดึงข้อมูลพนักงานตามสถานะ
 exports.getEmployeesByStatus = (req, res) => {
-    const type = req.params.no;
+    const no = req.params.no;
     connection.query('SELECT * FROM `employees` WHERE `status` = ?',
-      [type], function (err, results) {
+      [no], function (err, results) {
         if (err) {
             console.error('เกิดข้อผิดพลาดในการดึงข้อมูลพนักงานตามสถานะ:', err);
             return res.status(500).json({ message: 'ข้อผิดพลาดในการดึงข้อมูลพนักงานตามสถานะ' });
