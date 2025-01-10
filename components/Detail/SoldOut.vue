@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="dialog" max-width="1000px">
+    <v-dialog v-model="dialog" max-width="1200px">
         <v-card>
             <div>
                 <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen"
@@ -365,62 +365,6 @@
                             <td v-if="visibleColumns.includes('employee_no')" class="text-center">
                                 {{ getEmployeeByNo(transaction.employee_no)?.fname + ' ' +
                                     getEmployeeByNo(transaction.employee_no)?.lname ||
-                                    'ไม่ทราบ' }}</td>
-                            <td v-if="visibleColumns.includes('comment')" class="text-center">
-                                {{ item.comment || '-' }}</td>
-                            <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
-                            <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
-                            <td class="text-center"></td>
-                        </tr>
-
-                        <tr v-if="item.isOpen">
-                            <td v-if="visibleColumns.includes('select')" class="text-center"></td>
-                            <td class="text-center" style="color:#cb6ce6">รวมหักปันผล</td>
-                            <td v-if="visibleColumns.includes('updated_date')" class="text-center">
-                                {{ formatDateTime(item.updated_date) }}</td>
-                            <td v-if="visibleColumns.includes('customer_no')" class="text-center">
-                                {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
-                            <td v-if="visibleColumns.includes('customer_name')" class="text-center">
-                                {{ getCustomerByNo(item.customer_no)?.nickname || 'N/A' }}</td>
-                            <td v-if="visibleColumns.includes('stock_no')" class="text-center">
-                                {{ getStockByNo(item.stock_no)?.stock || 'N/A' }}</td>
-                            <td v-if="visibleColumns.includes('from_no')" class="text-center"
-                                :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
-                                {{ getFromByNo(item.from_no)?.from || 'N/A' }}</td>
-                            <td v-if="visibleColumns.includes('created_date')" class="text-center"
-                                :style="{ color: getDateColor(item.created_date) }">
-                                {{ formatDate(item.created_date) }}</td>
-                            <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
-                                {{ item.dividendprice.toLocaleString(2) }}</td>
-                            <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
-                                {{ item.amount.toLocaleString(2) }}</td>
-                            <td v-if="visibleColumns.includes('money')" class="text-center">
-                                {{ item.dividendmoney }}</td>
-                            <td v-if="visibleColumns.includes('dividend_amount')" class="text-center"
-                                style="color:#8c52ff">
-                                {{ item.dividend_amount }}</td>
-                            <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
-                                {{ item.balance_dividend }}</td>
-                            <td v-if="visibleColumns.includes('closing_price')" class="text-center"
-                                style="color:#ff914d">
-                                {{ item.closing_price }}</td>
-                            <td v-if="visibleColumns.includes('base_no')" class="text-center">
-                                {{ item.present_price }}</td>
-                            <td v-if="visibleColumns.includes('total')" class="text-center">
-                                {{ item.total }}</td>
-                            <td v-if="visibleColumns.includes('present_profit')" class="text-center"
-                                :style="{ color: getColorForNumber(item.present_profit) }">
-                                {{ item.present_profit }}</td>
-                            <td v-if="visibleColumns.includes('total_percent')" class="text-center"
-                                :style="{ color: getColorForPercent(item.total_percent) }">
-                                {{ item.total_percent }}%</td>
-                            <td v-if="visibleColumns.includes('port')" class="text-center"
-                                :style="{ color: getPortText(item.total_percent).color }">
-                                {{ getPortText(item.total_percent).text }}</td>
-                            <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                                {{ getEmployeeByNo(item.employee_no)?.fname + ' ' +
-                                    getEmployeeByNo(item.employee_no)?.lname
-                                    ||
                                     'ไม่ทราบ' }}</td>
                             <td v-if="visibleColumns.includes('comment')" class="text-center">
                                 {{ item.comment || '-' }}</td>
@@ -922,6 +866,7 @@ export default {
                             let transactionDividendTotalSum = 0;
                             let transactionAmountSum = 0;
                             let transactionnumberOfDividends = 0;
+                            const detailamount = detail.amount;
 
                             if (detail.created_date) {
                                 const dividendData = await this.$store.dispatch('api/dividend/getDividend', {
@@ -1026,7 +971,6 @@ export default {
                                 }
                             }
 
-                            const detailamount = detail.amount;
                             const detailprice = detail.price;
                             const detailmoney = detailamount * detailprice;
                             const detailpresent_price = detailamount * closingPriceData;
@@ -1081,11 +1025,6 @@ export default {
                             detail.employee_no = lasted_employee_no;
                             detail.type1Transactions = type1Transactions;
 
-                            const dividendmoney = money - (transactionDividendTotalSum + balance_dividend);
-                            const dividendprice = dividendmoney / amount;
-
-                            detail.dividendprice = dividendprice;
-                            detail.dividendmoney = dividendmoney.toLocaleString(2);
                         }
                     }
 

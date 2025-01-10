@@ -9,7 +9,7 @@
         <DetailEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
         <DetailSoldOut v-model="SoldOutStockDataOpen" />
 
-        <v-card flat>
+        <v-card class="custom-card" flat>
             <v-container>
                 <v-row justify="center" align="center">
                     <v-col cols="auto">
@@ -940,6 +940,7 @@ export default {
                             let transactionDividendTotalSum = 0;
                             let transactionAmountSum = 0;
                             let transactionnumberOfDividends = 0;
+                            const detailamount = detail.amount;
 
                             if (detail.created_date) {
                                 const dividendData = await this.$store.dispatch('api/dividend/getDividend', {
@@ -1044,7 +1045,6 @@ export default {
                                 }
                             }
 
-                            const detailamount = detail.amount;
                             const detailprice = detail.price;
                             const detailmoney = detailamount * detailprice;
                             const detailpresent_price = detailamount * closingPriceData;
@@ -1633,5 +1633,11 @@ export default {
 
 .custom-list {
     padding: 0.4px 2px;
+}
+
+.custom-card {
+    max-width: 1200px;
+    width: 100%;
+    margin: auto;
 }
 </style>
