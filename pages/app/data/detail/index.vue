@@ -1371,7 +1371,7 @@ export default {
             const worksheet = workbook.addWorksheet('Sheet1');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'detail' && header.value !== 'action')
+                .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'select')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -1417,7 +1417,7 @@ export default {
                         rowData[header.value] = this.getPortText(item.total_percent).text;
                     } else if (header.value === 'employee_no') {
                         rowData[header.value] = this.getEmployeeByNo(item.employee_no).fname + ' ' + this.getEmployeeByNo(item.employee_no).lname;
-                    } else if (header.value !== 'detail' && header.value !== 'action') {
+                    } else if (header.value !== 'detail' && header.value !== 'action' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }
                 });
@@ -1445,7 +1445,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ข้อมูลลูกค้า-${currentDate}.xlsx`);
+                link.setAttribute('download', `ข้อมูลหุ้นของลูกค้า-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

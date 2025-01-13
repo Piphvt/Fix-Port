@@ -266,7 +266,7 @@
                             <td v-if="visibleColumns.includes('select')" class="text-center"></td>
                             <td class="text-center" style="color:#e6c56c">หุ้นเดิม</td>
                             <td v-if="visibleColumns.includes('updated_date')" class="text-center">
-                                {{ formatDateTime(item.detailupdated_date) }}</td>
+                                {{ formatDateTime(item.DetailUpdated_date) }}</td>
                             <td v-if="visibleColumns.includes('customer_no')" class="text-center">
                                 {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
                             <td v-if="visibleColumns.includes('customer_name')" class="text-center">
@@ -284,31 +284,31 @@
                             <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
                                 {{ item.detailamount.toLocaleString(2) }}</td>
                             <td v-if="visibleColumns.includes('money')" class="text-center">
-                                {{ item.detailmoney }}</td>
+                                {{ item.DetailMoney }}</td>
                             <td v-if="visibleColumns.includes('dividend_amount')" class="text-center"
                                 style="color:#8c52ff">
-                                {{ item.detaildividend_amount }}</td>
+                                {{ item.DetailDividend_Amount }}</td>
                             <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
-                                {{ item.detailbalance_dividend }}</td>
+                                {{ item.DetailBalance_Dividend }}</td>
                             <td v-if="visibleColumns.includes('closing_price')" class="text-center"
                                 style="color:#ff914d">
                                 {{ item.closing_price }}</td>
                             <td v-if="visibleColumns.includes('present_price')" class="text-center">
-                                {{ item.detailpresent_price }}</td>
+                                {{ item.DetailPresent_Price }}</td>
                             <td v-if="visibleColumns.includes('total')" class="text-center">
-                                {{ item.detailtotal }}</td>
+                                {{ item.DetailTotal }}</td>
                             <td v-if="visibleColumns.includes('present_profit')" class="text-center"
-                                :style="{ color: getColorForNumber(item.detailpresent_profit) }">
-                                {{ item.detailpresent_profit }}</td>
+                                :style="{ color: getColorForNumber(item.DetailPresent_Profit) }">
+                                {{ item.DetailPresent_Profit }}</td>
                             <td v-if="visibleColumns.includes('total_percent')" class="text-center"
-                                :style="{ color: getColorForPercent(item.detailtotal_percent) }">
-                                {{ item.detailtotal_percent }}%</td>
+                                :style="{ color: getColorForPercent(item.DetailTotal_Percent) }">
+                                {{ item.DetailTotal_Percent }}%</td>
                             <td v-if="visibleColumns.includes('port')" class="text-center"
-                                :style="{ color: getPortText(item.detailtotal_percent).color }">
-                                {{ getPortText(item.detailtotal_percent).text }}</td>
+                                :style="{ color: getPortText(item.DetailTotal_Percent).color }">
+                                {{ getPortText(item.DetailTotal_Percent).text }}</td>
                             <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                                {{ getEmployeeByNo(item.detailemployee_no)?.fname + ' ' +
-                                    getEmployeeByNo(item.detailemployee_no)?.lname || 'ไม่ทราบ'
+                                {{ getEmployeeByNo(item.DetailEmployee_No)?.fname + ' ' +
+                                    getEmployeeByNo(item.DetailEmployee_No)?.lname || 'ไม่ทราบ'
                                 }}</td>
                             <td v-if="visibleColumns.includes('comment')" class="text-center">
                                 {{ item.comment || '-' }}</td>
@@ -710,7 +710,7 @@ export default {
         },
     },
 
-    async mounted() {
+    async fetch() {
         await this.fetchEmployeeData();
         await this.fetchDetailData();
         await this.fetchCustomerData();
@@ -718,6 +718,16 @@ export default {
         await this.fetchFromData();
         await this.fetchBaseData();
         await this.fetchTypeData();
+    },
+
+    mounted() {
+        this.fetchEmployeeData();
+        this.fetchDetailData();
+        this.fetchCustomerData();
+        this.fetchStockData();
+        this.fetchFromData();
+        this.fetchBaseData();
+        this.fetchTypeData();
     },
 
     methods: {
@@ -774,31 +784,31 @@ export default {
         getSearchItems(type) {
             if (type === 'stock_no') {
                 return this.details
-                    .filter(detail => detail.amount <= 0 && this.getStockByNo(detail.stock_no)?.stock)
+                    .filter(detail => this.getStockByNo(detail.stock_no)?.stock)
                     .map(detail => this.getStockByNo(detail.stock_no).stock);
             } else if (type === 'customer_name') {
                 return this.details
-                    .filter(detail => detail.amount <= 0 && this.getCustomerByNo(detail.customer_no)?.nickname)
+                    .filter(detail => this.getCustomerByNo(detail.customer_no)?.nickname)
                     .map(detail => this.getCustomerByNo(detail.customer_no).nickname);
             } else if (type === 'customer_no') {
                 return this.details
-                    .filter(detail => detail.amount <= 0 && this.getCustomerByNo(detail.customer_no)?.id)
+                    .filter(detail => this.getCustomerByNo(detail.customer_no)?.id)
                     .map(detail => this.getCustomerByNo(detail.customer_no).id);
             } else if (type === 'employee_no') {
                 return this.details
-                    .filter(detail => detail.amount <= 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
                     .map(detail => this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname);
             } else if (type === 'port') {
                 return this.details
-                    .filter(detail => detail.amount <= 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
                     .map(detail => this.getPortText(detail.total_percent).text);
             } else if (type === 'customer_base') {
                 return this.details
-                    .filter(detail => detail.amount <= 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
                     .map(detail => this.getBaseByNo(this.getCustomerByNo(detail.customer_no)?.base_no)?.base || 'ยังไม่ระบุ');
             } else if (type === 'customer_type') {
                 return this.details
-                    .filter(detail => detail.amount <= 0 && this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
+                    .filter(detail => this.getEmployeeByNo(detail.employee_no)?.fname + ' ' + this.getEmployeeByNo(detail.employee_no)?.lname)
                     .map(detail => this.getTypeByNo(this.getCustomerByNo(detail.customer_no)?.type_no)?.type || 'ยังไม่ระบุ');
             }
             return [];
@@ -838,23 +848,36 @@ export default {
             try {
                 await this.fetchStockData();
                 this.details = await this.$store.dispatch('api/detail/getDetail');
+                const transactions = await this.$store.dispatch('api/transaction/getTransaction');
+
+                this.details = this.details.filter(detail => {
+                    const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_no === detail.no);
+                    const type2Transactions = transactions.filter(t => t.type === 2 && t.stock_detail_no === detail.no);
+
+                    const type1TotalAmount = type1Transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+                    const type2TotalAmount = type2Transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+
+                    const calculatedAmount = (detail.amount || 0) + type1TotalAmount - type2TotalAmount;
+
+                    const isValid = type1Transactions.length === 0
+                        ? detail.amount - type2TotalAmount === 0
+                        : calculatedAmount === 0;
+
+
+                    return isValid;
+                });
+
 
                 if (Array.isArray(this.details) && this.details.length > 0) {
                     for (const detail of this.details) {
                         detail.isOpen = false;
                         if (detail.stock_no) {
                             let closingPriceData = null;
-
-                            const prices = await this.$store.dispatch('api/price/getPrice', {
-                                stock_no: detail.stock_no
-                            });
-
+                            const prices = await this.$store.dispatch('api/price/getPrice');
                             const priceData = prices.filter(p => p.stock_no === detail.stock_no);
-
                             const latestPriceData = priceData.reduce((latest, current) => {
                                 return moment(current.created_date).isAfter(moment(latest.created_date)) ? current : latest;
                             }, priceData[0]);
-
                             closingPriceData = latestPriceData ? latestPriceData.price : null;
 
                             let detail_total_Dividend = new Decimal(0);
@@ -866,7 +889,10 @@ export default {
                             let transactionDividendTotalSum = 0;
                             let transactionAmountSum = 0;
                             let transactionnumberOfDividends = 0;
-                            const detailamount = detail.amount;
+                            const OriginalAmount = detail.amount;
+                            const OriginalPrice = detail.price;
+                            const OriginalMoney = OriginalAmount * OriginalPrice;
+
 
                             if (detail.created_date) {
                                 const dividendData = await this.$store.dispatch('api/dividend/getDividend', {
@@ -885,43 +911,10 @@ export default {
                                 balance_dividend = detail.amount * detail_total_Dividend.toNumber();
                             }
 
-                            const transactions = await this.$store.dispatch('api/transaction/getTransaction', { stock_detail_no: detail.no });
-
                             const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_no === detail.no);
-                            const type2Transactions = transactions.filter(t => t.type === 2 && t.stock_detail_no === detail.no);
-
                             detail.transactions = type1Transactions;
-                            let remainingAmount = 0;
 
-                            const sortedType1Transactions = type1Transactions.sort((a, b) => moment(b.created_date).diff(moment(a.created_date)));
-
-                            for (const type1 of sortedType1Transactions) {
-                                let remainingAmount = type1.amount;
-
-                                for (const type2 of type2Transactions) {
-                                    if (moment(type2.created_date).isAfter(moment(type1.created_date)) && type2.amount > 0) {
-                                        if (type2.amount >= remainingAmount) {
-                                            type2.amount -= remainingAmount;
-                                            remainingAmount = 0;
-                                            break;
-                                        } else {
-                                            remainingAmount -= type2.amount;
-                                            type2.amount = 0;
-                                        }
-                                    }
-                                }
-
-                                type1.amount = remainingAmount;
-                            }
-
-                            detail.transactions = type1Transactions.filter(type1 => type1.amount > 0);
-                            const remainingType2Amount = type2Transactions.reduce((sum, type2) => sum + type2.amount, 0);
-
-                            if (remainingType2Amount > 0) {
-                                detail.amount -= remainingType2Amount;
-                            }
-
-                            for (const transaction of [...sortedType1Transactions]) {
+                            for (const transaction of detail.transactions) {
                                 if (transaction.amount > 0) {
                                     const commissionData = await this.$store.dispatch('api/commission/getCommission', { no: transaction.commission_id });
                                     const commission = commissionData.length > 0 ? commissionData[0] : null;
@@ -971,23 +964,6 @@ export default {
                                 }
                             }
 
-                            const detailprice = detail.price;
-                            const detailmoney = detailamount * detailprice;
-                            const detailpresent_price = detailamount * closingPriceData;
-                            const detailtotal = detailpresent_price + balance_dividend;
-
-                            detail.detailupdated_date = detail.updated_date;
-                            detail.detailamount = detailamount;
-                            detail.detailprice = detailprice;
-                            detail.detaildividend_amount = detail_total_Dividend.toNumber();
-                            detail.detailmoney = detailmoney.toLocaleString(2);
-                            detail.detailpresent_price = detailpresent_price.toLocaleString(2);
-                            detail.detailtotal = detailtotal.toLocaleString(2);
-                            detail.detailbalance_dividend = balance_dividend.toLocaleString(2);
-                            detail.detailpresent_profit = (detailtotal - detailmoney).toLocaleString(2);
-                            detail.detailtotal_percent = (((detailtotal - detailmoney) / detailmoney) * 100).toLocaleString(2);
-                            detail.detailemployee_no = detail.employee_no;
-
                             const lasted_updated_date = transactions
                                 .filter(transaction => transaction.stock_detail_no === detail.no)
                                 .map(transaction => transaction.updated_date);
@@ -1010,11 +986,11 @@ export default {
                             present_price = amount * closingPriceData;
                             total = present_price + balance;
 
+                            //แถวหลัก
                             detail.updated_date = latest_updated_date;
                             detail.price = price;
                             detail.amount = amount;
                             detail.money = money.toLocaleString(2);
-                            detail.totalprice = price;
                             detail.dividend_amount = ((detail_total_Dividend.toNumber() + transaction_total_Dividend) / (1 + transactionnumberOfDividends)).toLocaleString(2);
                             detail.balance_dividend = balance.toLocaleString(2);
                             detail.closing_price = closingPriceData;
@@ -1023,12 +999,28 @@ export default {
                             detail.present_profit = (total - money).toLocaleString(2);
                             detail.total_percent = (((total - money) / money) * 100).toLocaleString(2);
                             detail.employee_no = lasted_employee_no;
-                            detail.type1Transactions = type1Transactions;
 
+                            //แถวรอง
+                            const DetailPresent_Price = OriginalAmount * closingPriceData;
+                            const DetailTotal = DetailPresent_Price + balance_dividend;
+
+                            detail.DetailUpdated_date = detail.updated_date;
+                            detail.detailamount = OriginalAmount;
+                            detail.detailprice = OriginalPrice;
+                            detail.DetailDividend_Amount = detail_total_Dividend.toNumber();
+                            detail.DetailMoney = OriginalMoney.toLocaleString(2);
+                            detail.DetailPresent_Price = DetailPresent_Price.toLocaleString(2);
+                            detail.DetailTotal = DetailTotal.toLocaleString(2);
+                            detail.DetailBalance_Dividend = balance_dividend.toLocaleString(2);
+                            detail.DetailPresent_Profit = (DetailTotal - OriginalMoney).toLocaleString(2);
+                            detail.DetailTotal_Percent = (((DetailTotal - OriginalMoney) / OriginalMoney) * 100).toLocaleString(2);
+                            detail.DetailEmployee_No = detail.employee_no;
+
+                            detail.type1Transactions = type1Transactions;
                         }
                     }
 
-                    this.details = this.details.filter(detail => detail.amount == 0);
+
                 } else {
                     console.error("ข้อมูล details ไม่มีข้อมูลหรือไม่ใช่อาร์เรย์");
                 }
@@ -1287,7 +1279,7 @@ export default {
             const worksheet = workbook.addWorksheet('Sheet1');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'detail' && header.value !== 'action')
+                .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'select')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -1333,7 +1325,7 @@ export default {
                         rowData[header.value] = this.getPortText(item.total_percent).text;
                     } else if (header.value === 'employee_no') {
                         rowData[header.value] = this.getEmployeeByNo(item.employee_no).fname + ' ' + this.getEmployeeByNo(item.employee_no).lname;
-                    } else if (header.value !== 'detail' && header.value !== 'action') {
+                    } else if (header.value !== 'detail' && header.value !== 'action' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }
                 });
@@ -1361,7 +1353,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ข้อมูลลูกค้า-${currentDate}.xlsx`);
+                link.setAttribute('download', `ข้อมูลหุ้นของลูกค้าที่ขายหมดแล้ว-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
