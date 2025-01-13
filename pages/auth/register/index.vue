@@ -11,7 +11,7 @@
                 <v-col cols="12" sm="8" md="6">
                     <v-card>
                         <v-card-title style="justify-content: center; display: flex;">
-                            <span class="headline">สร้างผู้ใช้งาน</span>
+                            <span class="headline">สมัครสมาชิก</span>
                         </v-card-title>
                         <v-card-subtitle class="pa-0"
                             style="justify-content: center; display: flex;">กรอกข้อมูลให้ครบถ้วน</v-card-subtitle>
@@ -133,7 +133,7 @@ export default {
                 gender: null,
                 picture: 'unknown.jpg',
                 status: 2,
-                ranks_id: 2,
+                rank_no: 2,
                 created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                 updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             },

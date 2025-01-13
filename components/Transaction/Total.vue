@@ -159,27 +159,27 @@
                                 </td>
                                 <td class="text-center" v-if="visibleColumns.includes('updated_date')">
                                     {{ formatDateTime(group.updated_date) }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('customer_no')" >
+                                <td class="text-center" v-if="visibleColumns.includes('customer_no')">
                                     {{ getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ' }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('customer_name')" >
+                                <td class="text-center" v-if="visibleColumns.includes('customer_name')">
                                     {{ getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ' }}
                                 </td>
-                                <td class="text-center" v-if="visibleColumns.includes('base_stock')" >
+                                <td class="text-center" v-if="visibleColumns.includes('base_stock')">
                                     {{ (group.from1TotalDifference || 0).toLocaleString() }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('new_stock')" >
+                                <td class="text-center" v-if="visibleColumns.includes('new_stock')">
                                     {{ (group.from2TotalDifference || 0).toLocaleString() }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('tactic_stock')" >
+                                <td class="text-center" v-if="visibleColumns.includes('tactic_stock')">
                                     {{ (group.from3TotalDifference || 0).toLocaleString() }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('total')"  :style="{
+                                <td class="text-center" v-if="visibleColumns.includes('total')" :style="{
                                     color: getColorForNumber((group.from1TotalDifference + group.from2TotalDifference +
                                         group.from3TotalDifference) || 0)
                                 }">
                                     {{ ((group.from1TotalDifference + group.from2TotalDifference +
                                         group.from3TotalDifference) || 0).toLocaleString() }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('detail')" ><v-btn color="#5271ff" @click="openStockPopup(group, 'group')"
-                                        icon>
+                                <td class="text-center" v-if="visibleColumns.includes('detail')"><v-btn color="#5271ff"
+                                        @click="openStockPopup(group, 'group')" icon>
                                         <v-icon>mdi-eye</v-icon></v-btn></td>
-                                <td class="text-center" v-if="visibleColumns.includes('export')" ><v-btn color="#00bf63"
+                                <td class="text-center" v-if="visibleColumns.includes('export')"><v-btn color="#00bf63"
                                         @click="exportForPerson(group.customer_no, 'group', group)" icon>
                                         <v-icon>mdi-file-excel</v-icon></v-btn></td>
                             </tr>
@@ -436,14 +436,17 @@ export default {
         },
     },
 
-    mounted() {
-        this.fetchEmployeeData();
-        this.fetchDetailData();
-        this.fetchCustomerData();
-        this.fetchStockData();
-        this.fetchFromData();
-        this.fetchCommissionData();
-        this.fetchTransactionData();
+    async mounted() {
+        await Promise.all([
+            this.fetchEmployeeData(),
+            this.fetchCustomerData(),
+            this.fetchStockData(),
+            this.fetchFromData(),
+            this.fetchCommissionData(),
+            this.fetchTransactionData(),
+            this.fetchDetailData()
+        ]);
+
         this.filtered = this.details;
     },
 
@@ -451,16 +454,6 @@ export default {
         filteredHeaders() {
             return this.headers.filter(header => this.visibleColumns.includes(header.value));
         },
-    },
-
-    async fetch() {
-        await this.fetchEmployeeData();
-        await this.fetchDetailData();
-        await this.fetchCustomerData();
-        await this.fetchStockData();
-        await this.fetchFromData();
-        await this.fetchCommissionData();
-        await this.fetchTransactionData();
     },
 
     methods: {

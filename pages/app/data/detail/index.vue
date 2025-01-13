@@ -451,14 +451,16 @@ export default {
     middleware: 'auth',
 
     async mounted() {
-        await this.checkRank();
-        await this.fetchEmployeeData();
-        await this.fetchDetailData();
-        await this.fetchCustomerData();
-        await this.fetchStockData();
-        await this.fetchFromData();
-        await this.fetchBaseData();
-        await this.fetchTypeData();
+        await Promise.all([
+            this.checkRank(),
+            this.fetchEmployeeData(),
+            this.fetchDetailData(),
+            this.fetchCustomerData(),
+            this.fetchStockData(),
+            this.fetchFromData(),
+            this.fetchBaseData(),
+            this.fetchTypeData(),
+        ]);
     },
 
     components: {

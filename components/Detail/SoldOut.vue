@@ -710,24 +710,16 @@ export default {
         },
     },
 
-    async fetch() {
-        await this.fetchEmployeeData();
-        await this.fetchDetailData();
-        await this.fetchCustomerData();
-        await this.fetchStockData();
-        await this.fetchFromData();
-        await this.fetchBaseData();
-        await this.fetchTypeData();
-    },
-
-    mounted() {
-        this.fetchEmployeeData();
-        this.fetchDetailData();
-        this.fetchCustomerData();
-        this.fetchStockData();
-        this.fetchFromData();
-        this.fetchBaseData();
-        this.fetchTypeData();
+    async mounted() {
+        await Promise.all([
+            this.fetchEmployeeData(),
+            this.fetchDetailData(),
+            this.fetchCustomerData(),
+            this.fetchStockData(),
+            this.fetchFromData(),
+            this.fetchBaseData(),
+            this.fetchTypeData()
+        ]);
     },
 
     methods: {
