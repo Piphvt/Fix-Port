@@ -172,6 +172,13 @@
 
             <v-data-table :headers="filteredHeaders" :items="filtered" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc"
                 item-key="no" :items-per-page="5" style="overflow-x: auto; white-space: nowrap;">
+                <template v-slot:item.select="{ item }">
+                    <div class="text-center"
+                        style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                        <v-checkbox v-if="isSelectingItems" v-model="selectedItems" :value="item.no"
+                            style="transform: scale(1);" />
+                    </div>
+                </template>
                 <template v-slot:item.employee_no="{ item }">
                     <div class="text-center">
                         <span v-if="getEmployeeByNo(item.employee_no)">
@@ -293,7 +300,7 @@
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item @click="showConfirmDialog('delete', item)" class="custom-list-item">
+                                <v-list-item @click="toggleSelectItems" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
                                     </v-list-item-icon>
@@ -304,6 +311,12 @@
                     </div>
                 </template>
             </v-data-table>
+            <div class="text-center">
+                <v-btn v-if="isSelectingItems && selectedItems.length > 0" color="red" @click="deleteSelectedItems"
+                    class="mb-4" style="font-size: 1.5 rem; margin-left: auto;">
+                    <v-icon left color="white">mdi-delete</v-icon> ลบ
+                </v-btn>
+            </div>
         </v-card>
     </div>
 
@@ -373,6 +386,11 @@ export default {
             CommissionDataOpen: false,
             TotalTransactionDataOpen: false,
 
+            selectedItems: [],
+            handleConfirm: null,
+            isSelectingItems: false,
+            modalConfirmOpen: false,
+
             sortBy: 'updated_date',
             currentAction: '',
             searchQuery: '',
@@ -407,9 +425,17 @@ export default {
                 { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
-            visibleColumns: ['updated_date', 'customer_no', 'customer_name', 'stock_no', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_no', 'employee_no', 'detail'],
+            visibleColumns: ['select', 'updated_date', 'customer_no', 'customer_name', 'stock_no', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_no', 'employee_no', 'detail'],
 
             headers: [
+                {
+                    text: '',
+                    value: 'select',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
                 {
                     text: 'ข้อมูลวันที่',
                     value: 'updated_date',
@@ -561,6 +587,36 @@ export default {
     },
 
     methods: {
+        toggleSelectItems() {
+            this.isSelectingItems = !this.isSelectingItems;
+        },
+
+        async deleteSelectedItems() {
+
+            this.handleConfirm = async () => {
+                const selectedIds = this.selectedItems;
+
+                for (let i = 0; i < selectedIds.length; i++) {
+                    try {
+                        await this.$store.dispatch('api/transaction/deleteTransaction', selectedIds[i]);
+                    } catch (error) {
+                        console.error(`Error deleting customer with id ${selectedIds[i]}:`, error);
+                    }
+                }
+
+                this.$emit('updateItems');
+                this.selectedItems = [];
+                this.isSelectingItems = false;
+
+                this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
+                this.modal.complete.open = true;
+                this.recordLog()
+                this.modalConfirmOpen = false;
+            };
+
+            this.modalConfirmOpen = true;
+        },
+
         async fetchDetailData() {
             this.details = await this.$store.dispatch('api/detail/getDetail');
 
@@ -628,21 +684,6 @@ export default {
             this.currentAction = action;
             this.currentItem = item;
             this.modalConfirmOpen = true;
-        },
-
-        async handleConfirm() {
-            if (this.currentAction === 'delete') {
-                try {
-                    await this.$store.dispatch('api/transaction/deleteTransaction', this.currentItem.no);
-                    this.modal.complete.message = 'ลบผู้ใช้งานนี้เรียบร้อยแล้ว';
-                    this.recordLog();
-                    this.modal.complete.open = true;
-                } catch (warning) {
-                    this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
-                    this.modal.complete.open = true;
-                }
-            }
-            this.modalConfirmOpen = false;
         },
 
         async checkRank() {
@@ -827,7 +868,7 @@ export default {
                         this.searchType === 'stock_no' ? this.selectedStocks :
                             this.searchType === 'employee_no' ? this.selectedEmployees :
                                 this.searchType === 'action' ? this.selectedActions :
-                                        this.searchType === 'from_no' ? this.selectedFroms : [];
+                                    this.searchType === 'from_no' ? this.selectedFroms : [];
 
             if (selectedItems.length > 0) {
                 this.savedSearches.push({

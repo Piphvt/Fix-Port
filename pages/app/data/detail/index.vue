@@ -1164,11 +1164,11 @@ export default {
                 port = 'กำไร';
                 color = '#c1ff72';
             } else if (total_percent >= -10 && total_percent < 0) {
-                port = 'ระวัง';
-                color = '#ffde59';
-            } else if (total_percent >= -19.99 && total_percent <= -10.01) {
                 port = 'แก้เกมได้';
                 color = '#85d7df';
+            } else if (total_percent >= -19.99 && total_percent <= -10.01) {
+                port = 'ระวัง';
+                color = '#ffde59';
             } else {
                 port = 'ถือ';
                 color = '#ff5757';
@@ -1192,9 +1192,9 @@ export default {
             if (numericValue >= 0) {
                 return '#24b224';
             } else if (numericValue >= -10 && value < 0) {
-                return '#ffc800';
-            } else if (numericValue >= -19.99 && value <= -10.01) {
                 return '#38b6ff';
+            } else if (numericValue >= -19.99 && value <= -10.01) {
+                return '#ffc800';
             } else {
                 return '#e50211';
             }
