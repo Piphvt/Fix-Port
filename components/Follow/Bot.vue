@@ -9,8 +9,8 @@
                 <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-robot</v-icon>
-                <span class="headline">หุ้นจากบอท</span>
+                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-archive-edit</v-icon>
+                <span class="headline">หุ้นที่รอการตรวจสอบ</span>
             </v-card-title>
             
             <v-card-text>
@@ -182,16 +182,23 @@ export default {
         async handleConfirm() {
             try {
                 if (this.currentAction === 'approve') {
-                    await this.$store.dispatch('api/employee/updateEmployeeStatus', {
+                    await this.$store.dispatch('api/follow/updateFollow', {
                         no: this.currentItem.no,
-                        status: 1,
-                        employee_no: this.$auth.user.no
+                        stock_no: this.currentItem.stock_no,
+                        low_price: this.currentItem.low_price,
+                        up_price: this.currentItem.up_price,
+                        remark: this.currentItem.remark,
+                        result: 1,
+                        reach: null,
+                        employee_no: this.$auth.user.no,
+                        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                        updated_date: null,
                     });
                     this.recordLog();
-                    this.modal.complete.message = 'อนุมัติผู้ใช้งานเรียบร้อยแล้ว';
+                    this.modal.complete.message = 'เพิ่มการเฝ้าหุ้นแล้ว';
                 } else if (this.currentAction === 'reject') {
-                    await this.$store.dispatch('api/employee/deleteEmployee', this.currentItem.no);
-                    this.modal.complete.message = 'ลบผู้ใช้งานนี้เรียบร้อยแล้ว';
+                    await this.$store.dispatch('api/follow/deleteFollow', this.currentItem.no);
+                    this.modal.complete.message = 'ลบเรียบร้อย';
                     this.recordLog();
                 }
 

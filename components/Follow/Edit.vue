@@ -44,7 +44,7 @@
                     </v-form>
                     <v-card-actions class="card-title-center pa-0">
                         <v-btn @click="confirm"
-                            :disabled="!valid || !hasChanges || !formData.stock_no || !formData.low_price || !formData.up_price || !formData.remark"
+                            :disabled="!valid || !hasChanges"
                             depressed color="#24b224" class="font-weight-medium mr-2">
                             บันทึก
                         </v-btn>
@@ -104,7 +104,11 @@ export default {
 
     computed: {
         hasChanges() {
-            return JSON.stringify(this.formData) !== JSON.stringify(this.originalData);
+            const stockNoHasChanged = this.formData.stock_no !== this.originalData.stock_no;
+            const remarkNoHasChanged = this.formData.remark !== this.originalData.remark;
+            const lowpriceHasChanged = parseFloat(this.formData.low_price).toFixed(2) !== parseFloat(this.originalData.low_price).toFixed(2);
+            const uppriceHasChanged = parseFloat(this.formData.up_price).toFixed(2) !== parseFloat(this.originalData.up_price).toFixed(2);
+            return remarkNoHasChanged || lowpriceHasChanged || stockNoHasChanged || uppriceHasChanged;
         }
     },
 

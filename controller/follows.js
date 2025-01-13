@@ -49,15 +49,18 @@ exports.addFollow = async (req, res) => {
 
 exports.updateFollow = async (req, res) => {
     try {
-        const { stock_no, low_price, up_price, remark, employee_no } = req.body;
+        const { stock_no, low_price, up_price, remark, result, reach, created_date, updated_date, employee_no } = req.body;
         const stockId = req.params.no;
         const updatedData = {
             stock_no,
             low_price,
             up_price,
             remark,
+            result,
+            reach,
             employee_no,
-            created_date: new Date()
+            created_date,
+            updated_date,
         };
 
         connection.query("UPDATE `stocks_follow` SET ? WHERE `no` = ?", [updatedData, stockId], (err, results) => {

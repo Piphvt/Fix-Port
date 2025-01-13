@@ -25,18 +25,18 @@
                 <v-menu ref="menu" v-model="menu" :close-on-content-click="false" :nudge-right="40"
                   :return-value.sync="formData.created_date" transition="scale-transition" offset-y min-width="290px">
                   <template v-slot:activator="{ on, attrs }">
-                    <v-text-field v-model="formattedCreatedDate" label="วันที่ซื้อหุ้น" dense outlined readonly v-bind="attrs"
-                      v-on="on" :rules="[(v) => !!v || 'โปรดเลือกวันที่']"></v-text-field>
+                    <v-text-field v-model="formattedCreatedDate" label="วันที่ซื้อหุ้น" dense outlined readonly
+                      v-bind="attrs" v-on="on" :rules="[(v) => !!v || 'โปรดเลือกวันที่']"></v-text-field>
                   </template>
                   <v-date-picker v-model="formData.created_date" no-title scrollable @input="onDateSelected"
-                    :locale="'th'" :first-day-of-week="1"></v-date-picker>
+                    @change="onDateChange" :locale="'th'" :first-day-of-week="1" />
                 </v-menu>
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                 <v-autocomplete v-model="formData.stock_no" :items="stocks" :item-text="item => item.text"
-                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดกรอกชื่อหุ้น']" label="ชื่อหุ้น" dense outlined
-                  clearable solo hide-no-data hide-details />
+                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดกรอกชื่อหุ้น']" label="ชื่อหุ้น" dense
+                  outlined clearable solo hide-no-data hide-details />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
@@ -70,9 +70,8 @@
         </v-card-text>
 
         <v-card-actions class="card-title-center pa-0">
-          <v-btn @click="confirm"
-            :disabled="!valid || !hasChanges || !formData.customer_no || !formData.stock_no || !formData.detailprice || !formData.detailamount || !formData.from_no"
-            depressed color="#24b224" class="font-weight-medium mr-2 mb-5">
+          <v-btn @click="confirm" :disabled="!valid || !hasChanges" depressed color="#24b224"
+            class="font-weight-medium mr-2 mb-5">
             บันทึก
           </v-btn>
           <v-btn color="#e50211" @click="cancel" class="font-weight-medium mb-5">ยกเลิก
@@ -119,8 +118,10 @@ export default {
           message: 'มีหุ้นชื่อนี้แล้ว',
         },
       },
+
       menu: false,
-      formData: { ...this.data },
+
+      formData: {},
       valid: false,
       fromOptions: [],
       originalData: {},
@@ -132,8 +133,14 @@ export default {
 
   computed: {
     hasChanges() {
-      return JSON.stringify(this.formData) !== JSON.stringify(this.originalData);
-    },
+      const dateHasChanged = !moment(this.formData.created_date).isSame(this.originalData.created_date, 'day');
+      const customerNoHasChanged = this.formData.customer_no !== this.originalData.customer_no;
+      const stockNoHasChanged = this.formData.stock_no !== this.originalData.stock_no;
+      const fromNoHasChanged = this.formData.from_no !== this.originalData.from_no;
+      const priceHasChanged = parseFloat(this.formData.detailprice).toFixed(2) !== parseFloat(this.originalData.detailprice).toFixed(2);
+      const amountHasChanged = parseFloat(this.formData.detailamount).toFixed(2) !== parseFloat(this.originalData.detailamount).toFixed(2);
+      return dateHasChanged || customerNoHasChanged || fromNoHasChanged || stockNoHasChanged || priceHasChanged || amountHasChanged;
+    }
   },
 
   async mounted() {
@@ -187,11 +194,16 @@ export default {
     onDateSelected(date) {
       if (moment(date).isValid()) {
         this.formData.created_date = date;
-        this.formattedCreatedDate = moment(date).format('YYYY-MM-DD');
+        this.formattedCreatedDate = moment(date).format('DD-MM-YYYY');
+        this.originalData.created_date = date;
       } else {
         this.formData.created_date = null;
         this.formattedCreatedDate = '';
       }
+      this.menu = false;
+    },
+
+    onDateChange() {
       this.menu = false;
     },
 

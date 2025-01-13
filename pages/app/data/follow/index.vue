@@ -138,7 +138,7 @@
                 <div>
                     <v-btn @click="FollowBotDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-robot</v-icon> หุ้นจากบอท
+                        <v-icon left color="#85d7df">mdi-archive-edit</v-icon> หุ้นที่รอการตรวจสอบ
                     </v-btn>
                     <v-btn @click="FollowReachDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">

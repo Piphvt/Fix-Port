@@ -167,7 +167,6 @@ export default {
                         result: 1,
                         employee_no: this.$auth.user.no,
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-                        updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                     });
                 } catch (error) {
                     console.error('Error adding stock:', error);
