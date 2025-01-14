@@ -182,7 +182,7 @@
                             <v-list class="custom-list">
                                 <v-list-item @click="toggleSelectItems" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
+                                        <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
                                 </v-list-item>
