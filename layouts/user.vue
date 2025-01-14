@@ -36,7 +36,7 @@
               <v-list-item-content>
                 <v-list-item-title style="font-size: 0.8rem;">สมาชิก</v-list-item-title>
               </v-list-item-content>
-              <v-icon v-if="pendingEmployeesCount > 0" class="small-bell-icon"
+              <v-icon v-if="pendingEmployeesCount > 0" class="employee-bell-icon"
                 style="margin-left: 6px;">mdi-bell</v-icon>
             </v-list-item>
           </v-list>
@@ -67,6 +67,7 @@
               <v-list-item-content>
                 <v-list-item-title style="font-size: 0.8rem;">หุ้นที่กำลังเฝ้า</v-list-item-title>
               </v-list-item-content>
+              <v-icon v-if="pendingStocksCount > 0" class="small-bell-icon" style="margin-left: 6px;">mdi-bell</v-icon>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -181,7 +182,7 @@
 
               <v-list-item @click="buttonSignOut" class="custom-list-item">
                 <v-list-item-icon style="margin-right: 5px;">
-                  <v-icon class="icon-tab">mdi-logout</v-icon>
+                  <v-icon class="icon-tab">mdi-exit-run</v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
                   <v-list-item-title style="font-size: 0.8rem;">ออกจากระบบ</v-list-item-title>
@@ -193,8 +194,12 @@
           <v-snackbar v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" v-model="snackbar" :timeout="3000"
             style="width: 100px; height: 40px;" color="#24b224" absolute top right>
             <div class="snackbar-content">
+              <v-icon class="employee-bell-icon mb-2" style="margin-right: 8px; font-size: 16px;">mdi-bell</v-icon>{{
+                EmployeeText }}
+            </div>
+            <div class="snackbar-content">
               <v-icon class="small-bell-icon" style="margin-right: 8px; font-size: 16px;">mdi-bell</v-icon>{{
-                snackbarText }}
+                StockText }}
             </div>
           </v-snackbar>
 
@@ -219,8 +224,10 @@ export default {
   async mounted() {
     await this.fetchEmployeeData();
     await this.fetchPendingEmployeeCount();
+    await this.fetchPendingStockCount();
     setInterval(async () => {
       await this.fetchPendingEmployeeCount();
+      await this.fetchPendingStockCount();
     }, 15000);
   },
 
@@ -229,11 +236,13 @@ export default {
       profileImage: `${this.$config.API_URL}/file/profile/${this.$auth.user.picture}`,
       employees: [],
       pendingEmployeesCount: 0,
+      pendingStocksCount: 0,
       clipped: false,
       fixed: false,
       menuActive: false,
       snackbar: false,
-      snackbarText: '',
+      EmployeeText: '',
+      StockText: '',
       modal: {
         confirmLogout: {
           open: false,
@@ -244,30 +253,44 @@ export default {
 
   methods: {
     async fetchPendingEmployeeCount() {
-  try {
-    // เริ่มต้นการตรวจสอบว่ามีคำขอเดิมที่ยังรอการตอบสนอง
-    if (this.isFetching) {
-      return;  // ถ้ามีการเรียก API อยู่แล้ว ให้หยุดการทำงาน
-    }
+      try {
+        if (this.isFetching) {
+          return;
+        }
+        this.isFetching = true;
+        const response = await this.$store.dispatch('api/employee/getEmployeeByStatus', '2');
+        const newCount = response.length;
+        if (newCount !== this.pendingEmployeesCount) {
+          this.pendingEmployeesCount = newCount;
+          this.EmployeeText = `มีคำร้องขอสมัครสมาชิก : ${this.pendingEmployeesCount} คน`;
+          this.snackbar = true;
+        }
+      } catch (error) {
+        console.error('Error fetching pending employees:', error);
+      } finally {
+        this.isFetching = false;
+      }
+    },
 
-    this.isFetching = true;  // ตั้งค่าการกำลังโหลด
-
-    const response = await this.$store.dispatch('api/employee/getEmployeeByStatus', '2');
-    const newCount = response.length;
-
-    if (newCount !== this.pendingEmployeesCount) {
-      this.pendingEmployeesCount = newCount;
-      this.snackbarText = `มีคำร้องขอสมัครสมาชิก : ${this.pendingEmployeesCount} คน`;
-      this.snackbar = true;
-    }
-  } catch (error) {
-    console.error('Error fetching pending employees:', error);
-    // หากเกิดข้อผิดพลาด ให้แสดงข้อความที่เกี่ยวข้องหรือการจัดการเพิ่มเติม
-  } finally {
-    this.isFetching = false;  // หยุดสถานะการกำลังโหลด
-  }
-}
-,
+    async fetchPendingStockCount() {
+      try {
+        if (this.isFetching) {
+          return;
+        }
+        this.isFetching = true;
+        const response = await this.$store.dispatch('api/follow/getFollowByResult', '2');
+        const newCount = response.length;
+        if (newCount !== this.pendingStocksCount) {
+          this.pendingStocksCount = newCount;
+          this.StockText = `มีหุ้นที่ถึงเป้าแล้ว : ${this.pendingStocksCount} หุ้น`;
+          this.snackbar = true;
+        }
+      } catch (error) {
+        console.error('Error fetching pending employees:', error);
+      } finally {
+        this.isFetching = false;
+      }
+    },
 
     onImageError() {
       this.profileImage = `${this.$config.API_URL}/file/default/${this.$auth.user.picture}`;
@@ -542,6 +565,13 @@ export default {
   100% {
     transform: rotate(0deg);
   }
+}
+
+.employee-bell-icon {
+  font-size: 0.8rem;
+  vertical-align: middle;
+  color: #ffc800;
+  animation: shake 0.8s ease infinite;
 }
 
 .small-bell-icon {

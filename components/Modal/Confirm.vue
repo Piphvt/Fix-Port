@@ -7,13 +7,12 @@
         <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-help</v-icon>
         ต้องการทำรายการหรือไม่
       </v-card-title>
-      <v-divider class="mb-3"></v-divider>
 
       <v-card-actions class="justify-center">
-        <v-btn color="#24b224" @click="confirm" class="rounded-xl font-weight-medium mt-0">
+        <v-btn color="#24b224" @click="confirm" class="rounded-xl font-weight-medium mt-0 mb-2">
           ตกลง
         </v-btn>
-        <v-btn color="#e50211" @click="cancel" class="rounded-xl font-weight-medium mt-0">
+        <v-btn color="#e50211" @click="cancel" class="rounded-xl font-weight-medium mt-0 mb-2">
           ยกเลิก
         </v-btn>
       </v-card-actions>

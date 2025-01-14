@@ -88,6 +88,11 @@
                                 label="ค้นหาชื่อ" dense outlined clearable multiple>
                             </v-autocomplete>
 
+                            <v-autocomplete v-if="searchType === 'staff_no'" v-model="selectedStaffs"
+                                class="mx-2 search-size small-font" :items="getSearchItems('staff_no')"
+                                label="ค้นหาชื่อ" dense outlined clearable multiple>
+                            </v-autocomplete>
+
                             <v-autocomplete v-if="searchType === 'set_no'" v-model="selectedSets"
                                 class="mx-2 search-size small-font" :items="getSearchItems('set_no')"
                                 label="ค้นหาประเภท" dense outlined clearable multiple>
@@ -174,6 +179,9 @@
                 </template>
                 <template v-slot:item.employee_no="{ item }">
                     <div class="text-center">{{ getEmployeeName(item.employee_no) }}</div>
+                </template>
+                <template v-slot:item.staff_no="{ item }">
+                    <div class="text-center" style="color:#38b6ff">{{ getEmployeeName(item.staff_no) }}</div>
                 </template>
                 <template v-slot:item.updated_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
@@ -288,6 +296,7 @@ export default {
 
             selectedStocks: [],
             selectedEmployees: [],
+            selectedStaffs: [],
             selectedSets: [],
 
             selectedItems: [],
@@ -328,11 +337,12 @@ export default {
             searchTypes: [
                 { text: 'ชื่อหุ้น', value: 'stock' },
                 { text: 'ทำรายการโดย', value: 'employee_no' },
+                { text: 'ผู้ติดตามหุ้น', value: 'staff_no' },
                 { text: 'ประเภท', value: 'set_no' },
                 { text: 'เวลา', value: 'updated_date' }
             ],
 
-            visibleColumns: ['select', 'updated_date', 'set_no', 'stock', 'dividend_amount', 'closing_price', 'comment', 'employee_no', 'detail'],
+            visibleColumns: ['select', 'updated_date', 'set_no', 'stock', 'dividend_amount', 'closing_price', 'comment', 'staff_no', 'employee_no', 'detail'],
 
             headers: [
                 {
@@ -385,6 +395,14 @@ export default {
                 {
                     text: 'หมายเหตุ',
                     value: 'comment',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ผู้ติดตามหุ้น',
+                    value: 'staff_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -565,6 +583,8 @@ export default {
                 return this.stocks.map(stock => stock.stock);
             } else if (type === 'employee_no') {
                 return this.stocks.map(stock => this.getEmployeeName(stock.employee_no));
+            } else if (type === 'staff_no') {
+                return this.stocks.map(stock => this.getEmployeeName(stock.staff_no));
             } else if (type === 'set_no') {
                 return this.stocks.map(stock => this.getSetName(stock.set_no) || 'ยังไม่ระบุ');
             }
@@ -638,7 +658,7 @@ export default {
         },
 
         onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchSet !== 'updated_date' && this.searchType !== 'set_no';
+            this.isSearchFieldVisible = this.searchSet !== 'updated_date';
         },
 
         validateDateRange() {
@@ -657,7 +677,7 @@ export default {
                 return;
             }
 
-            if (this.searchType === 'stock' || this.searchType === 'employee_no' || this.searchType === 'set_no') {
+            if (this.searchType === 'stock' || this.searchType === 'employee_no' || this.searchType === 'staff_no' || this.searchType === 'set_no') {
                 this.addSearchItemsToSearch();
             } else {
                 this.savedSearches.push({
@@ -675,8 +695,9 @@ export default {
         addSearchItemsToSearch() {
             const selectedItems =
                 this.searchType === 'stock' ? this.selectedStocks :
-                    this.searchType === 'employee_no' ? this.selectedEmployees :
-                        this.searchType === 'set_no' ? this.selectedSets : [];
+                    this.searchType === 'staff_no' ? this.selectedStaffs :
+                        this.searchType === 'employee_no' ? this.selectedEmployees :
+                            this.searchType === 'set_no' ? this.selectedSets : [];
 
             if (selectedItems.length > 0) {
                 this.savedSearches.push({
@@ -688,6 +709,8 @@ export default {
 
                 if (this.searchType === 'stock') {
                     this.selectedStocks = [];
+                } else if (this.searchType === 'staff_no') {
+                    this.selectedStaffs = [];
                 } else if (this.searchType === 'employee_no') {
                     this.selectedEmployees = [];
                 } else if (this.searchType === 'set_no') {
@@ -705,13 +728,15 @@ export default {
             let field;
             if (search.type === 'employee_no') {
                 field = this.getEmployeeName(stock.employee_no);
+            } else if (search.type === 'staff_no') {
+                field = this.getEmployeeName(stock.staff_no) || 'ยังไม่ระบุ';
             } else if (search.type === 'set_no') {
                 field = this.getSetName(stock.set_no) || 'ยังไม่ระบุ';
             } else {
                 field = stock[search.type];
             }
 
-            if (search.type === 'stock' || search.type === 'employee_no' || search.type === 'set_no') {
+            if (search.type === 'stock' || search.type === 'employee_no' || search.type === 'staff_no' || search.type === 'set_no') {
                 queryMatched = search.query.some(query => {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField === query.toLowerCase();

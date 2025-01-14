@@ -10,7 +10,7 @@ exports.getStock = (req, res) => {
 
 exports.addStock = async (req, res) => {
     try {
-        const { stock, set_no, comment, employee_no, created_date, updated_date } = req.body;
+        const { stock, set_no, comment, staff_no, employee_no, created_date, updated_date } = req.body;
         connection.query('SELECT * FROM `stocks` WHERE `stock` = ?',
             [stock], function (err, results) {
                 if (results.length > 0) {
@@ -20,6 +20,7 @@ exports.addStock = async (req, res) => {
                         stock,
                         set_no,
                         comment,
+                        staff_no,
                         employee_no,
                         created_date,
                         updated_date,
@@ -45,7 +46,7 @@ exports.addStock = async (req, res) => {
 
 exports.updateStock = async (req, res) => {
     try {
-        const { stock, set_no, comment, employee_no } = req.body;
+        const { stock, set_no, comment, staff_no, employee_no } = req.body;
         const stockId = req.params.no;
         const [existingStocks] = await connection.promise().query('SELECT * FROM `stocks` WHERE `stock` = ? AND `no` != ?', [stock, stockId]);
         if (existingStocks.length > 0) {
@@ -55,6 +56,7 @@ exports.updateStock = async (req, res) => {
             stock,
             set_no,
             comment,
+            staff_no,
             employee_no,
             updated_date: new Date()
         };
