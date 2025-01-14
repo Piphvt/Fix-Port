@@ -3,6 +3,7 @@
     <div>
         <ModalWarning :open="modal.warning.open" :message="modal.warning.message" :warning.sync="modal.warning.open" />
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
+        <ModalConfirm :method="Confirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <FollowCreate :open="FollowCreateOpen" @update:open="FollowCreateOpen = false" />
@@ -183,14 +184,21 @@
                             <v-list class="custom-list">
                                 <v-list-item @click="openEditStock(item)" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#ffc800">mdi-pencil</v-icon>
+                                        <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
+                                <v-list-item @click="showConfirmDialog('waiting', item)" class="custom-list-item">
+                                        <v-list-item-icon style="margin-right: 4px;">
+                                            <v-icon class="icon-tab" color="#38b6ff">mdi-reply-circle</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content style="font-size: 0.8rem;">รอการตรวจสอบ</v-list-item-content>
+                                    </v-list-item>
+
                                 <v-list-item @click="toggleSelectItems" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#e50211">mdi-delete</v-icon>
+                                        <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
                                 </v-list-item>
@@ -399,6 +407,34 @@ export default {
     },
 
     methods: {
+        async Confirm() {
+            try {
+                if (this.currentAction === 'waiting') {
+                    await this.$store.dispatch('api/follow/updateFollow', {
+                        no: this.currentItem.no,
+                        stock_no: this.currentItem.stock_no,
+                        low_price: this.currentItem.low_price,
+                        up_price: this.currentItem.up_price,
+                        remark: this.currentItem.remark,
+                        result: 3,
+                        reach: null,
+                        employee_no: this.$auth.user.no,
+                        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                        updated_date: null,
+                    });
+                    this.recordLog();
+                    this.modal.complete.message = 'ส่งไปที่รอการตรวจสอบเรียบร้อยแล้ว';
+                }
+
+                this.modal.complete.open = true;
+            } catch (error) {
+                this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
+                this.modal.complete.open = true;
+            }
+
+            this.modalConfirmOpen = false;
+        },
+
         toggleSelectItems() {
             this.isSelectingItems = !this.isSelectingItems;
         },
@@ -693,7 +729,7 @@ export default {
                 action: this.currentAction === 'delete' ? 'ลบหุ้น' : 'ไม่ลบหุ้น',
                 time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

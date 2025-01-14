@@ -165,8 +165,10 @@ export default {
                         up_price: stock.up_price,
                         remark: stock.remark,
                         result: 1,
+                        reach: null,
                         employee_no: this.$auth.user.no,
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                        updated_date: null,
                     });
                 } catch (error) {
                     console.error('Error adding stock:', error);

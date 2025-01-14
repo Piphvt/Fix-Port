@@ -290,4 +290,8 @@ export default {
 .custom-list {
     padding: 0.4px 2px;
 }
+
+.icon-tab {
+    font-size: 120% !important;
+}
 </style>

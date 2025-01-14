@@ -36,18 +36,25 @@
                                     <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
                                 </template>
                                 <v-list class="custom-list">
-                                    <v-list-item @click="showConfirmDialog('approve', item)" class="custom-list-item">
+                                    <v-list-item @click="showConfirmDialog('waiting', item)" class="custom-list-item">
                                         <v-list-item-icon style="margin-right: 4px;">
-                                            <v-icon class="icon-tab" color="#24b224">mdi-check-circle</v-icon>
+                                            <v-icon class="icon-tab" color="#38b6ff">mdi-reply-circle</v-icon>
                                         </v-list-item-icon>
-                                        <v-list-item-content style="font-size: 0.8rem;">อนุมัติ</v-list-item-content>
+                                        <v-list-item-content style="font-size: 0.8rem;">รอการตรวจสอบ</v-list-item-content>
+                                    </v-list-item>
+
+                                    <v-list-item @click="showConfirmDialog('following', item)" class="custom-list-item">
+                                        <v-list-item-icon style="margin-right: 4px;">
+                                            <v-icon class="icon-tab" color="#24b224">mdi-plus-circle</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content style="font-size: 0.8rem;">เฝ้าหุ้น</v-list-item-content>
                                     </v-list-item>
 
                                     <v-list-item @click="showConfirmDialog('reject', item)" class="custom-list-item">
                                         <v-list-item-icon style="margin-right: 4px;">
-                                            <v-icon class="icon-tab" color="#e50211">mdi-close-circle</v-icon>
+                                            <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
                                         </v-list-item-icon>
-                                        <v-list-item-content style="font-size: 0.8rem;">ไม่อนุมัติ</v-list-item-content>
+                                        <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
                                     </v-list-item>
                                 </v-list>
                             </v-menu>
@@ -209,17 +216,39 @@ export default {
 
         async handleConfirm() {
             try {
-                if (this.currentAction === 'approve') {
-                    await this.$store.dispatch('api/employee/updateEmployeeStatus', {
+                if (this.currentAction === 'waiting') {
+                    await this.$store.dispatch('api/follow/updateFollow', {
                         no: this.currentItem.no,
-                        status: 1,
-                        employee_no: this.$auth.user.no
+                        stock_no: this.currentItem.stock_no,
+                        low_price: this.currentItem.low_price,
+                        up_price: this.currentItem.up_price,
+                        remark: this.currentItem.remark,
+                        result: 3,
+                        reach: null,
+                        employee_no: this.$auth.user.no,
+                        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                        updated_date: null,
                     });
                     this.recordLog();
-                    this.modal.complete.message = 'อนุมัติผู้ใช้งานเรียบร้อยแล้ว';
+                    this.modal.complete.message = 'ส่งไปที่รอการตรวจสอบเรียบร้อยแล้ว';
+                } else if (this.currentAction === 'following') {
+                    await this.$store.dispatch('api/follow/updateFollow', {
+                        no: this.currentItem.no,
+                        stock_no: this.currentItem.stock_no,
+                        low_price: this.currentItem.low_price,
+                        up_price: this.currentItem.up_price,
+                        remark: this.currentItem.remark,
+                        result: 1,
+                        reach: null,
+                        employee_no: this.$auth.user.no,
+                        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                        updated_date: null,
+                    });
+                    this.recordLog();
+                    this.modal.complete.message = 'ส่งไปที่เฝ้าหุ้นเรียบร้อยแล้ว';
                 } else if (this.currentAction === 'reject') {
-                    await this.$store.dispatch('api/employee/deleteEmployee', this.currentItem.no);
-                    this.modal.complete.message = 'ลบผู้ใช้งานนี้เรียบร้อยแล้ว';
+                    await this.$store.dispatch('api/follow/deleteFollow', this.currentItem.no);
+                    this.modal.complete.message = 'ลบเรียบร้อยแล้ว';
                     this.recordLog();
                 }
 
@@ -300,5 +329,9 @@ export default {
 
 .custom-list {
     padding: 0.4px 2px;
+}
+
+.icon-tab {
+    font-size: 120% !important;
 }
 </style>

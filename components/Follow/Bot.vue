@@ -7,19 +7,24 @@
                 <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
                     :complete.sync="modal.complete.open" :method="goBack" />
                 <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
+                <FollowChange :open="editStock" :data="editAllData" @update:edit="editStock = false" />
             </div>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-archive-edit</v-icon>
                 <span class="headline">หุ้นที่รอการตรวจสอบ</span>
             </v-card-title>
-            
+
             <v-card-text>
                 <v-data-table :headers="headers" :items="follows" item-value="no" item-key="no" :items-per-page="5">
                     <template v-slot:item.stock_no="{ item }">
                         <div class="text-center">{{ getStockName(item.stock_no) }}</div>
                     </template>
                     <template v-slot:item.employee_no="{ item }">
-                        <div class="text-center">{{ getEmployeeName(item.employee_no) }}</div>
+                        <div class="text-center" :style="{
+                            color: getEmployeeName(item.employee_no) ? '#38b6ff' : '#ffc800'
+                        }">
+                            {{ getEmployeeName(item.employee_no) || 'บอท' }}
+                        </div>
                     </template>
                     <template v-slot:item.created_date="{ item }">
                         <div class="text-center">{{ formatDateTime(item.created_date) }}</div>
@@ -36,6 +41,14 @@
                                             <v-icon class="icon-tab" color="#24b224">mdi-check-circle</v-icon>
                                         </v-list-item-icon>
                                         <v-list-item-content style="font-size: 0.8rem;">อนุมัติ</v-list-item-content>
+                                    </v-list-item>
+
+                                    <v-list-item @click="openEditStock(item)" class="custom-list-item">
+                                        <v-list-item-icon style="margin-right: 4px;">
+                                            <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content
+                                            style="font-size: 0.8rem;">แก้ไขและอนุมัติ</v-list-item-content>
                                     </v-list-item>
 
                                     <v-list-item @click="showConfirmDialog('reject', item)" class="custom-list-item">
@@ -86,6 +99,9 @@ export default {
             stocks: [],
             employee: [],
 
+            editStock: false,
+            editAllData: {},
+
             currentAction: '',
             currentItem: null,
             modalConfirmOpen: false,
@@ -125,6 +141,14 @@ export default {
                 {
                     text: 'หมายเหตุ',
                     value: 'remark',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'ข้อมูลจาก',
+                    value: 'employee_no',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -195,10 +219,10 @@ export default {
                         updated_date: null,
                     });
                     this.recordLog();
-                    this.modal.complete.message = 'เพิ่มการเฝ้าหุ้นแล้ว';
+                    this.modal.complete.message = 'เพิ่มการเฝ้าหุ้นเรียบร้อยแล้ว';
                 } else if (this.currentAction === 'reject') {
                     await this.$store.dispatch('api/follow/deleteFollow', this.currentItem.no);
-                    this.modal.complete.message = 'ลบเรียบร้อย';
+                    this.modal.complete.message = 'ลบเรียบร้อยแล้ว';
                     this.recordLog();
                 }
 
@@ -248,6 +272,11 @@ export default {
             }
         },
 
+        openEditStock(follow) {
+            this.editAllData = follow;
+            this.editStock = true;
+        },
+
         recordLog() {
             const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
             const Employee_Email = this.$auth.user.email;
@@ -279,5 +308,9 @@ export default {
 
 .custom-list {
     padding: 0.4px 2px;
+}
+
+.icon-tab {
+    font-size: 120% !important;
 }
 </style>
