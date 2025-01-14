@@ -181,8 +181,11 @@
                     <div class="text-center">{{ getEmployeeName(item.employee_no) }}</div>
                 </template>
                 <template v-slot:item.staff_no="{ item }">
-                    <div class="text-center" style="color:#38b6ff">{{ getEmployeeName(item.staff_no) }}</div>
+                    <div :style="{ 'color': item.staff_no ? '#38b6ff' : '#ffc800' }" class="text-center">
+                        {{ getEmployeeName(item.staff_no) }}
+                    </div>
                 </template>
+
                 <template v-slot:item.updated_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
                 </template>
@@ -531,7 +534,7 @@ export default {
 
                     stock.price = latestPrice.price;
                 } else {
-                    stock.price = null;
+                    stock.price = 0;
                 }
 
                 const totalDividend = this.dividends
@@ -565,7 +568,7 @@ export default {
 
         getEmployeeName(empId) {
             const employee = this.employees.find(e => e.no === empId);
-            return employee ? employee.fname + ' ' + employee.lname : 'ไม่ทราบ';
+            return employee ? employee.fname + ' ' + employee.lname : 'ยังไม่ระบุ';
         },
 
         openEditStock(stock) {

@@ -15,12 +15,10 @@
             <v-card-text>
                 <v-form ref="form" lazy-validation>
                     <v-row v-for="(item, index) in withdrawalItems" :key="index" align="center">
-                        <v-col cols="3" class="ml-2">
+                        <v-col v-if="customers.length > 0" cols="3" class="ml-2">
                             <v-text-field v-model="item.numericId" @input="setFullId(item)" label="ไอดีลูกค้า"
-                                type="text" dense outlined prepend="AQT" :rules="[
-                                    (v) => !!v || 'กรุณากรอกตัวเลขเท่านั้น',
-                                    (v) => /^(AQT)?[0-9]{9}$/.test(v) || 'กรุณากรอกข้อมูลให้ถูกต้อง'
-                                ]" maxlength="12" />
+                                type="text" dense outlined prepend="AQT" maxlength="12"
+                                :rules="validateStockRules(item)" />
                         </v-col>
 
                         <v-col cols="2">
@@ -71,6 +69,7 @@ export default {
     async mounted() {
         await this.fetchTypesData()
         await this.fetchBasesData()
+        await this.fetchCustomerData()
     },
 
     props: {
@@ -93,6 +92,7 @@ export default {
 
             types: [],
             bases: [],
+            customers: []
         };
     },
 
@@ -104,16 +104,26 @@ export default {
 
     computed: {
         isFormValid() {
-        return this.withdrawalItems.every(item => 
-            (item.numericId && item.numericId.trim() !== '') && 
-            (item.nickname && item.nickname.trim() !== '')
-        );
-    }
+            return this.withdrawalItems.every((item) => {
+                const isnumericIdValid = typeof item.numericId === 'string' && (/^\d{9}$/.test(item.numericId.trim()) || /^[aA][qQ][tT]\d{9}$/.test(item.numericId.trim()));
+                const isNicknameValid = typeof item.nickname === 'string' && /^[\u0E00-\u0E7F]+$/.test(item.nickname.trim());
+                const isStockUnique = !this.customers.some(
+                    (customer) =>
+                        customer.id &&
+                        item.id &&
+                        customer.id.toLowerCase() === item.id.toLowerCase()
+                );
+                const hasDuplicateStocks = this.findDuplicateIds(this.withdrawalItems).length === 0;
+                return isnumericIdValid && isNicknameValid && isStockUnique && hasDuplicateStocks;
+            });
+        },
+
     },
 
     mounted() {
         this.fetchTypesData();
         this.fetchBasesData();
+        this.fetchCustomerData();
         window.addEventListener('keydown', this.handleKeydown);
     },
 
@@ -122,12 +132,57 @@ export default {
     },
 
     methods: {
+        findDuplicateIds() {
+            const names = this.withdrawalItems
+                .map((customer) => (customer.id ? customer.id.toLowerCase() : ''))
+                .filter((id) => id);
+            return names.filter((id, index) => names.indexOf(id) !== index);
+        },
+
+        validateStockRules(item) {
+            return [
+                (v) => !!v || 'กรุณากรอกข้อมูลให้ถูกต้อง',
+                (v) => /^(AQT)?\d{9}$/i.test(v) || 'กรุณากรอกรหัสสมาชิกในรูปแบบที่ถูกต้อง',
+                (v) => {
+                    const duplicateCustomers = this.findDuplicateIds();
+                    if (
+                        item.id &&
+                        this.customers.some(
+                            (s) => s.id && s.id.toLowerCase() === item.id.toLowerCase()
+                        )
+                    ) {
+                        return 'มีรหัสสมาชิกนี้อยู่แล้ว';
+                    }
+                    if (item.id && duplicateCustomers.includes(item.id.toLowerCase())) {
+                        return 'รหัสสมาชิกซ้ำกัน';
+                    }
+                    return true;
+                },
+            ];
+        },
+
+        async fetchCustomerData() {
+            try {
+                const response = await this.$store.dispatch('api/customer/getCustomer');
+                if (response) {
+                    this.customers = response
+                        .map((item) => ({
+                            no: item.no,
+                            id: item.id ? item.id.trim().toLowerCase() : null,
+                        }))
+                        .filter((customer) => customer.id);
+                }
+            } catch (error) {
+                console.error('Error fetching customers:', error);
+            }
+        },
 
         setFullId(item) {
-            if (!item.numericId.startsWith('AQT')) {
-                item.id = 'AQT' + item.numericId;
+            const prefix = 'AQT';
+            if (!item.numericId.toUpperCase().startsWith(prefix)) {
+                item.id = prefix + item.numericId;
             } else {
-                item.id = item.numericId;
+                item.id = item.numericId.toUpperCase();
             }
         },
 
@@ -151,13 +206,6 @@ export default {
         },
 
         async confirmAndAddCustomers() {
-            const duplicateIds = this.findDuplicateIds(this.withdrawalItems);
-            if (duplicateIds.length > 0) {
-                this.modal.error.message = `มีไอดีซ้ำ : ${duplicateIds.join(', ')}`;
-                this.modal.error.open = true;
-                return;
-            }
-
             for (const customer of this.withdrawalItems) {
                 try {
                     await this.$store.dispatch('api/customer/addCustomer', {
@@ -183,11 +231,6 @@ export default {
             this.modal.complete.open = true;
             this.recordLog();
             this.showModalResult = false;
-        },
-
-        findDuplicateIds(customers) {
-            const ids = customers.map(customer => customer.id);
-            return ids.filter((id, index) => ids.indexOf(id) !== index && id);
         },
 
         async fetchTypesData() {

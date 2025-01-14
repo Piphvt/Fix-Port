@@ -182,9 +182,13 @@ export default {
 
         async fetchStockData() {
             try {
-                const response = await this.$store.dispatch('api/stock/getStock');
-                if (response) {
-                    this.stocks = response.map(item => ({ no: item.no, name: item.stock }));
+                const stockResponse = await this.$store.dispatch('api/stock/getStock');
+                const detailResponse = await this.$store.dispatch('api/detail/getDetail');
+
+                if (stockResponse && detailResponse) {
+                    this.stocks = stockResponse
+                        .filter(stock => detailResponse.some(detail => detail.stock_no === stock.no))
+                        .map(stock => ({ no: stock.no, name: stock.stock }));
                 }
             } catch (error) {
                 console.error('Error fetching stocks:', error);

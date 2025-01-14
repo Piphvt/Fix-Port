@@ -3,21 +3,21 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <StockResult :open="showModalResult" :stocks="withdrawalItems" :sets="sets" :employees="employees" @confirm="confirmAndAddCustomers"
-            @cancel="showModalResult = false" @update:open="showModalResult = $event" />
+        <StockResult :open="showModalResult" :stocks="withdrawalItems" :sets="sets" :employees="employees"
+            @confirm="confirmAndAddCustomers" @cancel="showModalResult = false"
+            @update:open="showModalResult = $event" />
 
         <v-card flat>
             <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon color="#24b224">mdi-archive-plus</v-icon>&nbsp;
+                <v-icon color="#24b224" size="30">mdi-archive-plus</v-icon>&nbsp;
                 <h2 class="custom-title">เพิ่มหุ้น</h2>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" lazy-validation>
                     <v-row v-for="(item, index) in withdrawalItems" :key="index" align="center">
-                        <v-col cols="3" class="ml-2">
-                            <v-text-field v-model="item.stock" label="ชื่อหุ้น" type="text" dense outlined
-                                :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']">
-                            </v-text-field>
+                        <v-col v-if="stocks.length > 0" cols="3" class="ml-2">
+                            <v-text-field v-model="item.stock" @input="setFullText(item)" label="ชื่อหุ้น" type="text"
+                                dense outlined :rules="validateStockRules(item)" />
                         </v-col>
 
                         <v-col cols="3">
@@ -65,6 +65,7 @@ export default {
     async mounted() {
         await this.fetchSetData();
         await this.fetchEmployeeData();
+        await this.fetchStockData();
     },
 
     props: {
@@ -88,6 +89,7 @@ export default {
             }],
             sets: [],
             employees: [],
+            stocks: []
         };
     },
 
@@ -99,13 +101,19 @@ export default {
 
     computed: {
         isFormValid() {
-            return this.withdrawalItems.every(item => item.stock.trim() !== '');
-        }
+            return this.withdrawalItems.every(item => {
+                const isStockValid = item.stock.trim() !== '';
+                const isStockUnique = !this.stocks.some(stock => stock.name.toLowerCase() === item.stock.toLowerCase());
+                const hasDuplicateStocks = this.findDuplicateIds(this.withdrawalItems).length === 0;
+                return hasDuplicateStocks && isStockValid && isStockUnique;
+            });
+        },
     },
 
     mounted() {
         this.fetchSetData();
         this.fetchEmployeeData();
+        this.fetchStockData();
         window.addEventListener('keydown', this.handleKeydown);
     },
 
@@ -114,11 +122,47 @@ export default {
     },
 
     methods: {
+        setFullText(item) {
+            item.stock = item.stock.toUpperCase();
+        },
+
+        findDuplicateIds() {
+            const names = this.withdrawalItems.map(stock => stock.stock.toLowerCase());
+            return names.filter((stock, index) => names.indexOf(stock) !== index && stock);
+        },
+
+        validateStockRules(item) {
+            return [
+                (v) => !!v || 'กรุณากรอกชื่อหุ้น',
+                (v) => {
+                    const duplicateStocks = this.findDuplicateIds();
+                    if (duplicateStocks.includes(item.stock.toLowerCase())) {
+                        return 'ชื่อหุ้นซ้ำกัน';
+                    }
+                    const stockExists = this.stocks.some(s => s.name.toLowerCase() === item.stock.toLowerCase());
+                    if (stockExists) {
+                        return 'มีชื่อหุ้นนี้อยู่แล้ว';
+                    }
+                    return true;
+                },
+            ];
+        },
+
         async fetchEmployeeData() {
             try {
                 const response = await this.$store.dispatch('api/employee/getEmployee');
                 if (response) {
                     this.employees = response.map(item => ({ no: item.no, name: item.fname + ' ' + item.lname }));
+                }
+            } catch (error) {
+            }
+        },
+
+        async fetchStockData() {
+            try {
+                const response = await this.$store.dispatch('api/stock/getStock');
+                if (response) {
+                    this.stocks = response.map(item => ({ no: item.no, name: item.stock }));
                 }
             } catch (error) {
             }
@@ -143,19 +187,7 @@ export default {
             window.location.reload();
         },
 
-        findDuplicateIds(stocks) {
-            const names = stocks.map(stock => stock.stock);
-            return names.filter((stock, index) => names.indexOf(stock) !== index && stock);
-        },
-
         async confirmAndAddCustomers() {
-            const duplicateIds = this.findDuplicateIds(this.withdrawalItems);
-            if (duplicateIds.length > 0) {
-                this.modal.error.message = `มีหุ้นซ้ำ : ${duplicateIds.join(', ')}`;
-                this.modal.error.open = true;
-                return;
-            }
-
             for (const stock of this.withdrawalItems) {
                 try {
                     await this.$store.dispatch('api/stock/addStock', {
@@ -199,6 +231,7 @@ export default {
             this.withdrawalItems.push({
                 stock: '',
                 set_no: null,
+                staff_no: null
             });
         },
 
