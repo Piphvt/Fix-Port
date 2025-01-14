@@ -18,7 +18,6 @@
                 <v-text-field v-model="formData.stock" :rules="[
                   (v) => !!v || 'โปรดกรอกชื่อหุ้น'
                 ]" label="ชื่อหุ้น" dense outlined required />
-
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
@@ -34,8 +33,14 @@
                 </v-select>
               </v-col>
 
-              <v-col cols="5" sm="11" class="pa-0 ml-4">
+              <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                 <v-text-field v-model="formData.comment" label="หมายเหตุ" dense outlined />
+              </v-col>
+
+              <v-col cols="6" sm="5" class="pa-0">
+                <v-autocomplete v-model="formData.staff_no" :items="employees" item-text="name" item-value="no"
+                  label="ชื่อผู้ติดตามหุ้น" dense outlined :rules="[(v) => !!v || 'กรุณากรอกชื่อผู้ติดตามหุ้น']" clearable>
+                </v-autocomplete>
               </v-col>
             </v-row>
           </v-form>
@@ -94,6 +99,7 @@ export default {
       setOptions: [],
       details: [],
       stocks: [],
+      employees: [],
       originalData: {},
 
     };
@@ -108,12 +114,14 @@ export default {
   async mounted() {
     await this.fetchDetailData();
     await this.fetchStockData();
+    await this.fetchEmployeeData();
   },
 
   mounted() {
     this.fetchDetailData();
     this.fetchStockData();
     this.setSetOptions();
+    this.fetchEmployeeData();
     this.formData = JSON.parse(JSON.stringify(this.data));
     this.originalData = JSON.parse(JSON.stringify(this.data));
     document.addEventListener('keydown', this.handleKeydown);
@@ -135,6 +143,16 @@ export default {
   },
 
   methods: {
+    async fetchEmployeeData() {
+      try {
+        const response = await this.$store.dispatch('api/employee/getEmployee');
+        if (response) {
+          this.employees = response.map(item => ({ no: item.no, name: item.fname + ' ' + item.lname }));
+        }
+      } catch (error) {
+      }
+    },
+
     async setSetOptions() {
       try {
         this.sets = await this.$store.dispatch('api/set/getSet');

@@ -5,32 +5,31 @@
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
         <ModalConfirm :open="modal.confirm.open" :confirm.sync="modal.confirm.open" :method="submitForm" />
 
-        <v-card class="custom-card" flat>
+        <v-card flat>
             <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon class="little-icon" color="#24b224">mdi-credit-card-plus</v-icon>&nbsp;
-                <h3 class="mb-0">เพิ่มค่าธรรมเนียม</h3>
+                <v-icon color="#24b224" size="30">mdi-credit-card-plus</v-icon>&nbsp;
+                <h3 class="custom-title">เพิ่มค่าธรรมเนียม</h3>
             </v-card-title>
 
-            <v-form ref="form" v-model="isFormValid" lazy-validation>
-                <v-container>
+            <v-card-text>
+                <v-form ref="form" v-model="isFormValid" lazy-validation>
                     <v-row>
                         <v-col cols="5" sm="11" class="pa-0 ml-3">
-                            <v-text-field v-model="newStockType" label="ค่าธรรมเนียม" dense required outlined>
+                            <v-text-field v-model="newStockType" label="ค่าธรรมเนียม" dense required outlined 
+                            :rules="[value => !!value || 'กรุณากรอกค่าธรรมเนียม']">
                             </v-text-field>
                         </v-col>
                     </v-row>
-                    <v-row>
-                        <v-col cols="12" class="text-center pa-0">
-                            <v-btn @click="confirm" :disabled="!isFormValid || !newStockType" color="#24b224" class="mb-5">
-                                ยืนยัน
-                            </v-btn>
-                            <v-btn @click="cancel" color="#e50211" class="ml-2 mb-5">
-                                ยกเลิก
-                            </v-btn>
-                        </v-col>
-                    </v-row>
-                </v-container>
-            </v-form>
+                </v-form>
+                <v-card-actions class="card-title-center pa-0">
+                    <v-btn @click="confirm" :disabled="!isFormValid || !newStockType" color="#24b224">
+                        ยืนยัน
+                    </v-btn>
+                    <v-btn @click="cancel" color="#e50211" class="ml-2">
+                        ยกเลิก
+                    </v-btn>
+                </v-card-actions>
+            </v-card-text>
         </v-card>
     </v-dialog>
 </template>
@@ -58,7 +57,7 @@ export default {
         };
     },
     watch: {
-        open(newVal) { 
+        open(newVal) {
             this.isOpen = newVal;
         }
     },
@@ -135,3 +134,16 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.card-title-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.custom-title {
+    font-size: 1rem;
+}
+</style>

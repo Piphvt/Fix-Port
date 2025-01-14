@@ -1,9 +1,9 @@
 <template>
     <v-dialog v-model="showModalResult" max-width="500px">
         <v-card>
-            <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon color="#24b224">mdi-text-box-check</v-icon>&nbsp;
-                <h3 class="custom-title">ตรวจสอบข้อมูลลูกค้า</h3>
+            <v-card-title class="d-flex align-center justify-center">
+                <v-icon color="#24b224" size="30">mdi-alert-circle</v-icon>&nbsp;
+                <h3 class="custom-title">ตรวจสอบความถูกต้อง</h3>
             </v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="formattedCustomers" class="elevation-1" hide-default-footer>
@@ -98,6 +98,6 @@ export default {
 }
 
 .custom-title {
-    font-size: 1rem;
+    font-size: 1.2rem;
 }
 </style>

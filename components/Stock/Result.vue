@@ -1,9 +1,9 @@
 <template>
     <v-dialog v-model="showModalResult" max-width="350px" @keydown="handleKeydown">
         <v-card>
-            <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon color="#24b224">mdi-archive-check</v-icon>&nbsp;
-                <h3 class="custom-title">ตรวจสอบข้อมูลหุ้น</h3>
+            <v-card-title class="d-flex align-center justify-center">
+                <v-icon color="#24b224" size="30">mdi-alert-circle</v-icon>&nbsp;
+                <h3 class="custom-title">ตรวจสอบความถูกต้อง</h3>
             </v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="formattedStocks" class="elevation-1" hide-default-footer>
@@ -25,6 +25,7 @@ export default {
         open: Boolean,
         stocks: Array,
         sets: Array,
+        employees: Array,
     },
     data() {
         return {
@@ -32,17 +33,21 @@ export default {
             headers: [
                 { text: 'ชื่อหุ้น', value: 'stock', sortable: false, align: 'center', cellClass: 'text-center' },
                 { text: 'ประเภท', value: 'set_name', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'ผู้ติดตามหุ้น', value: 'staff_name', sortable: false, align: 'center', cellClass: 'text-center' },
             ],
         };
     },
     computed: {
         formattedStocks() {
             const sets = this.sets || [];
+            const employees = this.employees || [];
             return this.stocks.map(stock => {
                 const set = sets.find(s => s.no === stock.set_no);
+                const employee = employees.find(e => e.no === stock.staff_no);
                 return {
                     ...stock,
                     set_name: set ? set.name : 'ยังไม่ระบุ',
+                    staff_name: employee ? employee.name : 'ยังไม่ระบุ',
                 };
             });
         },
@@ -91,6 +96,6 @@ export default {
 }
 
 .custom-title {
-    font-size: 1rem;
+    font-size: 1.2rem;
 }
 </style>

@@ -1,9 +1,9 @@
 <template>
-    <v-dialog v-model="StockCreateOpen" @close="updateOpen(false)" max-width="500px">
+    <v-dialog v-model="StockCreateOpen" @close="updateOpen(false)" max-width="700px">
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <StockResult :open="showModalResult" :stocks="withdrawalItems" :sets="sets" @confirm="confirmAndAddCustomers"
+        <StockResult :open="showModalResult" :stocks="withdrawalItems" :sets="sets" :employees="employees" @confirm="confirmAndAddCustomers"
             @cancel="showModalResult = false" @update:open="showModalResult = $event" />
 
         <v-card flat>
@@ -14,15 +14,21 @@
             <v-card-text>
                 <v-form ref="form" lazy-validation>
                     <v-row v-for="(item, index) in withdrawalItems" :key="index" align="center">
-                        <v-col cols="4" class="ml-2">
+                        <v-col cols="3" class="ml-2">
                             <v-text-field v-model="item.stock" label="ชื่อหุ้น" type="text" dense outlined
                                 :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']">
                             </v-text-field>
                         </v-col>
 
-                        <v-col cols="4">
+                        <v-col cols="3">
                             <v-select v-model="item.set_no" :items="sets" item-text="name" item-value="no"
                                 label="ประเภท" clearable dense outlined>
+                            </v-select>
+                        </v-col>
+
+                        <v-col cols="3">
+                            <v-select v-model="item.staff_no" :items="employees" item-text="name" item-value="no"
+                                label="ผู้ติดตามหุ้น" clearable dense outlined>
                             </v-select>
                         </v-col>
 
@@ -58,6 +64,7 @@ export default {
     middleware: 'auth',
     async mounted() {
         await this.fetchSetData();
+        await this.fetchEmployeeData();
     },
 
     props: {
@@ -77,9 +84,10 @@ export default {
 
             showModalResult: false,
             withdrawalItems: [{
-                stock: '', set_no: null,
+                stock: '', set_no: null, staff_no: null
             }],
             sets: [],
+            employees: [],
         };
     },
 
@@ -97,6 +105,7 @@ export default {
 
     mounted() {
         this.fetchSetData();
+        this.fetchEmployeeData();
         window.addEventListener('keydown', this.handleKeydown);
     },
 
@@ -105,6 +114,16 @@ export default {
     },
 
     methods: {
+        async fetchEmployeeData() {
+            try {
+                const response = await this.$store.dispatch('api/employee/getEmployee');
+                if (response) {
+                    this.employees = response.map(item => ({ no: item.no, name: item.fname + ' ' + item.lname }));
+                }
+            } catch (error) {
+            }
+        },
+
         openModal() {
             this.showModalResult = true;
         },
@@ -142,6 +161,7 @@ export default {
                     await this.$store.dispatch('api/stock/addStock', {
                         stock: stock.stock,
                         set_no: stock.set_no,
+                        staff_no: stock.staff_no,
                         employee_no: this.$auth.user.no,
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                         updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
@@ -197,7 +217,7 @@ export default {
             const Employee_Picture = this.$auth.user.picture;
             const details = this.withdrawalItems.map((item, index) => {
                 const setName = this.sets.find(set => set.no === item.set_no)?.name || 'ยังไม่ระบุ';
-                return `หุ้นที่ ${index + 1}\n` +`ชื่อ : ${item.stock || 'ยังไม่ระบุ'}\n` +`ประเภท : ${setName}`;
+                return `หุ้นที่ ${index + 1}\n` + `ชื่อ : ${item.stock || 'ยังไม่ระบุ'}\n` + `ประเภท : ${setName}`;
             }).join('\n\n');
             const log = {
                 action: 'เพิ่มหุ้นใหม่',

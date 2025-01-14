@@ -1,23 +1,124 @@
 <template>
-
     <div>
-        <v-container class="fill-height" fluid justify="center" align="center">
-            <v-row justify="center">
-                <v-col cols="12" sm="8" md="4" :style="{ marginTop: '10vh' }">
-                    <v-row justify="center">
-                        <!-- <v-col cols="12" class="d-flex justify-center">
-                            <v-btn color="#24b224" @click="fixport"
-                                :style="{ fontSize: '20px', height: '60px', width: '150%', marginBottom: '15px' }">
-                                ข้อมูลหุ้นของลูกค้า
-                            </v-btn>
-                        </v-col> -->
-                    </v-row>
-                </v-col>
+      <v-container class="fill-height" fluid justify="center" align="center">
+        <v-row justify="center">
+          <v-col cols="12" sm="10" md="8">
+            <v-row>
+              <!-- Top-Left Table -->
+              <v-col cols="12" sm="6" md="6">
+                <v-card>
+                  <v-card-title>Top-Left Table</v-card-title>
+                  <v-card-text>
+                    <v-simple-table>
+                      <thead>
+                        <tr>
+                          <th>Header 1</th>
+                          <th>Header 2</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Row 1, Col 1</td>
+                          <td>Row 1, Col 2</td>
+                        </tr>
+                        <tr>
+                          <td>Row 2, Col 1</td>
+                          <td>Row 2, Col 2</td>
+                        </tr>
+                      </tbody>
+                    </v-simple-table>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+  
+              <!-- Top-Right Table -->
+              <v-col cols="12" sm="6" md="6">
+                <v-card>
+                  <v-card-title>Top-Right Table</v-card-title>
+                  <v-card-text>
+                    <v-simple-table>
+                      <thead>
+                        <tr>
+                          <th>Header 1</th>
+                          <th>Header 2</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Row 1, Col 1</td>
+                          <td>Row 1, Col 2</td>
+                        </tr>
+                        <tr>
+                          <td>Row 2, Col 1</td>
+                          <td>Row 2, Col 2</td>
+                        </tr>
+                      </tbody>
+                    </v-simple-table>
+                  </v-card-text>
+                </v-card>
+              </v-col>
             </v-row>
-        </v-container>
+  
+            <v-row>
+              <!-- Bottom-Left Table -->
+              <v-col cols="12" sm="6" md="6">
+                <v-card>
+                  <v-card-title>Bottom-Left Table</v-card-title>
+                  <v-card-text>
+                    <v-simple-table>
+                      <thead>
+                        <tr>
+                          <th>Header 1</th>
+                          <th>Header 2</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Row 1, Col 1</td>
+                          <td>Row 1, Col 2</td>
+                        </tr>
+                        <tr>
+                          <td>Row 2, Col 1</td>
+                          <td>Row 2, Col 2</td>
+                        </tr>
+                      </tbody>
+                    </v-simple-table>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+  
+              <!-- Bottom-Right Table -->
+              <v-col cols="12" sm="6" md="6">
+                <v-card>
+                  <v-card-title>Bottom-Right Table</v-card-title>
+                  <v-card-text>
+                    <v-simple-table>
+                      <thead>
+                        <tr>
+                          <th>Header 1</th>
+                          <th>Header 2</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Row 1, Col 1</td>
+                          <td>Row 1, Col 2</td>
+                        </tr>
+                        <tr>
+                          <td>Row 2, Col 1</td>
+                          <td>Row 2, Col 2</td>
+                        </tr>
+                      </tbody>
+                    </v-simple-table>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-container>
     </div>
-
-</template>
+  </template>
 
 
 <script>
@@ -72,17 +173,6 @@ export default {
             }
         },
 
-        fixport() {
-            this.$router.push('/app/transaction/customer_stock');
-        },
-
-        transaction() {
-            this.$router.push('/app/transaction/customer_trade');
-        },
-
-        goToStocksFollowManagement() {
-            this.$router.push('/app/stock/stock_follow');
-        },
     }
 }
 
