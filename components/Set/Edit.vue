@@ -15,13 +15,13 @@
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
               <v-col cols="12" class="pa-0">
-                <v-text-field v-model="formData.set" :rules="[(v) => !!v || 'โปรดกรอกชื่อประเภทหุ้น']"
-                  label="ชื่อประเภทหุ้น" dense outlined required maxlength="12" class="text-center" />
+                <v-text-field v-model="formData.set" :rules="validateStockRules(formData)" label="ชื่อประเภทหุ้น" dense
+                  outlined required maxlength="12" class="text-center" />
               </v-col>
             </v-row>
           </v-form>
           <v-card-actions class="card-title-center pa-0">
-            <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.set" depressed color="#24b224"
+            <v-btn @click="confirm" :disabled="!valid || !hasChanges" depressed color="#24b224"
               class="font-weight-medium mr-2">
               บันทึก
             </v-btn>
@@ -71,6 +71,7 @@ export default {
         },
       },
 
+      sets: [],
       formData: { ...this.data },
       valid: false,
       originalData: {},
@@ -80,11 +81,17 @@ export default {
 
   computed: {
     hasChanges() {
-      return JSON.stringify(this.formData) !== JSON.stringify(this.originalData);
-    }
+      const setNoHasChanged = this.formData.set !== this.originalData.set;
+      return setNoHasChanged;
+    },
+  },
+
+  async mounted() {
+    await this.fetchSetData();
   },
 
   mounted() {
+    this.fetchSetData();
     this.formData = JSON.parse(JSON.stringify(this.data));
     this.originalData = JSON.parse(JSON.stringify(this.data));
     document.addEventListener('keydown', this.handleKeydown);
@@ -106,6 +113,38 @@ export default {
   },
 
   methods: {
+    validateStockRules(formData) {
+      return [
+        (v) => !!v || 'กรุณากรอกชื่อประเภทหุ้น',
+        (v) => {
+          if (formData.set.toLowerCase() === this.originalData.set.toLowerCase()) {
+            return true;
+          }
+          if (!Array.isArray(this.sets)) {
+            return 'ข้อมูลหุ้นไม่ถูกต้อง';
+          }
+          const stockExists = this.sets.some(s => s.name && s.name.toLowerCase() === formData.set.toLowerCase());
+          if (stockExists) {
+            return 'มีชื่อประเภทหุ้นนี้อยู่แล้ว';
+          }
+          return true;
+        },
+      ];
+    },
+
+    async fetchSetData() {
+      try {
+        const response = await this.$store.dispatch('api/set/getSet');
+        if (response) {
+          this.sets = response.map(item => ({
+            no: item.no,
+            name: item.set
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching sets:', error);
+      }
+    },
 
     async confirm() {
       this.modal.confirm.open = true;

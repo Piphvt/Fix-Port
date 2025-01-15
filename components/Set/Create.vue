@@ -15,14 +15,13 @@
                 <v-form ref="form" v-model="isFormValid" lazy-validation>
                     <v-row>
                         <v-col cols="5" sm="11" class="pa-0 ml-3">
-                            <v-text-field v-model="newStockType" label="ชื่อประเภทหุ้น" required dense outlined
-                                :rules="[value => !!value || 'กรุณากรอกชื่อประเภทหุ้น']">
-                            </v-text-field>
+                            <v-text-field v-model="set" label="ชื่อประเภทหุ้น" type="text" dense outlined
+                                :rules="validateStockRules(set)" />
                         </v-col>
                     </v-row>
                 </v-form>
                 <v-card-actions class="card-title-center pa-0">
-                    <v-btn @click="confirm" :disabled="!isFormValid || !newStockType" color="#24b224">
+                    <v-btn @click="confirm" :disabled="!isFormValid || !set" color="#24b224">
                         ยืนยัน
                     </v-btn>
                     <v-btn @click="cancel" color="#e50211" class="ml-2">
@@ -44,9 +43,11 @@ export default {
             required: true,
         },
     },
+
     data() {
         return {
-            newStockType: '',
+            sets: [],
+            set: '',
             isOpen: this.open,
             isFormValid: false,
             modal: {
@@ -56,33 +57,75 @@ export default {
             },
         };
     },
+
     watch: {
         open(newVal) {
             this.isOpen = newVal;
         }
     },
+
+    async mounted() {
+        await this.fetchSetData();
+    },
+
     mounted() {
+        this.fetchSetData();
         window.addEventListener('keydown', this.handleKeydown);
     },
+
     beforeDestroy() {
         window.removeEventListener('keydown', this.handleKeydown);
     },
+
     methods: {
+        validateStockRules(set) {
+            return [
+                (v) => !!v || 'กรุณากรอกชื่อประเภทหุ้น',
+                (v) => {
+                    if (typeof v !== 'string' || !v.trim()) {
+                        return true;
+                    }
+                    const stockExists = this.sets.some(s => s.name && s.name.toLowerCase() === set.toLowerCase());
+                    if (stockExists) {
+                        return 'มีชื่อประเภทหุ้นนี้อยู่แล้ว';
+                    }
+                    return true;
+                },
+            ];
+        },
+
+        async fetchSetData() {
+            try {
+                const response = await this.$store.dispatch('api/set/getSet');
+                if (response) {
+                    this.sets = response.map(item => ({
+                        no: item.no,
+                        name: item.set
+                    }));
+                }
+            } catch (error) {
+                console.error('Error fetching sets:', error);
+            }
+        },
+
         handleKeydown(event) {
             if (event.key === 'Escape') {
                 this.cancel();
             }
         },
+
         updateOpen(val) {
             this.isOpen = val;
-            this.$emit('update:open', val);
+            t
+            his.$emit('update:open', val);
         },
+
         goBack() {
             window.location.reload();
         },
 
         async submitForm() {
-            if (this.newStockType.trim() === '') {
+            if (this.set.trim() === '') {
                 this.modal.error.message = 'กรุณากรอกชื่อประเภทหุ้น';
                 this.modal.error.open = true;
                 return;
@@ -92,7 +135,7 @@ export default {
                 const created_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const updated_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const response = await this.$store.dispatch('api/set/addSet', {
-                    set: this.newStockType,
+                    set: this.set,
                     employee_no,
                     created_date,
                     updated_date,
@@ -101,7 +144,7 @@ export default {
                 this.modal.complete.message = 'เพิ่มประเภทหุ้นสำเร็จ';
                 this.modal.complete.open = true;
                 this.recordLog();
-                this.newStockType = '';
+                this.set = '';
                 this.$emit('update:open', false);
             } catch (error) {
                 this.modal.error.message = 'มีชื่อประเภทหุ้นนี้แล้ว';
@@ -116,7 +159,7 @@ export default {
             }
         },
         cancel() {
-            this.newStockType = '';
+            this.set = '';
             this.$emit('update:open', false);
         },
         recordLog() {
@@ -125,7 +168,7 @@ export default {
             const Employee_Picture = this.$auth.user.picture;
             const log = {
                 action: 'เพิ่มประเภทหุ้นใหม่',
-                name: this.newStockType,
+                name: this.set,
                 detail: 'ไม่มีข้อมูลเพิ่มเติม',
                 type: 2,
                 employee_name: Employee_Name,
@@ -146,6 +189,7 @@ export default {
     align-items: center;
     text-align: center;
 }
+
 .custom-title {
     font-size: 1rem;
 }

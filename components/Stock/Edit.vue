@@ -110,7 +110,6 @@ export default {
       const setNoHasChanged = this.formData.set_no !== this.originalData.set_no;
       const commentNoHasChanged = this.formData.comment !== this.originalData.comment;
       const staffNoHasChanged = this.formData.staff_no !== this.originalData.staff_no;
-
       return stockNoHasChanged || setNoHasChanged || commentNoHasChanged || staffNoHasChanged;
     },
 
@@ -174,7 +173,6 @@ export default {
         },
       ];
     },
-
 
     async fetchEmployeeData() {
       try {

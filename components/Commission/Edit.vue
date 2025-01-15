@@ -15,13 +15,13 @@
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
               <v-col cols="12" class="pa-0">
-                <v-text-field v-model="formData.commission" :rules="[(v) => !!v || 'โปรดกรอกค่าธรรมเนียม']"
-                  label="ค่าธรรมเนียม" dense outlined required maxlength="12" class="text-center" />
+                <v-text-field v-model="formData.commission" :rules="validateStockRules(formData)" label="ค่าธรรมเนียม"
+                  dense outlined required maxlength="12" class="text-center" />
               </v-col>
             </v-row>
           </v-form>
           <v-card-actions class="card-title-center pa-0">
-            <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.commission" depressed color="#24b224"
+            <v-btn @click="confirm" :disabled="!valid || !hasChanges" depressed color="#24b224"
               class="font-weight-medium mr-2">
               บันทึก
             </v-btn>
@@ -70,6 +70,7 @@ export default {
         },
       },
 
+      commissions: [],
       formData: { ...this.data },
       valid: false,
       originalData: {},
@@ -79,11 +80,17 @@ export default {
 
   computed: {
     hasChanges() {
-      return JSON.stringify(this.formData) !== JSON.stringify(this.originalData);
-    }
+      const commissionNoHasChanged = parseFloat(this.formData.commission) !== parseFloat(this.originalData.commission);
+      return commissionNoHasChanged;
+    },
+  },
+
+  async mounted() {
+    await this.fetchCommissionData();
   },
 
   mounted() {
+    this.fetchCommissionData();
     this.formData = JSON.parse(JSON.stringify(this.data));
     this.originalData = JSON.parse(JSON.stringify(this.data));
     document.addEventListener('keydown', this.handleKeydown);
@@ -105,6 +112,39 @@ export default {
   },
 
   methods: {
+    validateStockRules(formData) {
+      return [
+        (v) => !!v || 'กรุณากรอกค่าธรรมเนียม',
+        (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข',
+        (v) => {
+          if (parseFloat(formData.commission) === parseFloat(this.originalData.commission)) {
+            return true;
+          }
+          if (!Array.isArray(this.commissions)) {
+            return 'ข้อมูลค่าธรรมเนียมไม่ถูกต้อง';
+          }
+          const stockExists = this.commissions.some(c => !isNaN(c.name) && parseFloat(c.name) === parseFloat(formData.commission));
+          if (stockExists) {
+            return 'มีค่าธรรมเนียมนี้อยู่แล้ว';
+          }
+          return true;
+        },
+      ];
+    },
+
+    async fetchCommissionData() {
+      try {
+        const response = await this.$store.dispatch('api/commission/getCommission');
+        if (response) {
+          this.commissions = response.map(item => ({
+            no: item.no,
+            name: item.commission
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching sets:', error);
+      }
+    },
 
     async confirm() {
       this.modal.confirm.open = true;
@@ -160,7 +200,7 @@ export default {
       const Employee_Picture = this.$auth.user.picture;
       const log = {
         action: 'แก้ไขค่าค่าธรรมเนียม',
-        detail: 'จาก : ' + this.originalData.commission + '\nเป็น : '+ this.formData.commission,
+        detail: 'จาก : ' + this.originalData.commission + '\nเป็น : ' + this.formData.commission,
         type: 1,
         employee_name: Employee_Name,
         employee_email: Employee_Email,

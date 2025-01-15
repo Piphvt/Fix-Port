@@ -15,14 +15,13 @@
                 <v-form ref="form" v-model="isFormValid" lazy-validation>
                     <v-row>
                         <v-col cols="5" sm="11" class="pa-0 ml-3">
-                            <v-text-field v-model="newStockType" label="ค่าธรรมเนียม" dense required outlined 
-                            :rules="[value => !!value || 'กรุณากรอกค่าธรรมเนียม']">
-                            </v-text-field>
+                            <v-text-field v-model="commission" label="ค่าธรรมเนียม" type="text" dense outlined
+                                :rules="validateStockRules(commission)" />
                         </v-col>
                     </v-row>
                 </v-form>
                 <v-card-actions class="card-title-center pa-0">
-                    <v-btn @click="confirm" :disabled="!isFormValid || !newStockType" color="#24b224">
+                    <v-btn @click="confirm" :disabled="!isFormValid || !commission" color="#24b224">
                         ยืนยัน
                     </v-btn>
                     <v-btn @click="cancel" color="#e50211" class="ml-2">
@@ -44,9 +43,11 @@ export default {
             required: true,
         },
     },
+
     data() {
         return {
-            newStockType: '',
+            commissions: [],
+            commission: '',
             isOpen: this.open,
             isFormValid: false,
             modal: {
@@ -56,18 +57,58 @@ export default {
             },
         };
     },
+
     watch: {
         open(newVal) {
             this.isOpen = newVal;
         }
     },
+
+    async mounted() {
+        await this.fetchCommissionData();
+    },
+
     mounted() {
+        this.fetchCommissionData();
         window.addEventListener('keydown', this.handleKeydown);
     },
+
     beforeDestroy() {
         window.removeEventListener('keydown', this.handleKeydown);
     },
+
     methods: {
+        validateStockRules(commission) {
+            return [
+                (v) => !!v || 'กรุณากรอกค่าธรรมเนียม',
+                (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข',
+                (v) => {
+                    if (typeof v !== 'string' || !v.trim()) {
+                        return true;
+                    }
+                    const stockExists = this.commissions.some(c => !isNaN(c.name) && parseFloat(c.name) === parseFloat(commission));
+                    if (stockExists) {
+                        return 'มีค่าธรรมเนียมนี้อยู่แล้ว';
+                    }
+                    return true;
+                },
+            ];
+        },
+
+        async fetchCommissionData() {
+            try {
+                const response = await this.$store.dispatch('api/commission/getCommission');
+                if (response) {
+                    this.commissions = response.map(item => ({
+                        no: item.no,
+                        name: item.commission
+                    }));
+                }
+            } catch (error) {
+                console.error('Error fetching commissions:', error);
+            }
+        },
+
         handleKeydown(event) {
             if (event.key === 'Escape') {
                 this.cancel();
@@ -82,7 +123,7 @@ export default {
         },
 
         async submitForm() {
-            if (this.newStockType.trim() === '') {
+            if (this.commission.trim() === '') {
                 this.modal.error.message = 'กรุณากรอกชื่อประเภทหุ้น';
                 this.modal.error.open = true;
                 return;
@@ -92,7 +133,7 @@ export default {
                 const created_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const updated_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
                 const response = await this.$store.dispatch('api/commission/addCommission', {
-                    commission: this.newStockType,
+                    commission: this.commission,
                     employee_no,
                     created_date,
                     updated_date,
@@ -101,7 +142,7 @@ export default {
                 this.modal.complete.message = 'เพิ่มค่าธรรมเนียมสำเร็จ';
                 this.modal.complete.open = true;
                 this.recordLog();
-                this.newStockType = '';
+                this.commission = '';
                 this.$emit('update:open', false);
             } catch (error) {
                 this.modal.error.message = 'มีค่าธรรมเนียมนี้แล้ว';
@@ -116,14 +157,14 @@ export default {
             }
         },
         cancel() {
-            this.newStockType = '';
+            this.commission = '';
             this.$emit('update:open', false);
         },
         recordLog() {
             const log = {
                 emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
                 emp_email: this.$auth.user.email,
-                detail: this.newStockType,
+                detail: this.commission,
                 type: 1,
                 picture: this.$auth.user.picture || 'Unknown',
                 action: 'เพิ่มค่าธรรมเนียมใหม่',
