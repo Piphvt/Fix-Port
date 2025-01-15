@@ -43,9 +43,8 @@
                         </v-row>
                     </v-form>
                     <v-card-actions class="card-title-center pa-0">
-                        <v-btn @click="confirm"
-                            :disabled="!valid || !hasChanges"
-                            depressed color="#24b224" class="font-weight-medium mr-2">
+                        <v-btn @click="confirm" :disabled="!valid || !hasChanges" depressed color="#24b224"
+                            class="font-weight-medium mr-2">
                             บันทึก
                         </v-btn>
                         <v-btn color="#e50211" @click="cancel" class="font-weight-medium">ยกเลิก
@@ -104,16 +103,33 @@ export default {
 
     computed: {
         hasChanges() {
+            const originalLowPrice = parseFloat(this.originalData.low_price) || 0;
+            const originalUpPrice = parseFloat(this.originalData.up_price) || 0;
+            const formLowPrice = parseFloat(this.formData.low_price) || 0;
+            const formUpPrice = parseFloat(this.formData.up_price) || 0;
+
+            const finalLowPrice = formLowPrice !== originalLowPrice ? formLowPrice : originalLowPrice;
+            const finalUpPrice = formUpPrice !== originalUpPrice ? formUpPrice : originalUpPrice;
+
             const stockNoHasChanged = this.formData.stock_no !== this.originalData.stock_no;
-            const remarkNoHasChanged = this.formData.remark !== this.originalData.remark;
-            const lowpriceHasChanged = parseFloat(this.formData.low_price).toFixed(2) !== parseFloat(this.originalData.low_price).toFixed(2);
-            const uppriceHasChanged = parseFloat(this.formData.up_price).toFixed(2) !== parseFloat(this.originalData.up_price).toFixed(2);
-            return remarkNoHasChanged || lowpriceHasChanged || stockNoHasChanged || uppriceHasChanged;
+            const remarkHasChanged = this.formData.remark !== this.originalData.remark;
+
+            const lowPriceHasChanged = formLowPrice !== originalLowPrice;
+            const upPriceHasChanged = formUpPrice !== originalUpPrice;
+            const isPriceValid = finalUpPrice > finalLowPrice;
+
+            if (!isPriceValid) {
+                return false;
+            }
+
+            return (stockNoHasChanged || remarkHasChanged || lowPriceHasChanged || upPriceHasChanged) && isPriceValid;
         }
     },
 
     async mounted() {
-        await this.fetchStockData();
+        await Promise.all([
+            this.fetchStockData(),
+        ]);
     },
 
     mounted() {

@@ -1244,7 +1244,6 @@ export default {
             return queryMatched;
         },
 
-
         checkTimeRange(detail, search) {
             const detailTime = moment(detail.updated_date);
             const startTime = moment(search.start);

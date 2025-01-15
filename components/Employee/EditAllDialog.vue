@@ -39,11 +39,10 @@
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-select v-model="formData.rank_no" :items="rankOptions" :item-text="item => item.text"
-                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกตำแหน่ง']" label="ตำแหน่ง" dense
-                  outlined required>
+                <v-select v-model="formData.status" :items="statusOptions" :rules="[(v) => !!v || 'โปรดเลือกสถานะ']"
+                  label="สถานะ" dense outlined required>
                   <template v-slot:item="data">
-                    <v-icon left>
+                    <v-icon left :style="{ color: data.item.color }">
                       {{ data.item.icon }}
                     </v-icon>
                     {{ data.item.text }}
@@ -62,18 +61,20 @@
                     {{ data.item.text }}
                   </template>
                 </v-select>
-
               </v-col>
-              <v-col cols="5" sm="11" class="pa-0 ml-4">
-                <v-select v-model="formData.status" :items="statusOptions" :rules="[(v) => !!v || 'โปรดเลือกสถานะ']"
-                  label="สถานะ" dense outlined required>
+
+              <v-col v-if="$auth.user.rank_no === 1"  cols="5" sm="11" class="pa-0 ml-4">
+                <v-select v-model="formData.rank_no" :items="rankOptions" :item-text="item => item.text"
+                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกตำแหน่ง']" label="ตำแหน่ง" dense
+                  outlined required>
                   <template v-slot:item="data">
-                    <v-icon left :style="{ color: data.item.color }">
+                    <v-icon left>
                       {{ data.item.icon }}
                     </v-icon>
                     {{ data.item.text }}
                   </template>
                 </v-select>
+                
               </v-col>
             </v-row>
           </v-form>

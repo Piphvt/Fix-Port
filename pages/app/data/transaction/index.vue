@@ -157,7 +157,7 @@
                 <div>
                     <v-btn @click="TotalTransactionDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-cash-register</v-icon> สรุปผลการซื้อขายหุ้นของลูกค้า
+                        <v-icon left color="#85d7df">mdi-cash-register</v-icon> สรุปผล
                     </v-btn>
                     <v-btn @click="CommissionDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">

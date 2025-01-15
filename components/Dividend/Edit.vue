@@ -110,7 +110,7 @@ export default {
         hasChanges() {
             const dateHasChanged = !moment(this.formData.created_date).isSame(this.originalData.created_date, 'day');
             const stockNoHasChanged = this.formData.stock_no !== this.originalData.stock_no;
-            const dividendHasChanged = parseFloat(this.formData.dividend).toFixed(2) !== parseFloat(this.originalData.dividend).toFixed(2);
+            const dividendHasChanged = parseFloat(this.formData.dividend) !== parseFloat(this.originalData.dividend);
             return dateHasChanged || stockNoHasChanged || dividendHasChanged;
         }
     },

@@ -830,7 +830,7 @@ export default {
         },
 
         onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchType !== 'updated_date' && this.searchType !== 'port';
+            this.isSearchFieldVisible = this.searchType !== 'updated_date';
         },
 
         validateDateRange() {
@@ -1510,7 +1510,7 @@ export default {
 }
 
 .header-item {
-    flex: 1 0 20%;
+    flex: 1 0 14%;
     box-sizing: border-box;
 }
 

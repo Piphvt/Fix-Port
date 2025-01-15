@@ -15,15 +15,13 @@
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-text-field v-model="formData.stock" :rules="[
-                  (v) => !!v || 'โปรดกรอกชื่อหุ้น'
-                ]" label="ชื่อหุ้น" dense outlined required />
+                <v-text-field v-model="formData.stock" @input="setFullText(formData)" label="ชื่อหุ้น" type="text" dense
+                  outlined :rules="validateStockRules(formData)" />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-select v-model="formData.set_no" :items="setOptions" :item-text="item => item.text"
-                  :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกประเภท']" label="ประเภท" dense
-                  outlined required>
+                  :item-value="item => item.value" label="ประเภท" dense clearable outlined required>
                   <template v-slot:item="data">
                     <v-icon left>
                       {{ data.item.icon }}
@@ -34,18 +32,19 @@
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-text-field v-model="formData.comment" label="หมายเหตุ" dense outlined />
+                <v-text-field v-model="formData.comment" label="หมายเหตุ" dense clearable outlined />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-autocomplete v-model="formData.staff_no" :items="employees" item-text="name" item-value="no"
-                  label="ชื่อผู้ติดตามหุ้น" dense outlined :rules="[(v) => !!v || 'กรุณากรอกชื่อผู้ติดตามหุ้น']" clearable>
+                  label="ชื่อผู้ติดตามหุ้น" dense outlined :rules="[(v) => !!v || 'กรุณากรอกชื่อผู้ติดตามหุ้น']"
+                  clearable>
                 </v-autocomplete>
               </v-col>
             </v-row>
           </v-form>
           <v-card-actions class="card-title-center pa-0">
-            <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.stock" depressed color="#24b224"
+            <v-btn @click="confirm" :disabled="!valid || !hasChanges" depressed color="#24b224"
               class="font-weight-medium mr-2">
               บันทึก
             </v-btn>
@@ -107,6 +106,15 @@ export default {
 
   computed: {
     hasChanges() {
+      const stockNoHasChanged = this.formData.stock !== this.originalData.stock;
+      const setNoHasChanged = this.formData.set_no !== this.originalData.set_no;
+      const commentNoHasChanged = this.formData.comment !== this.originalData.comment;
+      const staffNoHasChanged = this.formData.staff_no !== this.originalData.staff_no;
+
+      return stockNoHasChanged || setNoHasChanged || commentNoHasChanged || staffNoHasChanged;
+    },
+
+    hasChanges() {
       return JSON.stringify(this.formData) !== JSON.stringify(this.originalData);
     }
   },
@@ -143,6 +151,31 @@ export default {
   },
 
   methods: {
+
+    setFullText(formData) {
+      formData.stock = formData.stock.toUpperCase();
+    },
+
+    validateStockRules(formData) {
+      return [
+        (v) => !!v || 'กรุณากรอกชื่อหุ้น',
+        (v) => {
+          if (formData.stock.toLowerCase() === this.originalData.stock.toLowerCase()) {
+            return true;
+          }
+          if (!Array.isArray(this.stocks)) {
+            return 'ข้อมูลหุ้นไม่ถูกต้อง';
+          }
+          const stockExists = this.stocks.some(s => s.stock && s.stock.toLowerCase() === formData.stock.toLowerCase());
+          if (stockExists) {
+            return 'มีชื่อหุ้นนี้อยู่แล้ว';
+          }
+          return true;
+        },
+      ];
+    },
+
+
     async fetchEmployeeData() {
       try {
         const response = await this.$store.dispatch('api/employee/getEmployee');

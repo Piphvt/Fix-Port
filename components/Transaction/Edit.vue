@@ -91,7 +91,7 @@
 
                 <v-card-actions class="card-title-center pa-0">
                     <v-btn @click="confirm"
-                        :disabled="!valid || !hasChanges || !formData.customer_no || !formData.stock_no || !formData.price || !formData.amount || !formData.type || !formData.from_no"
+                        :disabled="!valid || !hasChanges"
                         depressed color="#24b224" class="font-weight-medium mr-2 mb-5">
                         บันทึก
                     </v-btn>

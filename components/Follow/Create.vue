@@ -22,7 +22,8 @@
 
                         <v-col cols="2">
                             <v-text-field v-model="item.low_price" label="Low Price" type="text" dense outlined :rules="[
-                                (v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
+                                (v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข',
+                                (v) => !v || parseFloat(v) < parseFloat(item.up_price) || 'Low Price ต้องน้อยกว่า Up Price'
                             ]">
                             </v-text-field>
                         </v-col>
@@ -109,7 +110,8 @@ export default {
                 this.isFloatValid(item.stock_no) &&
                 this.isFloatValid(item.low_price) &&
                 this.isFloatValid(item.up_price) &&
-                this.isValid(item.remark)
+                this.isValid(item.remark) &&
+                parseFloat(item.low_price) < parseFloat(item.up_price)
             );
         },
     },

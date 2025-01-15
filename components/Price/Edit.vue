@@ -120,7 +120,7 @@ export default {
         hasChanges() {
             const dateHasChanged = !moment(this.formData.created_date).isSame(this.originalData.created_date);
             const stockNoHasChanged = this.formData.stock_no !== this.originalData.stock_no;
-            const priceHasChanged = parseFloat(this.formData.price).toFixed(2) !== parseFloat(this.originalData.price).toFixed(2);
+            const priceHasChanged = parseFloat(this.formData.price) !== parseFloat(this.originalData.price);
             return dateHasChanged || stockNoHasChanged || priceHasChanged;
         }
     },
