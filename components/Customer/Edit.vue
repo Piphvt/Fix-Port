@@ -15,8 +15,8 @@
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-text-field v-model="formData.id" :rules="[(v) => /^(AQT)?[0-9]{9}$/.test(v) || 'กรุณากรอกข้อมูลให้ถูกต้อง'
-                ]" label="ไอดีลูกค้า" dense outlined required maxlength="12" />
+                <v-text-field v-model="formData.id" @input="setFullId(formData)" label="ไอดีลูกค้า" type="text" dense
+                  outlined prepend="AQT" maxlength="12" :rules="validateStockRules(formData)" />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
@@ -53,7 +53,7 @@
             </v-row>
           </v-form>
           <v-card-actions class="card-title-center pa-0">
-            <v-btn @click="confirm" :disabled="!valid || !hasChanges || !formData.id || !formData.nickname" depressed
+            <v-btn @click="confirm" :disabled="!valid || !hasChanges" depressed
               color="#24b224" class="font-weight-medium mr-2">
               บันทึก
             </v-btn>
@@ -104,6 +104,7 @@ export default {
 
       formData: { ...this.data },
       valid: false,
+      customers: [],
       typeOptions: [],
       baseOptions: [],
       originalData: {},
@@ -118,6 +119,7 @@ export default {
   },
 
   mounted() {
+    this.fetchCustomerData();
     this.setTypeOptions();
     this.setBaseOptions();
     this.formData = JSON.parse(JSON.stringify(this.data));
@@ -141,6 +143,51 @@ export default {
   },
 
   methods: {
+    validateStockRules(formData) {
+      return [
+        (v) => !!v || 'กรุณากรอกรหัสสมาชิก',
+        (v) => /^(AQT)?\d{9}$/i.test(v) || 'กรุณากรอกรหัสสมาชิกในรูปแบบที่ถูกต้อง',
+        (v) => {
+          if (formData.id.toLowerCase() === this.originalData.id.toLowerCase()) {
+            return true;
+          }
+          if (!Array.isArray(this.customers)) {
+            return 'ข้อมูลสมาชิกไม่ถูกต้อง';
+          }
+          const stockExists = this.customers.some(c => c.id && c.id.toLowerCase() === formData.id.toLowerCase());
+          if (stockExists) {
+            return 'มีรหัสสมาชิกนี้อยู่แล้ว';
+          }
+          return true;
+        },
+      ];
+    },
+
+    async fetchCustomerData() {
+      try {
+        const response = await this.$store.dispatch('api/customer/getCustomer');
+        if (response) {
+          this.customers = response
+            .map((item) => ({
+              no: item.no,
+              id: item.id ? item.id.trim().toLowerCase() : null,
+            }))
+            .filter((customer) => customer.id);
+        }
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+      }
+    },
+
+    setFullId(formData) {
+      const prefix = 'AQT';
+      if (!formData.id.toUpperCase().startsWith(prefix)) {
+        formData.id = prefix + formData.id;
+      } else {
+        formData.id = formData.id.toUpperCase();
+      }
+    },
+
     async setBaseOptions() {
       try {
         this.bases = await this.$store.dispatch('api/base/getBase');

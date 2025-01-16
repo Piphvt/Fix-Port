@@ -40,6 +40,13 @@
                         </v-col>
 
                         <v-col cols="2">
+                            <v-select v-model="item.type"
+                                :items="[{ value: 1, text: 'ซื้อ' }, { value: 2, text: 'ขาย' }]" item-text="text"
+                                item-value="value" label="ซื้อ/ขาย" dense outlined clearable
+                                :disabled="!canEditItem(item)" :rules="[(v) => !!v || 'กรุณาเลือกซื้อหรือขาย']" />
+                        </v-col>
+
+                        <v-col cols="2">
                             <v-text-field v-model="item.price" label="ราคา" type="text" dense outlined
                                 :disabled="!canEditItem(item)"
                                 :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v.replace(/,/g, '')) || 'กรุณากรอกตัวเลข']"
@@ -50,19 +57,6 @@
                             <v-text-field v-model="item.amount" label="จำนวน" type="text" dense outlined
                                 :disabled="!canEditItem(item)" :rules="[
                                     (v) => !v || /^[0-9]*\.?[0-9]+$/.test(v.replace(/,/g, '')) || 'กรุณากรอกตัวเลข',
-                                    (v) => {
-                                        const stockDetail = detail_amount.find(detail => detail.no === item.stock_no);
-                                        if (!stockDetail) return true;
-
-                                        const totalAmount = withdrawalItems
-                                            .filter(wItem => wItem.stock_no === item.stock_no)
-                                            .reduce((sum, wItem) => sum + (parseFloat(wItem.amount || 0) || 0), 0);
-
-                                        return (
-                                            totalAmount <= parseFloat(stockDetail.remainingAmount) ||
-                                            `จำนวนรวม (${totalAmount}) มากกว่าจำนวนที่มีอยู่ (${stockDetail.remainingAmount})`
-                                        );
-                                    },
                                 ]" @input="item.amount = removeCommas(item.amount)" />
                         </v-col>
 
@@ -70,13 +64,6 @@
                             <v-autocomplete v-model="item.commission_no" :items="commissions" item-text="name"
                                 item-value="no" label="ค่าธรรมเนียม" dense outlined clearable
                                 :disabled="!canEditItem(item)" :rules="[(v) => !!v || 'กรุณากรอกค่าธรรมเนียม']" />
-                        </v-col>
-
-                        <v-col cols="2">
-                            <v-select v-model="item.type"
-                                :items="[{ value: 1, text: 'ซื้อ' }, { value: 2, text: 'ขาย' }]" item-text="text"
-                                item-value="value" label="ซื้อ/ขาย" dense outlined clearable
-                                :disabled="!canEditItem(item)" :rules="[(v) => !!v || 'กรุณาเลือกซื้อหรือขาย']" />
                         </v-col>
 
                         <v-col cols="1" class="d-flex align-center">
@@ -91,8 +78,8 @@
                     </v-row>
                 </v-form>
                 <v-card-actions class="card-title-center pa-0">
-                    <v-btn color="#24b224" @click="showModalResult = true" :disabled="!isFormValid || !isSearchValid || !isOverAmount"
-                        class="mr-2">
+                    <v-btn color="#24b224" @click="showModalResult = true"
+                        :disabled="!isFormValid || !isSearchValid || !isOverAmount" class="mr-2">
                         ยืนยัน
                     </v-btn>
                     <v-btn @click="cancel" color="#e50211">
@@ -167,7 +154,7 @@ export default {
         customer_name: {
             handler: 'fetchDetailAmountData',
             immediate: true
-        }
+        },
     },
 
     computed: {
@@ -186,7 +173,7 @@ export default {
                 )
             );
         },
-        
+
         isSearchValid() {
             return (
                 this.searchBy &&
@@ -204,7 +191,10 @@ export default {
                 if (stockDetail) {
                     const currentAmount = parseFloat(item.amount || 0);
                     const totalAmount = acc[item.stock_no] || 0;
-                    acc[item.stock_no] = totalAmount + currentAmount;
+                    const updatedAmount = item.type === 1
+                        ? totalAmount - currentAmount
+                        : totalAmount + currentAmount;
+                    acc[item.stock_no] = updatedAmount;
                 }
                 return acc;
             }, {});
@@ -214,11 +204,11 @@ export default {
             return this.withdrawalItems.every(item => {
                 const stockDetail = this.detail_amount.find(detail => detail.no === item.stock_no);
                 if (!stockDetail) return false;
-
                 const totalAmount = this.totalAmountForStock[item.stock_no] || 0;
                 return totalAmount <= parseFloat(stockDetail.remainingAmount);
             });
         },
+
     },
 
     mounted() {
