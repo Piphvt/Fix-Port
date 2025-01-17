@@ -1,12 +1,12 @@
 <template>
     <v-dialog v-model="dialog" max-width="650px">
-        <div>
-            <DetailChange :open="editStock" :data="editAllData" @update:edit="editStock = false" />
-        </div>
         <v-card>
+            <div>
+                <FollowDetail :open="DetailDataOpen" :data="DetailData" @update:edit="DetailDataOpen = false" />
+            </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-bank-check</v-icon>
-                <span class="headline">สรุปหุ้น</span>
+                <v-icon justify="center" class="mr-3" size="40" color="#ffc800">mdi-account-cowboy-hat</v-icon>
+                <span class="headline">หุ้นของโค้ช</span>
             </v-card-title>
 
             <v-card-text>
@@ -72,11 +72,6 @@
                                     label="ค้นหาชื่อหุ้น" dense outlined clearable multiple>
                                 </v-autocomplete>
 
-                                <v-autocomplete v-if="searchType === 'staff_no'" v-model="selectedStaffs"
-                                    class="mx-2 search-size small-font" :items="getSearchItems('staff_no')"
-                                    label="ค้นหาที่มาของหุ้น" dense outlined clearable multiple>
-                                </v-autocomplete>
-
                                 <v-btn icon @click="addSearch">
                                     <v-icon class="small-icon ">mdi-plus</v-icon>
                                 </v-btn>
@@ -96,25 +91,9 @@
                     <template v-slot:item.updated_date="{ item }">
                         <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
                     </template>
-                    <template v-slot:item.staff_no="{ item }">
-                        <div class="text-center">{{ getEmployeeName(item.staff_no) }}</div>
-                    </template>
                     <template v-slot:item.detail="{ item }">
                         <div class="text-center">
-                            <v-menu offset-y>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
-                                </template>
-                                <v-list class="custom-list">
-                                    <v-list-item @click="openEditStock(item)" class="custom-list-item">
-                                        <v-list-item-icon style="margin-right: 4px;">
-                                            <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>
-                                        </v-list-item-icon>
-                                        <v-list-item-content
-                                            style="font-size: 0.8rem;">แก้ไขผู้ติดตามหุ้น</v-list-item-content>
-                                    </v-list-item>
-                                </v-list>
-                            </v-menu>
+                            <v-icon @click="openDetailData(item)" color="#85d7df">mdi-eye</v-icon>
                         </div>
                     </template>
                 </v-data-table>
@@ -140,12 +119,10 @@ export default {
         return {
             filteredDetails: [],
             selectedStocks: [],
-            selectedStaffs: [],
             showSavedSearchesDialog: false,
             searchType: 'stock_no',
             searchTypes: [
                 { text: 'ชื่อหุ้น', value: 'stock_no' },
-                { text: 'ผู้ติดตามหุ้น', value: 'staff_no' },
             ],
             searchQuery: '',
             savedSearches: [],
@@ -154,8 +131,8 @@ export default {
             stocks: [],
             employees: [],
 
-            editStock: false,
-            editAllData: {},
+            DetailDataOpen: false,
+            DetailData: {},
 
             dialog: this.value,
 
@@ -184,15 +161,7 @@ export default {
                 },
 
                 {
-                    text: 'ผู้ติดตามหุ้น',
-                    value: 'staff_no',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: '',
+                    text: 'รายละเอียด',
                     value: 'detail',
                     sortable: false,
                     align: 'center',
@@ -226,9 +195,9 @@ export default {
     },
 
     methods: {
-        openEditStock(follow) {
-            this.editAllData = follow;
-            this.editStock = true;
+        openDetailData(item) {
+            this.DetailData = item;
+            this.DetailDataOpen = true;
         },
 
         applyFilters() {
@@ -242,16 +211,12 @@ export default {
                 return this.details
                     .filter(detail => this.getStockName(detail.stock_no))
                     .map(detail => this.getStockName(detail.stock_no));
-            } else if (type === 'staff_no') {
-                return this.details
-                    .filter(detail => this.getEmployeeName(detail.staff_no))
-                    .map(detail => this.getEmployeeName(detail.staff_no));
             }
             return [];
         },
 
         addSearch() {
-            if (this.searchType === 'stock_no' || this.searchType === 'staff_no') {
+            if (this.searchType === 'stock_no') {
                 this.addSearchItemsToSearch();
             } else {
                 if (this.searchQuery.trim()) {
@@ -268,8 +233,7 @@ export default {
 
         addSearchItemsToSearch() {
             const selectedItems =
-                this.searchType === 'stock_no' ? this.selectedStocks :
-                    this.searchType === 'staff_no' ? this.selectedStaffs : [];
+                this.searchType === 'stock_no' ? this.selectedStocks : [];
 
             if (selectedItems.length > 0) {
                 this.savedSearches.push({
@@ -280,9 +244,6 @@ export default {
                 if (this.searchType === 'stock_no') {
                     this.selectedStocks = [];
                 }
-                if (this.searchType === 'staff_no') {
-                    this.selectedStaffs = [];
-                }
 
             }
         },
@@ -291,8 +252,6 @@ export default {
             let field;
             if (search.type === 'stock_no') {
                 field = this.getStockName(detail.stock_no) || 'ยังไม่ระบุ';
-            } else if (search.type === 'staff_no') {
-                field = this.getEmployeeName(detail.staff_no) || 'ยังไม่ระบุ';
             } else {
                 field = detail[search.type];
             }
@@ -376,17 +335,20 @@ export default {
 
                 if (!uniqueDetails.some(item => item.stock_no === stockNo)) {
                     const matchingStock = stocks.find(stock => stock.no === stockNo);
-                    detail.staff_no = matchingStock ? matchingStock.staff_no : null;
+                    const staffNo = matchingStock ? matchingStock.staff_no : null;
+                    if (staffNo === this.$auth.user.no) {
+                        detail.staff_no = staffNo;
+                        detail.stock_amount = stockCount[stockNo].count;
+                        detail.latest_updated_date = stockCount[stockNo].latestUpdatedDate;
 
-                    detail.stock_amount = stockCount[stockNo].count;
-                    detail.latest_updated_date = stockCount[stockNo].latestUpdatedDate;
-
-                    uniqueDetails.push(detail);
+                        uniqueDetails.push(detail);
+                    }
                 }
             });
 
             this.details = uniqueDetails;
-        },
+        }
+        ,
 
         async fetchStockData() {
             this.stocks = await this.$store.dispatch('api/stock/getStock')
@@ -415,58 +377,48 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('สรุปหุ้น');
 
-            const groupedDetails = this.filteredDetails.reduce((acc, item) => {
-                if (!acc[item.staff_no]) acc[item.staff_no] = [];
-                acc[item.staff_no].push(item);
-                return acc;
-            }, {});
+            const headers = this.headers.filter(header => header.value !== 'detail')
+                .map(header => ({
+                    header: header.text,
+                    key: header.value,
+                    style: { font: { name: 'Angsana New', size: 16 } }
+                }));
 
-            Object.keys(groupedDetails).forEach(staff_no => {
-                const employeeName = this.getEmployeeName(parseInt(staff_no));
-                const worksheet = workbook.addWorksheet(employeeName || `พนักงาน-${staff_no}`);
+            worksheet.columns = headers;
 
-                const headers = this.headers.filter(header => header.value !== 'detail' && header.value !== 'staff_no')
-                    .map(header => ({
-                        header: header.text,
-                        key: header.value,
-                        style: { font: { name: 'Angsana New', size: 16 } }
-                    }));
-
-                worksheet.columns = headers;
-
-                groupedDetails[staff_no].forEach((item, index) => {
-                    const rowData = {};
-                    this.headers.forEach(header => {
-                        if (header.value === 'updated_date') {
-                            rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                        } else if (header.value === 'stock_no') {
-                            rowData[header.value] = this.getStockName(item.stock_no);
-                        } else if (header.value === 'stock_amount') {
-                            rowData[header.value] = item.stock_amount.toLocaleString(2);
-                        } else if (header.value !== 'detail' && header.value !== 'staff_no') {
-                            rowData[header.value] = item[header.value];
-                        } else {
-                            rowData[header.value] = item[header.value];
-                        }
-                    });
-                    worksheet.addRow(rowData);
+            this.filteredDetails.forEach((item, index) => {
+                const rowData = {};
+                this.headers.forEach(header => {
+                    if (header.value === 'updated_date') {
+                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
+                    } else if (header.value === 'stock_no') {
+                        rowData[header.value] = this.getStockName(item.stock_no);
+                    } else if (header.value === 'stock_amount') {
+                        rowData[header.value] = item.stock_amount.toLocaleString(2);
+                    } else if (header.value !== 'detail') {
+                        rowData[header.value] = item[header.value];
+                    } else {
+                        rowData[header.value] = item[header.value];
+                    }
                 });
+                worksheet.addRow(rowData);
+            });
 
-                worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell) => {
-                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                    cell.font = { bold: true, name: 'Angsana New', size: 18 };
-                });
+            worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell) => {
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.font = { bold: true, name: 'Angsana New', size: 18 };
+            });
 
-                worksheet.eachRow((row) => {
-                    row.eachCell({ includeEmpty: true }, (cell) => {
-                        cell.border = {
-                            top: { style: 'thin' },
-                            left: { style: 'thin' },
-                            bottom: { style: 'thin' },
-                            right: { style: 'thin' },
-                        };
-                    });
+            worksheet.eachRow((row) => {
+                row.eachCell({ includeEmpty: true }, (cell) => {
+                    cell.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' },
+                    };
                 });
             });
 
@@ -475,7 +427,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `หุ้นของโค้ช-${currentDate}.xlsx`);
+                link.setAttribute('download', `สรุปหุ้น-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

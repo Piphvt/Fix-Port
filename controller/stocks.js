@@ -117,3 +117,23 @@ exports.updateClosePriceByName = async (req, res) => {
         return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
     }
 }
+
+// อัปเดตสถานะพนักงาน
+exports.updateStockStaff = async (req, res) => {
+    try {
+        const { staff_no, employee_no } = req.body;
+        connection.query('UPDATE `stocks` SET `staff_no` = ?, `employee_no` = ?, `updated_date` = now() WHERE `no` = ?',
+            [staff_no, employee_no, req.params.no], function (err, results) {
+                if (err) {
+                    console.error('เกิดข้อผิดพลาดในการอัปเดตผู้ติดตามหุ้น:', err);
+                    return res.status(500).json({ message: 'ข้อผิดพลาดในการอัปเดตผู้ติดตามหุ้น' });
+                }
+                res.json(results);
+            }
+        );
+        console.log("อัปเดตข้อมูลพนักงานสำเร็จ");
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการอัปเดตสถานะพนักงาน', error);
+        return res.status(500).json({ message: "ข้อผิดพลาดภายในเซิร์ฟเวอร์" });
+    }
+};

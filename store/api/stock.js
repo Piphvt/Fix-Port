@@ -19,9 +19,9 @@ export const actions = {
             .delete(`stock/${no}`)
             .then((res) => res.data)
     },
-    async updateClosePriceByName({ getters }, data) {
+    async updateStockStaff({ getters }, data) {
         return await this.$axios
-            .$put(`stock/update-close-price/${data.name}`, data)
+            .put(`stock/update-stock-staff/${data.no}`, data)
             .then((res) => res.data)
     },
 }

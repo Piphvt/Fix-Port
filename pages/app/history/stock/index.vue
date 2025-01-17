@@ -635,7 +635,7 @@ export default {
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
 
-            return queryMatched && timeMatched;
+            return queryMatched;
         },
 
         checkTimeRange(log, search) {

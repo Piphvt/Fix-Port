@@ -10,6 +10,7 @@
         <FollowEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
         <FollowReach v-model="FollowReachDataOpen" />
         <FollowBot v-model="FollowBotDataOpen" />
+        <FollowStock v-model="FollowStockDataOpen" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -137,6 +138,10 @@
                     </v-list>
                 </v-menu>
                 <div>
+                    <v-btn @click="FollowStockDataOpen = true" class="tab-icon-three"
+                        style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#ffc800">mdi-account-cowboy-hat</v-icon> หุ้นของโค้ช
+                    </v-btn>
                     <v-btn @click="FollowBotDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-edit</v-icon> หุ้นที่รอการตรวจสอบ
@@ -285,6 +290,7 @@ export default {
             FollowCreateOpen: false,
             FollowReachDataOpen: false,
             FollowBotDataOpen: false,
+            FollowStockDataOpen: false,
 
             selectedItems: [],
             handleConfirm: null,

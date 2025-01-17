@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="dialog" max-width="1200px">
+    <v-dialog v-model="open" v-if="data" max-width="1200px">
         <v-card>
             <div>
                 <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen"
@@ -12,8 +12,8 @@
                 <DetailEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-piggy-bank</v-icon>
-                <span class="headline">หุ้นที่ขายหมดแล้ว</span>
+                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-bank</v-icon>
+                <span class="headline">หุ้นของลูกค้า</span>
             </v-card-title>
 
             <v-card-text>
@@ -176,18 +176,14 @@
                     style="overflow-x: auto; white-space: nowrap;">
                     <template v-slot:item="{ item }">
                         <tr>
-                            <td v-if="visibleColumns.includes('select')" class="text-center"
-                                style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                <v-checkbox v-if="isSelectingItems" v-model="selectedItems" :value="item.no"
-                                    style="transform: scale(1);" />
-                            </td>
                             <td class="text-center">
                                 <v-icon style="color:#85d7df" @click="toggleOpen(item)">
                                     {{ item.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
                                 </v-icon>
                             </td>
-                            <td v-if="visibleColumns.includes('updated_date')" class="text-center">
-                                {{ formatDateTime(item.updated_date) }}</td>
+                            <td v-if="visibleColumns.includes('created_date')" class="text-center"
+                                :style="{ color: getDateColor(item.created_date) }">
+                                {{ formatDate(item.created_date) }}</td>
                             <td v-if="visibleColumns.includes('customer_no')" class="text-center">
                                 {{ getCustomerByNo(item.customer_no)?.id || 'ยังไม่ระบุ' }}</td>
                             <td v-if="visibleColumns.includes('customer_name')" class="text-center">
@@ -197,76 +193,23 @@
                             <td v-if="visibleColumns.includes('from_no')" class="text-center"
                                 :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
                                 {{ getFromByNo(item.from_no)?.from || 'ยังไม่ระบุ' }}</td>
-                            <td v-if="visibleColumns.includes('created_date')" class="text-center"
-                                :style="{ color: getDateColor(item.created_date) }">
-                                {{ formatDate(item.created_date) }}</td>
                             <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
                                 {{ item.price.toLocaleString(2) }}</td>
                             <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
                                 {{ item.amount.toLocaleString(2) }}</td>
                             <td v-if="visibleColumns.includes('money')" class="text-center">
                                 {{ item.money }}</td>
-                            <td v-if="visibleColumns.includes('dividend_amount')" class="text-center"
-                                style="color:#8c52ff">
-                                {{ item.dividend_amount }}</td>
-                            <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
-                                {{ item.balance_dividend }}</td>
-                            <td v-if="visibleColumns.includes('closing_price')" class="text-center"
-                                style="color:#ff914d">
-                                {{ item.closing_price }}</td>
-                            <td v-if="visibleColumns.includes('present_price')" class="text-center">
-                                {{ item.present_price }}</td>
-                            <td v-if="visibleColumns.includes('total')" class="text-center">
-                                {{ item.total }}</td>
-                            <td v-if="visibleColumns.includes('present_profit')" class="text-center"
-                                :style="{ color: getColorForNumber(item.present_profit) }">
-                                {{ item.present_profit }}</td>
-                            <td v-if="visibleColumns.includes('total_percent')" class="text-center"
-                                :style="{ color: getColorForPercent(item.total_percent) }">
-                                {{ item.total_percent }}%</td>
-                            <td v-if="visibleColumns.includes('port')" class="text-center"
-                                :style="{ color: getPortText(item.total_percent).color }">
-                                {{ getPortText(item.total_percent).text }}</td>
-                            <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                                {{ getEmployeeByNo(item.employee_no)?.fname + ' ' +
-                                    getEmployeeByNo(item.employee_no)?.lname
-                                    ||
-                                    'ยังไม่ระบุ' }}</td>
                             <td v-if="visibleColumns.includes('comment')" class="text-center">
                                 {{ item.comment || '-' }}</td>
                             <td v-if="visibleColumns.includes('type_no')" class="text-center">
                                 {{ getTypeByNo(getCustomerByNo(item.customer_no)?.type_no)?.type || 'ยังไม่ระบุ' }}</td>
-                            <td v-if="visibleColumns.includes('base_no')" class="text-center">
-                                {{ getBaseByNo(getCustomerByNo(item.customer_no)?.base_no)?.base || 'ยังไม่ระบุ' }}</td>
-                            <td class="text-center">
-                                <v-menu offset-y>
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
-                                    </template>
-                                    <v-list class="custom-list">
-                                        <v-list-item @click="openEditAllDialog(item)" class="custom-list-item">
-                                            <v-list-item-icon style="margin-right: 4px;">
-                                                <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>
-                                            </v-list-item-icon>
-                                            <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
-                                        </v-list-item>
-
-                                        <v-list-item @click="toggleSelectItems" class="custom-list-item">
-                                            <v-list-item-icon style="margin-right: 4px;">
-                                                <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
-                                            </v-list-item-icon>
-                                            <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
-                                        </v-list-item>
-                                    </v-list>
-                                </v-menu>
-                            </td>
                         </tr>
 
                         <tr v-if="item.isOpen">
                             <td v-if="visibleColumns.includes('select')" class="text-center"></td>
                             <td class="text-center" style="color:#e6c56c">หุ้นเดิม</td>
-                            <td v-if="visibleColumns.includes('updated_date')" class="text-center">
-                                {{ formatDateTime(item.DetailUpdated_date) }}</td>
+                            <td v-if="visibleColumns.includes('created_date')" class="text-center">
+                                {{ formatDate(item.created_date) }}</td>
                             <td v-if="visibleColumns.includes('customer_no')" class="text-center">
                                 {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
                             <td v-if="visibleColumns.includes('customer_name')" class="text-center">
@@ -276,53 +219,23 @@
                             <td v-if="visibleColumns.includes('from_no')" class="text-center"
                                 :style="{ color: getFromText(getFromByNo(item.from_no)?.from).color }">
                                 {{ getFromByNo(item.from_no)?.from || 'N/A' }}</td>
-                            <td v-if="visibleColumns.includes('created_date')" class="text-center"
-                                :style="{ color: getDateColor(item.created_date) }">
-                                {{ formatDate(item.created_date) }}</td>
                             <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
                                 {{ item.detailprice.toLocaleString(2) }}</td>
                             <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
                                 {{ item.detailamount.toLocaleString(2) }}</td>
                             <td v-if="visibleColumns.includes('money')" class="text-center">
-                                {{ item.DetailMoney }}</td>
-                            <td v-if="visibleColumns.includes('dividend_amount')" class="text-center"
-                                style="color:#8c52ff">
-                                {{ item.DetailDividend_Amount }}</td>
-                            <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
-                                {{ item.DetailBalance_Dividend }}</td>
-                            <td v-if="visibleColumns.includes('closing_price')" class="text-center"
-                                style="color:#ff914d">
-                                {{ item.closing_price }}</td>
-                            <td v-if="visibleColumns.includes('present_price')" class="text-center">
-                                {{ item.DetailPresent_Price }}</td>
-                            <td v-if="visibleColumns.includes('total')" class="text-center">
-                                {{ item.DetailTotal }}</td>
-                            <td v-if="visibleColumns.includes('present_profit')" class="text-center"
-                                :style="{ color: getColorForNumber(item.DetailPresent_Profit) }">
-                                {{ item.DetailPresent_Profit }}</td>
-                            <td v-if="visibleColumns.includes('total_percent')" class="text-center"
-                                :style="{ color: getColorForPercent(item.DetailTotal_Percent) }">
-                                {{ item.DetailTotal_Percent }}%</td>
-                            <td v-if="visibleColumns.includes('port')" class="text-center"
-                                :style="{ color: getPortText(item.DetailTotal_Percent).color }">
-                                {{ getPortText(item.DetailTotal_Percent).text }}</td>
-                            <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                                {{ getEmployeeByNo(item.DetailEmployee_No)?.fname + ' ' +
-                                    getEmployeeByNo(item.DetailEmployee_No)?.lname || 'ไม่ทราบ'
-                                }}</td>
+                                {{ item.detailmoney }}</td>
                             <td v-if="visibleColumns.includes('comment')" class="text-center">
-                                {{ item.comment || '-' }}</td>
-                            <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
-                            <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
-                            <td class="text-center"></td>
+                                {{ '-' }}</td>
+                            <td v-if="visibleColumns.includes('type_no')" class="text-center">
+                                {{ '-' }}</td>
                         </tr>
 
                         <tr v-if="item.transactions && item.isOpen" v-for="transaction in item.transactions"
                             :key="transaction.id">
-                            <td v-if="visibleColumns.includes('select')" class="text-center"></td>
                             <td class="text-center" style="color:#6ce69f">ซื้อเพิ่ม</td>
-                            <td v-if="visibleColumns.includes('updated_date')" class="text-center">
-                                {{ formatDateTime(transaction.updated_date) }}</td>
+                            <td v-if="visibleColumns.includes('created_date')" class="text-center">
+                                {{ formatDate(transaction.created_date) }}</td>
                             <td v-if="visibleColumns.includes('customer_no')" class="text-center">
                                 {{ getCustomerByNo(item.customer_no)?.id || 'N/A' }}</td>
                             <td v-if="visibleColumns.includes('customer_name')" class="text-center">
@@ -332,51 +245,22 @@
                             <td v-if="visibleColumns.includes('from_no')" class="text-center"
                                 :style="{ color: getFromText(getFromByNo(transaction.from_no)?.from).color }">
                                 {{ getFromByNo(transaction.from_no)?.from || 'N/A' }}</td>
-                            <td v-if="visibleColumns.includes('created_date')" class="text-center"
-                                :style="{ color: getDateColor(transaction.created_date) }">
-                                {{ formatDate(transaction.created_date) }}</td>
                             <td v-if="visibleColumns.includes('price')" class="text-center" style="color:#00bf63">
                                 {{ transaction.price.toLocaleString(2) }}</td>
                             <td v-if="visibleColumns.includes('amount')" class="text-center" style="color:#ff66c4">
                                 {{ transaction.amount.toLocaleString(2) }}</td>
                             <td v-if="visibleColumns.includes('money')" class="text-center">
                                 {{ transaction.money }}</td>
-                            <td v-if="visibleColumns.includes('dividend_amount')" class="text-center"
-                                style="color:#8c52ff">
-                                {{ transaction.dividend_amount }}</td>
-                            <td v-if="visibleColumns.includes('balance_dividend')" class="text-center">
-                                {{ transaction.balance_dividend }}</td>
-                            <td v-if="visibleColumns.includes('closing_price')" class="text-center"
-                                style="color:#ff914d">
-                                {{ item.closing_price }}</td>
-                            <td v-if="visibleColumns.includes('present_price')" class="text-center">
-                                {{ transaction.present_price }}</td>
-                            <td v-if="visibleColumns.includes('total')" class="text-center">
-                                {{ transaction.total }}</td>
-                            <td v-if="visibleColumns.includes('present_profit')" class="text-center"
-                                :style="{ color: getColorForNumber(transaction.present_profit) }">
-                                {{ transaction.present_profit }}</td>
-                            <td v-if="visibleColumns.includes('total_percent')" class="text-center"
-                                :style="{ color: getColorForPercent(transaction.total_percent) }">
-                                {{ transaction.total_percent }}%</td>
-                            <td v-if="visibleColumns.includes('port')" class="text-center"
-                                :style="{ color: getPortText(transaction.total_percent).color }">
-                                {{ getPortText(transaction.total_percent).text }}</td>
-                            <td v-if="visibleColumns.includes('employee_no')" class="text-center">
-                                {{ getEmployeeByNo(transaction.employee_no)?.fname + ' ' +
-                                    getEmployeeByNo(transaction.employee_no)?.lname ||
-                                    'ไม่ทราบ' }}</td>
                             <td v-if="visibleColumns.includes('comment')" class="text-center">
-                                {{ item.comment || '-' }}</td>
-                            <td v-if="visibleColumns.includes('type_no')" class="text-center"></td>
-                            <td v-if="visibleColumns.includes('base_no')" class="text-center"></td>
-                            <td class="text-center"></td>
+                                {{ '-' }}</td>
+                            <td v-if="visibleColumns.includes('type_no')" class="text-center">
+                                {{ '-' }}</td>
                         </tr>
                     </template>
                 </v-data-table>
             </v-card-text>
             <div class="text-center">
-                <v-btn @click="dialog = false" class="mb-4" color="#e50211">ปิด</v-btn>
+                <v-btn @click="cancel" class="mb-4" color="#e50211">ปิด</v-btn>
             </div>
         </v-card>
     </v-dialog>
@@ -391,8 +275,15 @@ import 'vue2-datepicker/index.css';
 import Decimal from 'decimal.js';
 
 export default {
+
     props: {
-        value: Boolean,
+        method: { type: Function },
+        open: {
+            required: true,
+        },
+        data: {
+            required: true,
+        },
     },
 
     components: {
@@ -401,6 +292,9 @@ export default {
 
     data() {
         return {
+
+            dialogVisible: false,
+
             modal: {
                 warning: {
                     open: false,
@@ -442,24 +336,12 @@ export default {
             searchTypes: [
                 { text: 'รหัสสมาชิก', value: 'customer_no' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
-                { text: 'ชื่อหุ้น', value: 'stock_no' },
-                { text: 'ประเภทพอร์ต', value: 'port' },
                 { text: 'ประเภทลูกค้า', value: 'customer_type' },
-                { text: 'ฐานทุน', value: 'customer_base' },
-                { text: 'ทำรายการโดย', value: 'employee_no' },
-                { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
-            visibleColumns: ['select', 'action', 'updated_date', 'customer_no', 'customer_name', 'stock_no', 'created_date', 'price', 'amount', 'money', 'dividend_amount', 'balance_dividend', 'closing_price', 'present_price', 'total', 'present_profit', 'percent', 'total_percent', 'port', 'from_no', 'type_no', 'base_no', 'comment', 'employee_no', 'detail'],
+            visibleColumns: ['action', 'created_date', 'customer_no', 'customer_name', 'stock_no', 'price', 'amount', 'money', 'from_no', 'type_no', 'comment'],
 
             headers: [
-                {
-                    text: '',
-                    value: 'select',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
 
                 {
                     text: '',
@@ -470,8 +352,9 @@ export default {
                 },
 
                 {
-                    text: 'ข้อมูลวันที่',
-                    value: 'updated_date',
+                    text: 'วันที่ซื้อหุ้น',
+                    value: 'created_date',
+                    sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },
@@ -509,14 +392,6 @@ export default {
                 },
 
                 {
-                    text: 'วันที่ซื้อหุ้น',
-                    value: 'created_date',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
                     text: 'ราคาที่ติด',
                     value: 'price',
                     sortable: false,
@@ -541,78 +416,6 @@ export default {
                 },
 
                 {
-                    text: 'จำนวนปันผล',
-                    value: 'dividend_amount',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'ยอดเงินปันผล',
-                    value: 'balance_dividend',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'ราคาปิด',
-                    value: 'closing_price',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'มูลค่าปัจจุบัน',
-                    value: 'present_price',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'มูลค่าปัจจุบัน(รวมยอดเงินปันผล)',
-                    value: 'total',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'กำไร/ขาดทุน ปัจจุบัน',
-                    value: 'present_profit',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'เปอร์เซ็น กำไร/ขาดทุน ปัจจุบัน',
-                    value: 'total_percent',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'ประเภทพอร์ต',
-                    value: 'port',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'ทำรายการโดย',
-                    value: 'employee_no',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
                     text: 'ความเห็นลูกค้า',
                     value: 'comment',
                     sortable: false,
@@ -623,22 +426,6 @@ export default {
                 {
                     text: 'ประเภทลูกค้า',
                     value: 'type_no',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: 'ฐานทุน',
-                    value: 'base_no',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
-                    text: '',
-                    value: 'detail',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -671,17 +458,17 @@ export default {
             savedSearches: [],
             editAllData: {},
 
-            dialog: this.value,
+            formData: { ...this.data },
+
         };
     },
 
     watch: {
-        value(newValue) {
-            this.dialog = newValue;
-        },
-        dialog(newValue) {
-            this.$emit('input', newValue);
-        },
+        data(newData) {
+            if (newData && newData.stock_no) {
+                this.fetchDetailData(newData);
+            }
+        }
     },
 
     computed: {
@@ -689,10 +476,10 @@ export default {
             let filteredDetails = this.details.map(detail => {
                 const transactions = detail.transactions || [];
                 const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_no === detail.no);
-
                 return {
                     ...detail,
                     type1Transactions: type1Transactions,
+
                 };
             });
 
@@ -722,7 +509,33 @@ export default {
         ]);
     },
 
+    mounted() {
+        this.fetchEmployeeData(),
+        this.fetchDetailData(),
+        this.fetchCustomerData(),
+        this.fetchStockData(),
+        this.fetchFromData(),
+        this.fetchBaseData(),
+        this.fetchTypeData()
+        document.addEventListener('keydown', this.handleKeydown);
+    },
+
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.handleKeydown);
+    },
+
     methods: {
+        handleKeydown(event) {
+            if (event.key === 'Escape') {
+                this.cancel();
+            }
+        },
+
+        cancel() {
+            this.modal.confirm.open = false;
+            this.$emit('update:edit', false);
+        },
+
         toggleSelectItems() {
             this.isSelectingItems = !this.isSelectingItems;
         },
@@ -836,40 +649,32 @@ export default {
             return this.types.find(type => type.no === typeNo);
         },
 
-        async fetchDetailData() {
+        async fetchDetailData(data) {
             try {
+                if (!data || !data.stock_no) {
+                    console.error("Data or stock_no is missing!");
+                    return;
+                }
                 await this.fetchStockData();
                 this.details = await this.$store.dispatch('api/detail/getDetail');
-                const transactions = await this.$store.dispatch('api/transaction/getTransaction');
-
-                this.details = this.details.filter(detail => {
-                    const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_no === detail.no);
-                    const type2Transactions = transactions.filter(t => t.type === 2 && t.stock_detail_no === detail.no);
-
-                    const type1TotalAmount = type1Transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
-                    const type2TotalAmount = type2Transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
-
-                    const calculatedAmount = (detail.amount || 0) + type1TotalAmount - type2TotalAmount;
-
-                    const isValid = type1Transactions.length === 0
-                        ? detail.amount - type2TotalAmount === 0
-                        : calculatedAmount === 0;
-
-
-                    return isValid;
-                });
-
 
                 if (Array.isArray(this.details) && this.details.length > 0) {
+                    this.details = this.details.filter(detail => detail.stock_no === data.stock_no);
                     for (const detail of this.details) {
                         detail.isOpen = false;
                         if (detail.stock_no) {
                             let closingPriceData = null;
-                            const prices = await this.$store.dispatch('api/price/getPrice');
+
+                            const prices = await this.$store.dispatch('api/price/getPrice', {
+                                stock_no: detail.stock_no
+                            });
+
                             const priceData = prices.filter(p => p.stock_no === detail.stock_no);
+
                             const latestPriceData = priceData.reduce((latest, current) => {
                                 return moment(current.created_date).isAfter(moment(latest.created_date)) ? current : latest;
                             }, priceData[0]);
+
                             closingPriceData = latestPriceData ? latestPriceData.price : null;
 
                             let detail_total_Dividend = new Decimal(0);
@@ -881,10 +686,7 @@ export default {
                             let transactionDividendTotalSum = 0;
                             let transactionAmountSum = 0;
                             let transactionnumberOfDividends = 0;
-                            const OriginalAmount = detail.amount;
-                            const OriginalPrice = detail.price;
-                            const OriginalMoney = OriginalAmount * OriginalPrice;
-
+                            const detailamount = detail.amount;
 
                             if (detail.created_date) {
                                 const dividendData = await this.$store.dispatch('api/dividend/getDividend', {
@@ -903,10 +705,43 @@ export default {
                                 balance_dividend = detail.amount * detail_total_Dividend.toNumber();
                             }
 
-                            const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_no === detail.no);
-                            detail.transactions = type1Transactions;
+                            const transactions = await this.$store.dispatch('api/transaction/getTransaction', { stock_detail_no: detail.no });
 
-                            for (const transaction of detail.transactions) {
+                            const type1Transactions = transactions.filter(t => t.type === 1 && t.stock_detail_no === detail.no);
+                            const type2Transactions = transactions.filter(t => t.type === 2 && t.stock_detail_no === detail.no);
+
+                            detail.transactions = type1Transactions;
+                            let remainingAmount = 0;
+
+                            const sortedType1Transactions = type1Transactions.sort((a, b) => moment(b.created_date).diff(moment(a.created_date)));
+
+                            for (const type1 of sortedType1Transactions) {
+                                let remainingAmount = type1.amount;
+
+                                for (const type2 of type2Transactions) {
+                                    if (moment(type2.created_date).isAfter(moment(type1.created_date)) && type2.amount > 0) {
+                                        if (type2.amount >= remainingAmount) {
+                                            type2.amount -= remainingAmount;
+                                            remainingAmount = 0;
+                                            break;
+                                        } else {
+                                            remainingAmount -= type2.amount;
+                                            type2.amount = 0;
+                                        }
+                                    }
+                                }
+
+                                type1.amount = remainingAmount;
+                            }
+
+                            detail.transactions = type1Transactions.filter(type1 => type1.amount > 0);
+                            const remainingType2Amount = type2Transactions.reduce((sum, type2) => sum + type2.amount, 0);
+
+                            if (remainingType2Amount > 0) {
+                                detail.amount -= remainingType2Amount;
+                            }
+
+                            for (const transaction of [...sortedType1Transactions]) {
                                 if (transaction.amount > 0) {
                                     const commissionData = await this.$store.dispatch('api/commission/getCommission', { no: transaction.commission_id });
                                     const commission = commissionData.length > 0 ? commissionData[0] : null;
@@ -956,6 +791,23 @@ export default {
                                 }
                             }
 
+                            const detailprice = detail.price;
+                            const detailmoney = detailamount * detailprice;
+                            const detailpresent_price = detailamount * closingPriceData;
+                            const detailtotal = detailpresent_price + balance_dividend;
+
+                            detail.detailupdated_date = detail.updated_date;
+                            detail.detailamount = detailamount;
+                            detail.detailprice = detailprice;
+                            detail.detaildividend_amount = detail_total_Dividend.toNumber();
+                            detail.detailmoney = detailmoney.toLocaleString(2);
+                            detail.detailpresent_price = detailpresent_price.toLocaleString(2);
+                            detail.detailtotal = detailtotal.toLocaleString(2);
+                            detail.detailbalance_dividend = balance_dividend.toLocaleString(2);
+                            detail.detailpresent_profit = (detailtotal - detailmoney).toLocaleString(2);
+                            detail.detailtotal_percent = (((detailtotal - detailmoney) / detailmoney) * 100).toLocaleString(2);
+                            detail.detailemployee_no = detail.employee_no;
+
                             const lasted_updated_date = transactions
                                 .filter(transaction => transaction.stock_detail_no === detail.no)
                                 .map(transaction => transaction.updated_date);
@@ -978,11 +830,11 @@ export default {
                             present_price = amount * closingPriceData;
                             total = present_price + balance;
 
-                            //แถวหลัก
                             detail.updated_date = latest_updated_date;
                             detail.price = price;
                             detail.amount = amount;
                             detail.money = money.toLocaleString(2);
+                            detail.totalprice = price;
                             detail.dividend_amount = ((detail_total_Dividend.toNumber() + transaction_total_Dividend) / (1 + transactionnumberOfDividends)).toLocaleString(2);
                             detail.balance_dividend = balance.toLocaleString(2);
                             detail.closing_price = closingPriceData;
@@ -991,28 +843,17 @@ export default {
                             detail.present_profit = (total - money).toLocaleString(2);
                             detail.total_percent = (((total - money) / money) * 100).toLocaleString(2);
                             detail.employee_no = lasted_employee_no;
-
-                            //แถวรอง
-                            const DetailPresent_Price = OriginalAmount * closingPriceData;
-                            const DetailTotal = DetailPresent_Price + balance_dividend;
-
-                            detail.DetailUpdated_date = detail.updated_date;
-                            detail.detailamount = OriginalAmount;
-                            detail.detailprice = OriginalPrice;
-                            detail.DetailDividend_Amount = detail_total_Dividend.toNumber();
-                            detail.DetailMoney = OriginalMoney.toLocaleString(2);
-                            detail.DetailPresent_Price = DetailPresent_Price.toLocaleString(2);
-                            detail.DetailTotal = DetailTotal.toLocaleString(2);
-                            detail.DetailBalance_Dividend = balance_dividend.toLocaleString(2);
-                            detail.DetailPresent_Profit = (DetailTotal - OriginalMoney).toLocaleString(2);
-                            detail.DetailTotal_Percent = (((DetailTotal - OriginalMoney) / OriginalMoney) * 100).toLocaleString(2);
-                            detail.DetailEmployee_No = detail.employee_no;
-
                             detail.type1Transactions = type1Transactions;
+
+                            const dividendmoney = money - (transactionDividendTotalSum + balance_dividend);
+                            const dividendprice = dividendmoney / amount;
+
+                            detail.dividendprice = dividendprice;
+                            detail.dividendmoney = dividendmoney.toLocaleString(2);
                         }
                     }
 
-
+                    this.details = this.details.filter(detail => detail.amount !== 0);
                 } else {
                     console.error("ข้อมูล details ไม่มีข้อมูลหรือไม่ใช่อาร์เรย์");
                 }
@@ -1314,8 +1155,8 @@ export default {
                         rowData[header.value] = this.getCustomerByNo(item.customer_no).nickname;
                     } else if (header.value === 'port') {
                         rowData[header.value] = this.getPortText(item.total_percent).text;
-                    } else if (header.value === 'employee_no') {
-                        rowData[header.value] = this.getEmployeeByNo(item.employee_no).fname + ' ' + this.getEmployeeByNo(item.employee_no).lname;
+                    } else if (header.value === 'type_no') {
+                        rowData[header.value] = this.getTypeByNo(this.getCustomerByNo(item.customer_no)?.type_no)?.type;
                     } else if (header.value !== 'detail' && header.value !== 'action' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }
@@ -1353,27 +1194,6 @@ export default {
 
         goBack() {
             window.location.reload();
-        },
-
-        recordLog() {
-            const stock = this.getStockByNo(this.currentItem.stock_no);
-            const from = this.getFromByNo(this.currentItem.from_no);
-            const customer = this.getCustomerByNo(this.currentItem.customer_no)
-            const log = {
-                customer_no: `${customer ? customer.id : 'ไม่พบรหัสลูกค้า'}`,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
-                detail: this.currentAction === 'delete'
-                    ? `ชื่อหุ้น : ${stock ? stock.name : 'ไม่พบชื่อหุ้น'}\nที่มาที่ไป : ${from ? from.from : 'ไม่พบที่มาที่ไป'}\nราคาที่ติด : ${this.currentItem.price}\nจำนวนที่ติด : ${this.currentItem.amount}`
-                    : `ชื่อหุ้น : ${stock ? stock.name : 'ไม่พบชื่อหุ้น'}\nที่มาที่ไป : ${from ? from.from : 'ไม่พบที่มาที่ไป'}\nราคาที่ติด : ${this.currentItem.price}\nจำนวนที่ติด : ${this.currentItem.amount}`,
-                type: 1,
-                picture: this.$auth.user.picture || 'Unknown',
-                action: this.currentAction === 'delete'
-                    ? 'ลบข้อมูลหุ้นของลูกค้า'
-                    : 'ไม่ลบข้อมูลหุ้นของลูกค้า',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };
@@ -1500,7 +1320,7 @@ export default {
 }
 
 .header-item {
-    flex: 1 0 20%;
+    flex: 1 0 10%;
     box-sizing: border-box;
 }
 

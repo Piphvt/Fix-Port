@@ -23,7 +23,6 @@
                         <v-col cols="2">
                             <v-text-field v-model="item.low_price" label="Low Price" type="text" dense outlined :rules="[
                                 (v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข',
-                                (v) => !v || parseFloat(v) < parseFloat(item.up_price) || 'Low Price ต้องน้อยกว่า Up Price'
                             ]">
                             </v-text-field>
                         </v-col>
@@ -31,7 +30,6 @@
                         <v-col cols="2">
                             <v-text-field v-model="item.up_price" label="Up Price" type="text" dense outlined :rules="[
                                 (v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข',
-                                (v) => !v || parseFloat(v) > parseFloat(item.low_price) || 'Up Price ต้องมากกว่า Low Price'
                             ]">
                             </v-text-field>
                         </v-col>
