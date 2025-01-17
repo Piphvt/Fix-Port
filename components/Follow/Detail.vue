@@ -1108,7 +1108,7 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
+            const worksheet = workbook.addWorksheet('หุ้นของลูกค้า');
 
             const headers = this.filteredHeaders
                 .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'select')
@@ -1185,7 +1185,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ข้อมูลหุ้นของลูกค้าที่ขายหมดแล้ว-${currentDate}.xlsx`);
+                link.setAttribute('download', `หุ้นของลูกค้า-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

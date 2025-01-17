@@ -112,10 +112,6 @@ export default {
       const staffNoHasChanged = this.formData.staff_no !== this.originalData.staff_no;
       return stockNoHasChanged || setNoHasChanged || commentNoHasChanged || staffNoHasChanged;
     },
-
-    hasChanges() {
-      return JSON.stringify(this.formData) !== JSON.stringify(this.originalData);
-    }
   },
 
   async mounted() {

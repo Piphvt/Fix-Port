@@ -27,9 +27,8 @@
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-text-field v-model="formData.email"
-                  :rules="[(v) => !!v || 'โปรดกรอกอีเมล', (v) => /.+@.+\..+/.test(v) || 'โปรดกรอกอีเมลที่ถูกต้อง']"
-                  label="อีเมล" dense outlined required />
+                <v-text-field v-model="formData.email" label="อีเมล" type="text" dense
+                  outlined :rules="validateUserRules(formData)" />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
@@ -63,7 +62,7 @@
                 </v-select>
               </v-col>
 
-              <v-col v-if="$auth.user.rank_no === 1"  cols="5" sm="11" class="pa-0 ml-4">
+              <v-col v-if="$auth.user.rank_no === 1" cols="5" sm="11" class="pa-0 ml-4">
                 <v-select v-model="formData.rank_no" :items="rankOptions" :item-text="item => item.text"
                   :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกตำแหน่ง']" label="ตำแหน่ง" dense
                   outlined required>
@@ -74,7 +73,7 @@
                     {{ data.item.text }}
                   </template>
                 </v-select>
-                
+
               </v-col>
             </v-row>
           </v-form>
@@ -129,12 +128,13 @@ export default {
         },
       },
 
+      originalData: {},
       formData: {},
       valid: false,
       genderOptions: [],
       rankOptions: [],
       statusOptions: [],
-      originalData: {},
+      employees: []
 
     };
   },
@@ -149,6 +149,7 @@ export default {
     this.setGenderOptions();
     this.setRankOptions();
     this.setStatusOptions();
+    this.fetchEmployeeData();
     this.formData = JSON.parse(JSON.stringify(this.data));
     this.originalData = JSON.parse(JSON.stringify(this.data));
     document.addEventListener('keydown', this.handleKeydown);
@@ -170,6 +171,36 @@ export default {
   },
 
   methods: {
+    validateUserRules(formData) {
+      return [
+        (v) => !!v || 'โปรดกรอกอีเมล', 
+        (v) => /.+@.+\..+/.test(v) || 'โปรดกรอกอีเมลที่ถูกต้อง',
+        (v) => {
+          if (formData.email.toLowerCase() === this.originalData.email.toLowerCase()) {
+            return true;
+          }
+          if (!Array.isArray(this.employees)) {
+            return 'ข้อมูลสมาชิกไม่ถูกต้อง';
+          }
+          const stockExists = this.employees.some(e => e.email && e.email.toLowerCase() === formData.email.toLowerCase());
+          if (stockExists) {
+            return 'มีอีเมลนี้อยู่แล้ว';
+          }
+          return true;
+        },
+      ];
+    },
+
+    async fetchEmployeeData() {
+      try {
+        const response = await this.$store.dispatch('api/employee/getEmployee');
+        if (response) {
+          this.employees = response.map(item => ({ no: item.no, email: item.email }));
+        }
+      } catch (error) {
+      }
+    },
+
     async setRankOptions() {
       try {
         this.ranks = await this.$store.dispatch('api/rank/getRank');
@@ -177,7 +208,8 @@ export default {
         const rankIcons = {
           'ผู้พัฒนา': 'mdi-account-tie',
           'แอดมิน': 'mdi-account-hard-hat',
-          'พนักงานทั่วไป': 'mdi-account'
+          'โค้ช': 'mdi-account-cowboy-hat',
+          'ผู้ใช้งานทั่วไป': 'mdi-account'
         };
 
         const allRanks = this.ranks.map(rank => ({
@@ -186,7 +218,7 @@ export default {
           icon: rankIcons[rank.rank] || 'mdi-account'
         }));
 
-        const prioritizedRanks = ['ผู้พัฒนา', 'แอดมิน', 'พนักงานทั่วไป'];
+        const prioritizedRanks = ['ผู้พัฒนา', 'แอดมิน', 'โค้ช', 'ผู้ใช้งานทั่วไป'];
         this.rankOptions = prioritizedRanks.reduce((acc, rankName) => {
           const rank = allRanks.find(r => r.text === rankName);
           if (rank) acc.push(rank);
@@ -387,7 +419,7 @@ export default {
 
       const log = {
         action: 'แก้ไขข้อมูลผู้ใช้งาน',
-        name: this.originalData.fname + ' '+this.originalData.lname,
+        name: this.originalData.fname + ' ' + this.originalData.lname,
         detail: changes.join(''),
         type: 4,
         employee_name: Employee_Name,

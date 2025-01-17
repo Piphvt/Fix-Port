@@ -191,18 +191,6 @@
             </v-list>
           </v-menu>
 
-          <v-snackbar v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" v-model="snackbar" :timeout="3000"
-            style="width: 100px; height: 40px;" color="#24b224" absolute top right>
-            <div class="snackbar-content">
-              <v-icon class="employee-bell-icon mb-2" style="margin-right: 8px; font-size: 16px;">mdi-bell</v-icon>{{
-                EmployeeText }}
-            </div>
-            <div class="snackbar-content">
-              <v-icon class="small-bell-icon" style="margin-right: 8px; font-size: 16px;">mdi-bell</v-icon>{{
-                StockText }}
-            </div>
-          </v-snackbar>
-
         </div>
       </v-app-bar>
       <v-main>
