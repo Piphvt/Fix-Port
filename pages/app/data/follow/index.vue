@@ -3,7 +3,7 @@
     <div>
         <ModalWarning :open="modal.warning.open" :message="modal.warning.message" :warning.sync="modal.warning.open" />
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
-        <ModalConfirm :method="Confirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
+        <ModalRecheck :method="Confirm" :open="modalRecheckOpen" @update:confirm="modalRecheckOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <FollowCreate :open="FollowCreateOpen" @update:open="FollowCreateOpen = false" />
@@ -138,7 +138,7 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn v-if="$auth.user.rank_no === 1" @click="FollowStockDataOpen = true" class="tab-icon-three"
+                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 4" @click="FollowStockDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#ffc800">mdi-account-cowboy-hat</v-icon> สรุปหุ้น
                     </v-btn>
@@ -150,7 +150,7 @@
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-alert</v-icon> หุ้นที่ถึงเป้าแล้ว
                     </v-btn>
-                    <v-btn @click="FollowCreateOpen = true" class="tab-icon-two"
+                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4" @click="FollowCreateOpen = true" class="tab-icon-two"
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#24b224">mdi-archive-star</v-icon> เพิ่มการเฝ้าหุ้น
                     </v-btn>
@@ -273,6 +273,9 @@ export default {
                 confirm: {
                     open: false,
                 },
+                recheck: {
+                    open: false,
+                },
                 complete: {
                     open: false,
                     message: '',
@@ -310,6 +313,7 @@ export default {
             showSavedSearchesDialog: false,
             showColumnSelector: false,
             modalConfirmOpen: false,
+            modalRecheckOpen: false,
             editStock: false,
             dialog: false,
             sortDesc: true,
@@ -438,15 +442,11 @@ export default {
                 this.modal.complete.open = true;
             }
 
-            this.modalConfirmOpen = false;
+            this.modalRecheckOpen = false;
         },
 
         toggleSelectItems() {
             this.isSelectingItems = !this.isSelectingItems;
-        },
-
-        getCurrentItem(no) {
-            return this.follows.find(item => item.no === no);
         },
 
         async deleteSelectedItems() {
@@ -459,7 +459,7 @@ export default {
 
                         this.currentItem = this.getCurrentItem(selectedIds[i]);
 
-
+                        this.recordLog();
                     } catch (error) {
                         console.error(`Error deleting item with id ${selectedIds[i]}:`, error);
                     }
@@ -475,6 +475,10 @@ export default {
             };
 
             this.modalConfirmOpen = true;
+        },
+
+        getCurrentItem(no) {
+            return this.follows.find(item => item.no === no);
         },
 
         async fetchSetData() {
@@ -547,6 +551,8 @@ export default {
                     } else if (RankID === '2') {
                         this.$router.push('/app/home');
                     } else if (RankID === '3') {
+                        this.$router.push('/app/data/follow');
+                    } else if (RankID === '4') {
                         this.$router.push('/app/data/follow');
                     } else {
                         this.$router.push('/auth');

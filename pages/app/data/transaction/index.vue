@@ -701,6 +701,8 @@ export default {
                         this.$router.push('/app/data/transaction');
                     } else if (RankID === '3') {
                         this.$router.push('/app/data/transaction');
+                    } else if (RankID === '4') {
+                        this.$router.push('/app/data/transaction');
                     } else {
                         this.$router.push('/auth');
                     }

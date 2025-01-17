@@ -113,7 +113,9 @@ export default {
                         this.$router.push('/app/profile');
                     } else if (RankID === '3') {
                         this.$router.push('/app/profile');
-                    } else {
+                    } else if (RankID === '4') {
+                        this.$router.push('/app/profile');
+                    }  else {
                         this.$router.push('/auth');
                     }
                 }

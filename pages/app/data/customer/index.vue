@@ -508,6 +508,8 @@ export default {
                         this.$router.push('/app/data/customer');
                     } else if (RankID === '3') {
                         this.$router.push('/app/data/customer');
+                    } else if (RankID === '4') {
+                        this.$router.push('/app/data/customer');
                     } else {
                         this.$router.push('/auth');
                     }

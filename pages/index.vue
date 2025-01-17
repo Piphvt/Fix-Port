@@ -47,6 +47,8 @@ export default {
                         this.$router.push('/auth');
                     } else if (RankID === '3') {
                         this.$router.push('/auth');
+                    } else if (RankID === '4') {
+                        this.$router.push('/auth');
                     } else {
                         this.$router.push('/');
                     }

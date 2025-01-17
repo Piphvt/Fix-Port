@@ -490,6 +490,8 @@ export default {
                         this.$router.push('/app/history/user');
                     } else if (RankID === '3') {
                         this.$router.push('/app/history/user');
+                    } else if (RankID === '4') {
+                        this.$router.push('/app/history/user');
                     } else {
                         this.$router.push('/auth');
                     }

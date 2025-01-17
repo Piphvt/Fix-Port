@@ -885,6 +885,8 @@ export default {
                         this.$router.push('/app/data/detail');
                     } else if (RankID === '3') {
                         this.$router.push('/app/data/detail');
+                    } else if (RankID === '4') {
+                        this.$router.push('/app/data/detail');
                     } else {
                         this.$router.push('/auth');
                     }

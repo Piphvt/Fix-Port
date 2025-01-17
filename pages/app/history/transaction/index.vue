@@ -512,6 +512,8 @@ export default {
                         this.$router.push('/app/history/transaction');
                     } else if (RankID === '3') {
                         this.$router.push('/app/history/transaction');
+                    } else if (RankID === '4') {
+                        this.$router.push('/app/history/transaction');
                     } else {
                         this.$router.push('/auth');
                     }
