@@ -461,8 +461,8 @@ export default {
             this.isSelectingItems = !this.isSelectingItems;
         },
 
-        getCurrentItem(id) {
-            return this.stocks.find(item => item.no === id);
+        getCurrentItem(no) {
+            return this.stocks.find(item => item.no === no);
         },
 
         async deleteSelectedItems() {
@@ -847,7 +847,8 @@ export default {
                 action: 'ลบหุ้น',
                 name: this.currentItem.stock,
                 detail: `ประเภท : ${this.getSetName(this.currentItem.set_no) || 'ยังไม่ระบุ'}\n` +
-                    `หมายเหตุ : ${this.currentItem.comment || 'ยังไม่ระบุ'}`,
+                    `หมายเหตุ : ${this.currentItem.comment || 'ยังไม่ระบุ'}\n`+
+                    `ผู้ติดตามหุ้น : ${this.getEmployeeName(this.currentItem.staff_no)}\n`,
                 type: 2,
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,

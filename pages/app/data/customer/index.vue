@@ -404,15 +404,18 @@ export default {
         },
 
         async deleteSelectedItems() {
-
             this.handleConfirm = async () => {
                 const selectedIds = this.selectedItems;
 
                 for (let i = 0; i < selectedIds.length; i++) {
                     try {
                         await this.$store.dispatch('api/customer/deleteCustomer', selectedIds[i]);
+
+                        this.currentItem = this.getCurrentItem(selectedIds[i]);
+
+                        this.recordLog();
                     } catch (error) {
-                        console.error(`Error deleting customer with id ${selectedIds[i]}:`, error);
+                        console.error(`Error deleting item with id ${selectedIds[i]}:`, error);
                     }
                 }
 
@@ -422,11 +425,14 @@ export default {
 
                 this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
                 this.modal.complete.open = true;
-                this.recordLog()
                 this.modalConfirmOpen = false;
             };
 
             this.modalConfirmOpen = true;
+        },
+
+        getCurrentItem(no) {
+            return this.customers.find(item => item.no === no);
         },
 
         async fetchTypeData() {
@@ -723,6 +729,8 @@ export default {
             const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
             const Employee_Email = this.$auth.user.email;
             const Employee_Picture = this.$auth.user.picture;
+
+
             const log = {
                 action: 'ลบลูกค้า',
                 name: this.currentItem.id,
@@ -735,8 +743,10 @@ export default {
                 employee_picture: Employee_Picture,
                 created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
+
             this.$store.dispatch('api/log/addLog', log);
         },
+
 
         goToNewUser() {
             this.$router.push('/app/user/new');

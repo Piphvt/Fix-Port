@@ -371,34 +371,3 @@ export default {
 }
 
 </script>
-
-<style scoped>
-@keyframes shake {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  25% {
-    transform: rotate(-10deg);
-  }
-
-  50% {
-    transform: rotate(10deg);
-  }
-
-  75% {
-    transform: rotate(-10deg);
-  }
-
-  100% {
-    transform: rotate(0deg);
-  }
-}
-
-.small-bell-icon {
-  font-size: 1.2rem;
-  vertical-align: middle;
-  color: #ffc800;
-  animation: shake 0.8s ease infinite;
-}
-</style>

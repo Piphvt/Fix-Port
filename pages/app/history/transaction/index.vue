@@ -140,7 +140,9 @@
                 item-key="no" :items-per-page="5">
                 <template v-slot:item.employee_picture="{ item }">
                     <v-avatar size="40">
-                        <img :src="`${$config.API_URL}/file/profile/${item.employee_picture}`" alt="picture" />
+                        <img :src="item.employee_picture
+                            ? `${$config.API_URL}/file/profile/${item.employee_picture}`
+                            : `${$config.API_URL}/file/default/${item.employee_picture}`" alt="picture" />
                     </v-avatar>
                 </template>
                 <template v-slot:item.select="{ item }">
