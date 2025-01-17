@@ -166,7 +166,7 @@
                     </div>
                 </template>
                 <template v-slot:item.base_no="{ item }">
-                    <div class="text-center" :style="{ color: getBaseText(getBaseName(item.base_no)).color }">
+                    <div class="text-center">
                         {{ getBaseName(item.base_no) }}
                     </div>
                 </template>

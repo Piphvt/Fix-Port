@@ -511,8 +511,8 @@ export default {
         getRankText(rank) {
             if (rank === 'ผู้พัฒนา') {
                 return { text: 'ผู้พัฒนา', color: '#24b224' };
-            } else if (rank === 'พนักงานทั่วไป') {
-                return { text: 'พนักงานทั่วไป', color: '#ffc800' };
+            } else if (rank === 'โค้ช') {
+                return { text: 'โค้ช', color: '#ffc800' };
             } else if (rank === 'แอดมิน') {
                 return { text: 'แอดมิน', color: '#85d7df' };
             } else {

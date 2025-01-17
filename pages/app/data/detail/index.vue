@@ -9,6 +9,7 @@
         <DetailEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
         <DetailSoldOut v-model="SoldOutStockDataOpen" />
         <DetailSummarize v-model="SummarizeStockDataOpen" />
+        <FollowStock v-model="FollowStockDataOpen" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -166,9 +167,15 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="SummarizeStockDataOpen = true" class="tab-icon-three"
+                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                        @click="SummarizeStockDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-bank-check</v-icon> สรุปหุ้น
+                        <v-icon left color="#ffc800">mdi-account-hard-hat</v-icon> สรุปหุ้น
+                    </v-btn>
+
+                    <v-btn v-if="$auth.user.rank_no === 4" @click="FollowStockDataOpen = true" class="tab-icon-three"
+                        style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#ffc800">mdi-account-cowboy-hat</v-icon> สรุปหุ้น
                     </v-btn>
 
                     <v-btn @click="SoldOutStockDataOpen = true" class="tab-icon-three"
@@ -500,7 +507,7 @@ export default {
             DetailCreateOpen: false,
             SoldOutStockDataOpen: false,
             SummarizeStockDataOpen: false,
-            
+            FollowStockDataOpen: false,
 
             selectedCustomerIDs: [],
             selectedCustomerNames: [],

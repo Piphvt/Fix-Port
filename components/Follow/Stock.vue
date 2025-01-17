@@ -159,14 +159,6 @@ export default {
                     align: 'center',
                     cellClass: 'text-center',
                 },
-
-                {
-                    text: 'รายละเอียด',
-                    value: 'detail',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
             ],
         };
     },

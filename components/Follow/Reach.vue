@@ -8,6 +8,7 @@
                     :complete.sync="modal.complete.open" :method="goBack" />
                 <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
                 <FollowChange :open="editStock" :data="editAllData" @update:edit="editStock = false" />
+                <FollowDetail :open="DetailDataOpen" :data="DetailData" @update:edit="DetailDataOpen = false" />
             </div>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-archive-alert</v-icon>
@@ -124,6 +125,14 @@
                                     <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
                                 </template>
                                 <v-list class="custom-list">
+                                    <v-list-item @click="openDetailData( item)" class="custom-list-item">
+                                        <v-list-item-icon style="margin-right: 4px;">
+                                            <v-icon class="icon-tab" color="#ffffff">mdi-eye-circle</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content
+                                            style="font-size: 0.8rem;">ลูกค้าที่มีหุ้น</v-list-item-content>
+                                    </v-list-item>
+
                                     <v-list-item @click="showConfirmDialog('waiting', item)" class="custom-list-item">
                                         <v-list-item-icon style="margin-right: 4px;">
                                             <v-icon class="icon-tab" color="#38b6ff">mdi-reply-circle</v-icon>
@@ -209,6 +218,9 @@ export default {
 
             editStock: false,
             editAllData: {},
+
+            DetailDataOpen: false,
+            DetailData: {},
 
             follows: [],
             stocks: [],
@@ -319,6 +331,11 @@ export default {
     },
 
     methods: {
+        openDetailData(item) {
+            this.DetailData = item;
+            this.DetailDataOpen = true;
+        },
+
         applyFilters() {
             this.filteredFollows = this.follows.filter(follow => {
                 return this.savedSearches.every(search => this.applySearchFilter(follow, search));
@@ -343,7 +360,7 @@ export default {
         },
 
         addSearch() {
-            if (this.searchType === 'stock_no' || this.searchType === 'employee_no'|| this.searchType === 'reach') {
+            if (this.searchType === 'stock_no' || this.searchType === 'employee_no' || this.searchType === 'reach') {
                 this.addSearchItemsToSearch();
             } else {
                 if (this.searchQuery.trim()) {
@@ -360,7 +377,7 @@ export default {
         addSearchItemsToSearch() {
             const selectedItems =
                 this.searchType === 'stock_no' ? this.selectedStocks :
-                    this.searchType === 'employee_no' ? this.selectedEmployees : 
+                    this.searchType === 'employee_no' ? this.selectedEmployees :
                         this.searchType === 'reach' ? this.selectedReaches : [];
 
             if (selectedItems.length > 0) {
