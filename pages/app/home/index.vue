@@ -63,7 +63,8 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col cols="12" sm="6" md="4" lg="6">
+
+        <v-col cols="12" sm="6" md="4" lg="6" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3">
           <v-card>
             <v-card-title class="d-flex align-center justify-center">คำร้องขอสมัครสมาชิก</v-card-title>
             <v-card-text>
@@ -90,6 +91,41 @@
                   <template v-else>
                     <tr>
                       <td colspan="4" class="text-center">ไม่มีคำร้องขอสมัครสมาชิกในขณะนี้</td>
+                    </tr>
+                  </template>
+                </tbody>
+              </v-simple-table>
+            </v-card-text>
+          </v-card>
+        </v-col>
+
+        <v-col cols="12" sm="6" md="4" lg="6" v-if="$auth.user.rank_no === 2 || $auth.user.rank_no === 4">
+          <v-card>
+            <v-card-title class="d-flex align-center justify-center">หุ้นที่ลูกค้ามี</v-card-title>
+            <v-card-text>
+              <v-simple-table>
+                <thead>
+                  <tr>
+                    <th class="text-center">ชื่อหุ้น</th>
+                    <th class="text-center">จำนวน</th>
+                    <th class="text-center">ผู้ติดตามหุ้น</th>
+                    <th class="text-center"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template v-if="randomDetail.length > 0">
+                    <tr v-for="(item, index) in randomDetail.slice(0, 3)" :key="index">
+                      <td class="text-center">{{ getStockName(item.stock_no) }}</td>
+                      <td class="text-center">{{ item.stock_amount }}</td>
+                      <td class="text-center">{{ getStaffName(item.staff_no) }}</td>
+                      <td class="text-center">
+                        <v-icon @click="openDetailData(item)" color="#85d7df">mdi-eye</v-icon>
+                      </td>
+                    </tr>
+                  </template>
+                  <template v-else>
+                    <tr>
+                      <td colspan="4" class="text-center">ไม่มีหุ้นของลูกค้าในขณะนี้</td>
                     </tr>
                   </template>
                 </tbody>
@@ -154,6 +190,8 @@ export default {
     await this.fetchDividendData();
     await this.fetchStockData();
     await this.fetchFollowData();
+    await this.fetchDetailData();
+    await this.fetchAllEmployeeData();
 
     this.updateRandomData();
 
@@ -177,70 +215,86 @@ export default {
       employees: [],
       stocks: [],
       follows: [],
+      details: [],
+      allemployees: [],
 
       randomPrice: [],
       randomDividend: [],
       randomFollow: [],
       randomEmployee: [],
+      randomDetail: [],
     };
   },
 
   methods: {
     updateRandomData() {
-      if (this.prices.length > 0) {
-        const randomPriceIndexes = [];
-        while (randomPriceIndexes.length < 3 && randomPriceIndexes.length < this.prices.length) {
-          const randomPriceIndex = Math.floor(Math.random() * this.prices.length);
-          if (!randomPriceIndexes.includes(randomPriceIndex)) {
-            randomPriceIndexes.push(randomPriceIndex);
-          }
-        }
-
-        this.randomPrice = randomPriceIndexes.map(index => this.prices[index]);
+  if (this.prices.length > 0) {
+    const randomPriceIndexes = [];
+    while (randomPriceIndexes.length < 3 && randomPriceIndexes.length < this.prices.length) {
+      const randomPriceIndex = Math.floor(Math.random() * this.prices.length);
+      if (!randomPriceIndexes.includes(randomPriceIndex)) {
+        randomPriceIndexes.push(randomPriceIndex);
       }
+    }
 
-      if (this.dividends.length > 0) {
-        const randomDividendIndexes = [];
-        while (randomDividendIndexes.length < 3 && randomDividendIndexes.length < this.dividends.length) {
-          const randomDividendIndex = Math.floor(Math.random() * this.dividends.length);
-          if (!randomDividendIndexes.includes(randomDividendIndex)) {
-            randomDividendIndexes.push(randomDividendIndex);
-          }
-        }
+    this.randomPrice = randomPriceIndexes.map(index => this.prices[index]);
+  }
 
-        this.randomDividend = randomDividendIndexes.map(index => this.dividends[index]);
+  if (this.dividends.length > 0) {
+    const randomDividendIndexes = [];
+    while (randomDividendIndexes.length < 3 && randomDividendIndexes.length < this.dividends.length) {
+      const randomDividendIndex = Math.floor(Math.random() * this.dividends.length);
+      if (!randomDividendIndexes.includes(randomDividendIndex)) {
+        randomDividendIndexes.push(randomDividendIndex);
       }
+    }
 
+    this.randomDividend = randomDividendIndexes.map(index => this.dividends[index]);
+  }
 
-      if (this.follows.length > 0) {
-        const randomFollowIndexes = [];
-        while (randomFollowIndexes.length < 3 && randomFollowIndexes.length < this.follows.length) {
-          const randomFollowIndex = Math.floor(Math.random() * this.follows.length);
-          if (!randomFollowIndexes.includes(randomFollowIndex)) {
-            randomFollowIndexes.push(randomFollowIndex);
-          }
-        }
-
-        this.randomFollow = randomFollowIndexes.map(index => this.follows[index]);
-      } else {
-        this.randomFollow = [];
+  if (this.details.length > 0) {
+    const randomDetailIndexes = [];
+    while (randomDetailIndexes.length < 3 && randomDetailIndexes.length < this.details.length) {
+      const randomDetailIndex = Math.floor(Math.random() * this.details.length); // Fixed variable name here
+      if (!randomDetailIndexes.includes(randomDetailIndex)) {
+        randomDetailIndexes.push(randomDetailIndex);
       }
+    }
 
-      if (this.employees.length > 0) {
-        const randomEmployeeIndexes = [];
-        while (randomEmployeeIndexes.length < 3 && randomEmployeeIndexes.length < this.employees.length) {
-          const randomEmployeeIndex = Math.floor(Math.random() * this.employees.length);
-          if (!randomEmployeeIndexes.includes(randomEmployeeIndex)) {
-            randomEmployeeIndexes.push(randomEmployeeIndex);
-          }
-        }
+    this.randomDetail = randomDetailIndexes.map(index => this.details[index]);
+  }
 
-        this.randomEmployee = randomEmployeeIndexes.map(index => this.employees[index]);
-      } else {
-        this.randomEmployee = [];
+
+  if (this.follows.length > 0) {
+    const randomFollowIndexes = [];
+    while (randomFollowIndexes.length < 3 && randomFollowIndexes.length < this.follows.length) {
+      const randomFollowIndex = Math.floor(Math.random() * this.follows.length);
+      if (!randomFollowIndexes.includes(randomFollowIndex)) {
+        randomFollowIndexes.push(randomFollowIndex);
       }
+    }
 
-    },
+    this.randomFollow = randomFollowIndexes.map(index => this.follows[index]);
+  } else {
+    this.randomFollow = [];
+  }
+
+  if (this.employees.length > 0) {
+    const randomEmployeeIndexes = [];
+    while (randomEmployeeIndexes.length < 3 && randomEmployeeIndexes.length < this.employees.length) {
+      const randomEmployeeIndex = Math.floor(Math.random() * this.employees.length);
+      if (!randomEmployeeIndexes.includes(randomEmployeeIndex)) {
+        randomEmployeeIndexes.push(randomEmployeeIndex);
+      }
+    }
+
+    this.randomEmployee = randomEmployeeIndexes.map(index => this.employees[index]);
+  } else {
+    this.randomEmployee = [];
+  }
+
+},
+
 
     openDetailData(item) {
       this.DetailData = item;
@@ -255,6 +309,63 @@ export default {
     OpenPriceData(stockNo) {
       this.selectedStockNo = stockNo;
       this.PriceDataOpen = true;
+    },
+
+    async fetchDetailData() {
+      this.details = await this.$store.dispatch('api/detail/getDetail');
+      const transactions = await this.$store.dispatch('api/transaction/getTransaction');
+      const stocks = await this.$store.dispatch('api/stock/getStock');
+
+      const filteredDetails = this.details.filter(detail => {
+        const relatedTransactions = transactions.filter(
+          transaction => transaction.stock_detail_no === detail.no
+        );
+
+        const buy = (detail.amount || 0) +
+          relatedTransactions
+            .filter(transaction => transaction.type === 1)
+            .reduce((sum, transaction) => sum + (transaction.amount || 0), 0);
+
+        const sale = relatedTransactions
+          .filter(transaction => transaction.type === 2)
+          .reduce((sum, transaction) => sum + (transaction.amount || 0), 0);
+
+        const remainingStock = buy - sale;
+        return remainingStock > 0;
+      });
+
+      const stockCount = filteredDetails.reduce((acc, detail) => {
+        const stockNo = detail.stock_no;
+
+        if (!acc[stockNo]) {
+          acc[stockNo] = { count: 0, latestUpdatedDate: null };
+        }
+
+        acc[stockNo].count += 1;
+
+        if (!acc[stockNo].latestUpdatedDate || new Date(detail.updated_date) > new Date(acc[stockNo].latestUpdatedDate)) {
+          acc[stockNo].latestUpdatedDate = detail.updated_date;
+        }
+
+        return acc;
+      }, {});
+
+      const uniqueDetails = [];
+      filteredDetails.forEach(detail => {
+        const stockNo = detail.stock_no;
+
+        if (!uniqueDetails.some(item => item.stock_no === stockNo)) {
+          const matchingStock = stocks.find(stock => stock.no === stockNo);
+          detail.staff_no = matchingStock ? matchingStock.staff_no : null;
+
+          detail.stock_amount = stockCount[stockNo].count;
+          detail.latest_updated_date = stockCount[stockNo].latestUpdatedDate;
+
+          uniqueDetails.push(detail);
+        }
+      });
+
+      this.details = uniqueDetails;
     },
 
     async fetchEmployeeData() {
@@ -317,6 +428,15 @@ export default {
     getStockName(stockId) {
       const stock = this.stocks.find(s => s.no === stockId);
       return stock ? stock.stock : '';
+    },
+
+    async fetchAllEmployeeData() {
+      this.allemployees = await this.$store.dispatch('api/employee/getEmployee');
+    },
+
+    getStaffName(staffNo) {
+      const employee = this.allemployees.find(e => e.no === staffNo);
+      return employee ? employee.fname + ' '+ employee.lname : '';
     },
 
     getReachText(reach) {

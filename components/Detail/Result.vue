@@ -1,9 +1,9 @@
 <template>
     <v-dialog v-model="showModalResult" max-width="800px">
         <v-card>
-            <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-bank-check</v-icon>
-                <span class="headline">ตรวจสอบข้อมูลหุ้นลูกค้า</span>
+            <v-card-title class="d-flex align-center justify-center">
+                <v-icon color="#24b224" size="30">mdi-alert-circle</v-icon>&nbsp;
+                <h3 class="custom-title">ตรวจสอบความถูกต้อง</h3>
             </v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="formattedStocks" class="elevation-1" hide-default-footer>
@@ -108,3 +108,16 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.card-title-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.custom-title {
+    font-size: 1.2rem;
+}
+</style>

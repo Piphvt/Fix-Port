@@ -112,7 +112,7 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -174,7 +174,7 @@
                 <template v-slot:item.created_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.created_date) }}</div>
                 </template>
-                <template v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" v-slot:item.edit="{ item }">
+                <template v-if="$auth.user.rank_no === 1" v-slot:item.edit="{ item }">
                     <div class="text-center">
                         <v-menu offset-y>
                             <template v-slot:activator="{ on, attrs }">
@@ -207,37 +207,9 @@
                 </v-card-title>
                 <v-card-text>
                     <div v-for="(line, index) in formattedDetailLines" :key="`${line}-${index}`">
-                        <template v-if="line.includes('หุ้นที่ ')">
-                            <span style="color: green">หุ้นที่ </span>{{ line.replace('หุ้นที่', '').trim()
-                            }}
+                        <template v-if="line.includes('-')">
+                            {{ line }}
                         </template>
-                        <template v-else-if="line.includes('ชื่อ ')">
-                            <span style="color: white">ชื่อ </span>{{ line.replace('ชื่อ', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ประเภท ')">
-                            <span style="color: blue">ประเภท </span>{{ line.replace('ประเภท', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('จำนวนปันผล ')">
-                            <span style="color: orange">จำนวนปันผล </span>{{ line.replace('จำนวนปันผล', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ราคาปิด ')">
-                            <span style="color: purple">ราคาปิด </span>{{ line.replace('ราคาปิด', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('หมายเหตุ ')">
-                            <span style="color: pink">หมายเหตุ </span>{{ line.replace('หมายเหตุ', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ไม่มีข้อมูลเพิ่มเติม')">
-                            <div style="display: flex; justify-content: center; color: red;">
-                                <span>ไม่มีข้อมูลเพิ่มเติม</span>
-                                {{ line.replace('ไม่มีข้อมูลเพิ่มเติม', '').trim() }}
-                            </div>
-                        </template>
-
                         <template v-else>
                             {{ line }}
                         </template>
@@ -337,6 +309,7 @@ export default {
                 {
                     text: '',
                     value: 'select',
+                    sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },
@@ -513,7 +486,7 @@ export default {
                     } else if (RankID === '3') {
                         this.$router.push('/app/history/stock');
                     } else if (RankID === '4') {
-                        this.$router.push('/app/home');
+                        this.$router.push('/app/history/stock');
                     } else {
                         this.$router.push('/auth');
                     }

@@ -42,7 +42,7 @@
           </v-list>
         </v-menu>
 
-        <v-menu v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" bottom right :offset-y="true" :nudge-top="8"
+        <v-menu v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4" bottom right :offset-y="true" :nudge-top="8"
           :nudge-right="8" class="user-menu">
           <template v-slot:activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on" rounded>
@@ -60,7 +60,8 @@
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item @click="goToStocksFollow" class="custom-list-item">
+            <v-list-item @click="goToStocksFollow"
+              class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-archive-search</v-icon>
               </v-list-item-icon>
@@ -89,8 +90,7 @@
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="goToStockTrade"
-              class="custom-list-item">
+            <v-list-item @click="goToStockTrade" class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-cash</v-icon>
               </v-list-item-icon>
@@ -118,8 +118,8 @@
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="goToStocksHist"
-              class="custom-list-item">
+            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4"
+              @click="goToStocksHist" class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-archive-clock</v-icon>
               </v-list-item-icon>
@@ -137,7 +137,8 @@
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item v-if="$auth.user.rank_no === 1" @click="goToEmpsHist" class="custom-list-item">
+            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="goToEmpsHist"
+              class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-home-clock</v-icon>
               </v-list-item-icon>

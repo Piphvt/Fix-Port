@@ -89,9 +89,9 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
-                                <v-icon>mdi-file-excel</v-icon>
-                            </v-btn>
+                            <v-btn color="success"
+                                v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4"
+                                @click="exportExcel" icon><v-icon>mdi-file-excel</v-icon></v-btn>
                         </div>
                     </v-col>
                 </v-row>
@@ -125,7 +125,7 @@
                                     <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
                                 </template>
                                 <v-list class="custom-list">
-                                    <v-list-item @click="openDetailData( item)" class="custom-list-item">
+                                    <v-list-item @click="openDetailData(item)" class="custom-list-item">
                                         <v-list-item-icon style="margin-right: 4px;">
                                             <v-icon class="icon-tab" color="#ffffff">mdi-eye-circle</v-icon>
                                         </v-list-item-icon>

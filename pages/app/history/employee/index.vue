@@ -113,7 +113,7 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -175,7 +175,7 @@
                 <template v-slot:item.created_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.created_date) }}</div>
                 </template>
-                <template v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" v-slot:item.edit="{ item }">
+                <template v-if="$auth.user.rank_no === 1" v-slot:item.edit="{ item }">
                     <div class="text-center">
                         <v-menu offset-y>
                             <template v-slot:activator="{ on, attrs }">
@@ -213,50 +213,6 @@
                                 <img :src="`${$config.API_URL}/file/profile/${line}`" alt="detail image" width="100"
                                     height="100" />
                             </div>
-                        </template>
-                        <template v-else-if="line.includes('เบอร์โทรศัพท์')">
-                            <span style="color: green">เบอร์โทรศัพท์ </span>{{ line.replace('เบอร์โทรศัพท์', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ผู้อนุมัติ')">
-                            <span style="color: white">ผู้อนุมัติ </span>{{ line.replace('ผู้อนุมัติ', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('รหัสผ่าน')">
-                            <span style="color: white">รหัสผ่าน </span>{{ maskNewData(line.replace('รหัสผ่าน ',
-                                '').trim()) }}
-                        </template>
-                        <template v-else-if="line.includes('เพศ')">
-                            <span style="color: blue">เพศ </span>{{ line.replace('เพศ', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ชื่อเล่น')">
-                            <span style="color: white">ชื่อเล่น </span>{{ line.replace('ชื่อเล่น', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ชื่อ')">
-                            <span style="color: yellow">ชื่อ </span>{{ line.replace('ชื่อ', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('อีเมล')">
-                            <span style="color: red">อีเมล </span>{{ line.replace('อีเมล', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('สถานะ')">
-                            <span style="color: orange">สถานะ </span>{{ line.replace('สถานะ', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ตำแหน่ง')">
-                            <span style="color: purple">ตำแหน่ง </span>{{ line.replace('ตำแหน่ง', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ที่อยู่')">
-                            <span style="color: green">ที่อยู่ </span>{{ line.replace('ที่อยู่', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ไอพี')">
-                            <span style="color: blue">ไอพี </span>{{ line.replace('ไอพี', '').trim()
-                            }}
                         </template>
                         <template v-else>
                             {{ line }}
@@ -355,6 +311,7 @@ export default {
                 {
                     text: '',
                     value: 'select',
+                    sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },
@@ -520,7 +477,7 @@ export default {
                     } else if (RankID === '2') {
                         this.$router.push('/app/home');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/home');
+                        this.$router.push('/app/history/employee');
                     } else if (RankID === '4') {
                         this.$router.push('/app/home');
                     } else {

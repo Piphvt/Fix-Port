@@ -83,16 +83,17 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
-                                <v-icon>mdi-file-excel</v-icon>
-                            </v-btn>
+                            <v-btn color="success"
+                                v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4"
+                                @click="exportExcel" icon><v-icon>mdi-file-excel</v-icon></v-btn>
                         </div>
                     </v-col>
                 </v-row>
             </v-container>
 
             <v-card-text>
-                <v-data-table :headers="headers" :items="filteredFollows" item-value="no" item-key="no" :items-per-page="5">
+                <v-data-table :headers="headers" :items="filteredFollows" item-value="no" item-key="no"
+                    :items-per-page="5">
                     <template v-slot:item.stock_no="{ item }">
                         <div class="text-center">{{ getStockName(item.stock_no) }}</div>
                     </template>
@@ -318,7 +319,7 @@ export default {
 
         addSearchItemsToSearch() {
             const selectedItems =
-                this.searchType === 'stock_no' ? this.selectedStocks : 
+                this.searchType === 'stock_no' ? this.selectedStocks :
                     this.searchType === 'employee_no' ? this.selectedEmployees : [];
 
             if (selectedItems.length > 0) {
@@ -341,7 +342,7 @@ export default {
             let field;
             if (search.type === 'stock_no') {
                 field = this.getStockName(follow.stock_no) || 'ยังไม่ระบุ';
-            } else if (search.type === 'employee_no'){
+            } else if (search.type === 'employee_no') {
                 field = this.getEmployeeName(follow.employee_no) || 'บอท';
             } else {
                 field = follow[search.type];

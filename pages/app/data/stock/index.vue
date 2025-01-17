@@ -123,7 +123,7 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -148,11 +148,11 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="StockUpdateOpen = true" class="tab-icon-three"
+                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="StockUpdateOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-arrow-up</v-icon> อัพเดทหุ้น
                     </v-btn>
-                    <v-btn @click="SetDataOpen = true" class="tab-icon-three"
+                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="SetDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-settings</v-icon> ประเภทหุ้น
                     </v-btn>
@@ -215,7 +215,7 @@
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item @click="toggleSelectItems" class="custom-list-item">
+                                <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="toggleSelectItems" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
                                     </v-list-item-icon>

@@ -113,7 +113,7 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -175,7 +175,7 @@
                 <template v-slot:item.created_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.created_date) }}</div>
                 </template>
-                <template v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" v-slot:item.edit="{ item }">
+                <template v-if="$auth.user.rank_no === 1" v-slot:item.edit="{ item }">
                     <div class="text-center">
                         <v-menu offset-y>
                             <template v-slot:activator="{ on, attrs }">
@@ -208,25 +208,7 @@
                 </v-card-title>
                 <v-card-text>
                     <div v-for="(line, index) in formattedDetailLines" :key="`${line}-${index}`">
-                        <template v-if="line.includes('ชื่อเล่น')">
-                            <span style="color: white">ชื่อเล่น </span>{{ line.replace('ชื่อเล่น', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ลูกค้าคนที่ ')">
-                            <span style="color: green">ลูกค้าคนที่ </span>{{ line.replace('ลูกค้าคนที่', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ฐานทุน')">
-                            <span style="color: yellow">ฐานทุน </span>{{ line.replace('ฐานทุน', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('ประเภท')">
-                            <span style="color: blue">ประเภท </span>{{ line.replace('ประเภท', '').trim()
-                            }}
-                        </template>
-                        <template v-else-if="line.includes('รหัส')">
-                            <span style="color: red">รหัส </span>{{ line.replace('รหัส', '').trim()
-                            }}
+                        <template v-if="line.includes('-')">{{ line }}
                         </template>
                         <template v-else>
                             {{ line }}
@@ -325,6 +307,7 @@ export default {
                 {
                     text: '',
                     value: 'select',
+                    sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },

@@ -15,7 +15,7 @@
                 <span class="headline">ข้อมูลราคาปิด</span></v-card-title>
             <v-card-text>
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                    <v-btn @click="createDividendOpen = true" style="font-size: 1.5 rem; margin-left: auto;"
+                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="createDividendOpen = true" style="font-size: 1.5 rem; margin-left: auto;"
                         color="#24b224">
                         <v-icon left>mdi-wallet-plus</v-icon> เพิ่ม
                     </v-btn>
@@ -34,7 +34,7 @@
                     <template v-slot:item.employee_no="{ item }">
                         <td class="text-center">{{ getEmployeeName(item.employee_no) }}</td>
                     </template>
-                    <template v-slot:item.detail="{ item }">
+                    <template v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" v-slot:item.detail="{ item }">
                         <div class="text-center">
                             <v-menu offset-y>
                                 <template v-slot:activator="{ on, attrs }">
