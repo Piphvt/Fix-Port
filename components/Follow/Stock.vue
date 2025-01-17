@@ -2,7 +2,7 @@
     <v-dialog v-model="dialog" max-width="650px">
         <v-card>
             <div>
-                <FollowDetail :open="DetailDataOpen" :data="DetailData" @update:edit="DetailDataOpen = false" />
+                <FollowBuild :open="DetailDataOpen" :data="DetailData" @update:edit="DetailDataOpen = false" />
             </div>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#ffc800">mdi-account-cowboy-hat</v-icon>
@@ -93,7 +93,7 @@
                     </template>
                     <template v-slot:item.detail="{ item }">
                         <div class="text-center">
-                            <v-icon @click="openDetailData(item)" color="#85d7df">mdi-eye</v-icon>
+                            <v-icon @click="openDetailData(item)" color="#24b224">mdi-archive-star</v-icon>
                         </div>
                     </template>
                 </v-data-table>
@@ -155,6 +155,14 @@ export default {
                 {
                     text: 'จำนวน',
                     value: 'stock_amount',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: '',
+                    value: 'detail',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',

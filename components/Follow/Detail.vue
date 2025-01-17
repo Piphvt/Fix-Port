@@ -293,8 +293,6 @@ export default {
     data() {
         return {
 
-            dialogVisible: false,
-
             modal: {
                 warning: {
                     open: false,

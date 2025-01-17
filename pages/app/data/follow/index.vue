@@ -10,6 +10,7 @@
         <FollowEdit :open="editStock" :data="editAllData" @update:edit="editStock = false" />
         <FollowReach v-model="FollowReachDataOpen" />
         <FollowBot v-model="FollowBotDataOpen" />
+        <FollowStock v-model="FollowStockDataOpen" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -112,7 +113,7 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportCSV" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -137,6 +138,10 @@
                     </v-list>
                 </v-menu>
                 <div>
+                    <v-btn v-if="$auth.user.rank_no === 1" @click="FollowStockDataOpen = true" class="tab-icon-three"
+                        style="font-size: 1.5 rem; margin-left: auto;">
+                        <v-icon left color="#ffc800">mdi-account-cowboy-hat</v-icon> สรุปหุ้น
+                    </v-btn>
                     <v-btn @click="FollowBotDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
                         <v-icon left color="#85d7df">mdi-archive-edit</v-icon> หุ้นที่รอการตรวจสอบ
@@ -234,12 +239,12 @@
 
 <script>
 
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import moment from 'moment';
 import 'moment/locale/th'
 import DatePicker from 'vue2-datepicker';
 import 'vue2-datepicker/index.css';
-import Papa from 'papaparse';
+import Decimal from 'decimal.js';
 
 export default {
 
@@ -263,14 +268,14 @@ export default {
             modal: {
                 warning: {
                     open: false,
-                    message: 'การป้อนข้อมูลเวลาไม่ถูกต้อง',
+                    message: '',
                 },
                 confirm: {
                     open: false,
                 },
                 complete: {
                     open: false,
-                    message: 'สำเร็จ',
+                    message: '',
                 },
             },
 
@@ -285,6 +290,7 @@ export default {
             FollowCreateOpen: false,
             FollowReachDataOpen: false,
             FollowBotDataOpen: false,
+            FollowStockDataOpen: false,
 
             selectedItems: [],
             handleConfirm: null,
@@ -439,8 +445,8 @@ export default {
             this.isSelectingItems = !this.isSelectingItems;
         },
 
-        getCurrentItem(id) {
-            return this.stocks.find(item => item.no === id);
+        getCurrentItem(no) {
+            return this.follows.find(item => item.no === no);
         },
 
         async deleteSelectedItems() {
@@ -453,7 +459,7 @@ export default {
 
                         this.currentItem = this.getCurrentItem(selectedIds[i]);
 
-                        this.recordLog();
+
                     } catch (error) {
                         console.error(`Error deleting item with id ${selectedIds[i]}:`, error);
                     }
@@ -670,40 +676,90 @@ export default {
             return found ? found.text : type;
         },
 
-        exportCSV() {
-            const filteredData = this.filtered.map(item => {
-                const dataItem = {};
+        exportExcel() {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('หุ้นของลูกค้า');
+
+            const headers = this.filteredHeaders
+                .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'select')
+                .map(header => ({
+                    header: header.text,
+                    key: header.value,
+                    style: { font: { name: 'Angsana New', size: 16 } }
+                }));
+
+            worksheet.columns = headers;
+
+            this.filtered.forEach((item, index) => {
+                const rowData = {};
                 this.filteredHeaders.forEach(header => {
-                    if (header.value === 'created_date') {
-                        dataItem['เวลา'] = this.formatDateTime(item.created_date);
-                    } else if (header.value === 'set_id') {
-                        dataItem['ประเภท'] = this.getSetName(item.set_id);
-                    } else if (header.value === 'employee_no') {
-                        dataItem['ทำรายการโดย'] = this.getEmployeeName(item.employee_no);
-                    } else {
-                        dataItem[header.text] = item[header.value];
+                    if (header.value === 'updated_date') {
+                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
+                    } else if (header.value === 'created_date') {
+                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD');
+                    } else if (header.value === 'price') {
+                        rowData[header.value] = item.price.toLocaleString(2);
+                    } else if (header.value === 'amount') {
+                        rowData[header.value] = item.amount.toLocaleString(2);
+                    } else if (header.value === 'money') {
+                        rowData[header.value] = item.money;
+                    } else if (header.value === 'total_percent') {
+                        rowData[header.value] = item.total_percent + '%';
+                    } else if (header.value === 'present_profit') {
+                        rowData[header.value] = item.present_profit;
+                    } else if (header.value === 'total') {
+                        rowData[header.value] = item.total;
+                    } else if (header.value === 'dividend_amount') {
+                        rowData[header.value] = item.dividend_amount;
+                    } else if (header.value === 'present_price') {
+                        rowData[header.value] = item.present_price;
+                    } else if (header.value === 'balance_dividend') {
+                        rowData[header.value] = item.balance_dividend;
+                    } else if (header.value === 'from_no') {
+                        rowData[header.value] = this.getFromByNo(item.from_no).from;
+                    } else if (header.value === 'stock_no') {
+                        rowData[header.value] = this.getStockByNo(item.stock_no).stock;
+                    } else if (header.value === 'customer_no') {
+                        rowData[header.value] = this.getCustomerByNo(item.customer_no).id;
+                    } else if (header.value === 'customer_name') {
+                        rowData[header.value] = this.getCustomerByNo(item.customer_no).nickname;
+                    } else if (header.value === 'port') {
+                        rowData[header.value] = this.getPortText(item.total_percent).text;
+                    } else if (header.value === 'type_no') {
+                        rowData[header.value] = this.getTypeByNo(this.getCustomerByNo(item.customer_no)?.type_no)?.type;
+                    } else if (header.value !== 'detail' && header.value !== 'action' && header.value !== 'select') {
+                        rowData[header.value] = item[header.value];
                     }
                 });
-                return dataItem;
+                worksheet.addRow(rowData);
             });
-            const csv = Papa.unparse(filteredData);
-            const bom = '\uFEFF';
-            const csvWithBom = bom + csv;
-            const blob = new Blob([csvWithBom], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const currentDate = moment().format('YYYY-MM-DD');
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', `ข้อมูลหุ้น-${currentDate}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        },
 
-        convertToCSV(objArray) {
-            const array = [Object.keys(objArray[0])].concat(objArray);
-            return array.map(row => {
-                return Object.values(row).map(value => `"${value}"`).join(',');
-            }).join('\n');
+            worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell) => {
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.font = { bold: true, name: 'Angsana New', size: 18 };
+            });
+
+            worksheet.eachRow((row) => {
+                row.eachCell({ includeEmpty: true }, (cell) => {
+                    cell.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' },
+                    };
+                });
+            });
+
+            const currentDate = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
+            workbook.xlsx.writeBuffer().then(buffer => {
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute('download', `หุ้นของลูกค้า-${currentDate}.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
         },
 
         goBack() {
