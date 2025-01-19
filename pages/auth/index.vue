@@ -24,9 +24,6 @@
               <v-btn @click="login" :disabled="!form.email || !form.password" color="#24b224" block>
                 เข้าสู่ระบบ
               </v-btn>
-              <a @click="forgotPassword" class="forgot-password-text">
-                ลืมรหัสผ่าน?
-              </a>
             </v-card-text>
           </v-card>
         </v-col>
@@ -136,11 +133,6 @@ export default {
       } catch (error) {
         this.modal.error.open = true;
       }
-    },
-
-
-    forgotPassword() {
-      this.$router.push('/auth/forgot_password');
     },
 
     handleKeydown(e) {

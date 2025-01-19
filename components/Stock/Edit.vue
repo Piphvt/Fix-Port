@@ -31,11 +31,15 @@
                 </v-select>
               </v-col>
 
-              <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
+              <v-col cols="5" sm="11" class="pa-0 ml-4" v-if="$auth.user.rank_no === 2 || $auth.user.rank_no === 4">
                 <v-text-field v-model="formData.comment" label="หมายเหตุ" dense clearable outlined />
               </v-col>
 
-              <v-col cols="6" sm="5" class="pa-0">
+              <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3">
+                <v-text-field v-model="formData.comment" label="หมายเหตุ" dense clearable outlined />
+              </v-col>
+
+              <v-col cols="6" sm="5" class="pa-0" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3">
                 <v-autocomplete v-model="formData.staff_no" :items="employees" item-text="name" item-value="no"
                   label="ชื่อผู้ติดตามหุ้น" dense outlined :rules="[(v) => !!v || 'กรุณากรอกชื่อผู้ติดตามหุ้น']"
                   clearable>

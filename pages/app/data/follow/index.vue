@@ -534,7 +534,7 @@ export default {
         showConfirmDialog(action, item) {
             this.currentAction = action;
             this.currentItem = item;
-            this.modalConfirmOpen = true;
+            this.modalRecheckOpen = true;
         },
 
         async checkRank() {

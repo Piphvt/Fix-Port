@@ -6,6 +6,8 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <EmployeeEditAllDialog :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
+        <EmployeeForgotPassword :open="editPasswordDialog" :edit.sync="editPasswordDialog" :data="editPasswordData" />
+        <EmployeeChangePicture :open="editUploadDialog" :edit.sync="editUploadDialog" :data="editUploadData" />
         <EmployeeNew v-model="EmployeeDataOpen" />
 
         <v-card flat>
@@ -196,6 +198,20 @@
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
+                                <v-list-item @click="() => { editPasswordDialog = true; editPasswordData = item }" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#ffffff">mdi-sync-circle</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content style="font-size: 0.8rem;">เปลี่ยนรหัสผ่าน</v-list-item-content>
+                                </v-list-item>
+
+                                <v-list-item @click="() => { editUploadDialog = true; editUploadData = item }" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#38b6ff">mdi-upload-circle</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content style="font-size: 0.8rem;">เปลี่ยนรูป</v-list-item-content>
+                                </v-list-item>
+
                                 <v-list-item @click="showConfirmDialog('delete', item)" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
@@ -264,6 +280,11 @@ export default {
                     message: 'สำเร็จ',
                 },
             },
+
+            editPasswordData: null,
+            editUploadData: null,
+            editPasswordDialog: false,
+            editUploadDialog: false,
 
             employees: [],
             ranks: [],
