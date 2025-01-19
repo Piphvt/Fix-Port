@@ -19,10 +19,11 @@ exports.getLogByType = (req, res) => {
 
 exports.addLog = (req, res) => {
   try {
-    const { action, name, detail, type, employee_name, employee_email, employee_picture, created_date } = req.body;
+    const { action, name, edit_no, detail, type, employee_name, employee_email, employee_picture, created_date } = req.body;
     const logData = {
       action,
       name,
+      edit_no,
       detail,
       type,
       employee_name,

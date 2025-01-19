@@ -11,6 +11,7 @@
         <DividendData :stockNo="selectedStockNo" v-model="DividendDataOpen" />
         <PriceData :stockNo="selectedStockNo" v-model="PriceDataOpen" />
         <SetData v-model="SetDataOpen" />
+        <StockHistory :No="selectedNo" v-model="HistoryDataOpen" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -215,6 +216,14 @@
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
+                                <v-list-item @click="OpenLogData(item.no)" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#ffffff">mdi-clock-time-four</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content
+                                        style="font-size: 0.8rem;">ประวัติการแก้ไข</v-list-item-content>
+                                </v-list-item>
+
                                 <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="toggleSelectItems" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
@@ -306,6 +315,8 @@ export default {
             handleConfirm: null,
             isSelectingItems: false,
 
+            selectedNo: null,
+            HistoryDataOpen: false,
             selectedStockNo: null,
             DividendDataOpen: false,
             PriceDataOpen: false,
@@ -447,6 +458,11 @@ export default {
     },
 
     methods: {
+        OpenLogData(No) {
+            this.selectedNo = No;
+            this.HistoryDataOpen = true;
+        },
+
         OpenDividendData(stockNo) {
             this.selectedStockNo = stockNo;
             this.DividendDataOpen = true;

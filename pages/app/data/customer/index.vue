@@ -7,6 +7,7 @@
             :complete.sync="modal.complete.open" :method="goBack" />
         <CustomerEdit :open="editCustomer" :data="editAllData" @update:edit="editCustomer = false" />
         <CustomerCreate :open="CustomerCreateOpen" @update:open="CustomerCreateOpen = false" />
+        <CustomerHistory :stockNo="selectedStockNo" v-model="DividendDataOpen" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -190,6 +191,14 @@
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
+                                <v-list-item @click="OpenLogData(item.no)" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#ffffff">mdi-clock-time-four</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content
+                                        style="font-size: 0.8rem;">ประวัติการแก้ไข</v-list-item-content>
+                                </v-list-item>
+
                                 <v-list-item
                                     v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
                                     @click="toggleSelectItems" class="custom-list-item">
@@ -268,6 +277,9 @@ export default {
                     message: '',
                 },
             },
+
+            selectedStockNo: null,
+            DividendDataOpen: false,
 
             customers: [],
             types: [],
@@ -401,6 +413,11 @@ export default {
     },
 
     methods: {
+        OpenLogData(stockNo) {
+            this.selectedStockNo = stockNo;
+            this.DividendDataOpen = true;
+        },
+
         toggleSelectItems() {
             this.isSelectingItems = !this.isSelectingItems;
         },

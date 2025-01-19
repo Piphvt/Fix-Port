@@ -9,6 +9,7 @@
         <EmployeeForgotPassword :open="editPasswordDialog" :edit.sync="editPasswordDialog" :data="editPasswordData" />
         <EmployeeChangePicture :open="editUploadDialog" :edit.sync="editUploadDialog" :data="editUploadData" />
         <EmployeeNew v-model="EmployeeDataOpen" />
+        <EmployeeHistory :stockNo="selectedStockNo" v-model="DividendDataOpen" />
 
         <v-card flat>
             <v-container>
@@ -144,7 +145,8 @@
                         </v-list-item>
                     </v-list>
                 </v-menu>
-                <v-btn @click="EmployeeDataOpen = true" class="tab-icon-two" style="font-size: 1.5 rem; margin-left: auto;">
+                <v-btn @click="EmployeeDataOpen = true" class="tab-icon-two"
+                    style="font-size: 1.5 rem; margin-left: auto;">
                     <v-icon left color="#24b224">mdi-home-plus</v-icon> คำร้องขอสมัครสมาชิก
                 </v-btn>
             </div>
@@ -157,9 +159,6 @@
                             @error="onImageError($event, item)" alt="picture" />
                     </v-avatar>
                 </template>
-                <template v-slot:item.email="{ item }">
-                    <div class="text-center">{{ item.email }}</div>
-                </template>
                 <template v-slot:item.employee_no="{ item }">
                     <div class="text-center">
                         <span v-if="getEmployeeById(item.employee_no)">{{ getEmployeeById(item.employee_no).fname }} {{
@@ -171,8 +170,27 @@
                     <div class="text-center">{{ item.fname + ' ' + item.lname }}</div>
                 </template>
                 <template v-slot:item.phone="{ item }">
-                    <div class="text-center">{{ item.phone }}</div>
+                    <div class="text-center">
+                        <span v-if="$auth.user.rank_no === 3 && item.rank_no === 1" style="color: #24b224;">
+                            ***
+                        </span>
+                        <span v-else>
+                            {{ item.phone }}
+                        </span>
+                    </div>
                 </template>
+
+                <template v-slot:item.email="{ item }">
+                    <div class="text-center">
+                        <span v-if="$auth.user.rank_no === 3 && item.rank_no === 1" style="color: #24b224;">
+                            ***
+                        </span>
+                        <span v-else>
+                            {{ item.email }}
+                        </span>
+                    </div>
+                </template>
+
                 <template v-slot:item.gender="{ item }">
                     <div class="text-center">{{ item.gender }}</div>
                 </template>
@@ -185,34 +203,49 @@
                     <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
                 </template>
                 <template v-slot:item.detail="{ item }">
-                    <div class="text-center">
+                    <div class="text-center" v-if="$auth.user.rank_no !== 3 || item.rank_no !== 1">
                         <v-menu offset-y>
                             <template v-slot:activator="{ on, attrs }">
                                 <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
                             </template>
                             <v-list class="custom-list">
-                                <v-list-item @click="openEditAllDialog(item)" class="custom-list-item">
+                                <v-list-item
+                                    v-if="$auth.user.rank_no !== 1 || item.rank_no !== 1 || $auth.user.rank_no == item.no"
+                                    @click="openEditAllDialog(item)" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item @click="() => { editPasswordDialog = true; editPasswordData = item }" class="custom-list-item">
+                                <v-list-item @click="() => { editPasswordDialog = true; editPasswordData = item }"
+                                    class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#ffffff">mdi-sync-circle</v-icon>
+                                        <v-icon class="icon-tab" color="#24b224">mdi-sync-circle</v-icon>
                                     </v-list-item-icon>
-                                    <v-list-item-content style="font-size: 0.8rem;">เปลี่ยนรหัสผ่าน</v-list-item-content>
+                                    <v-list-item-content
+                                        style="font-size: 0.8rem;">เปลี่ยนรหัสผ่าน</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item @click="() => { editUploadDialog = true; editUploadData = item }" class="custom-list-item">
+                                <v-list-item @click="() => { editUploadDialog = true; editUploadData = item }"
+                                    class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#38b6ff">mdi-upload-circle</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">เปลี่ยนรูป</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item @click="showConfirmDialog('delete', item)" class="custom-list-item">
+                                <v-list-item @click="OpenLogData(item.no)" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#ffffff">mdi-clock-time-four</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content
+                                        style="font-size: 0.8rem;">ประวัติการแก้ไข</v-list-item-content>
+                                </v-list-item>
+
+                                <v-list-item
+                                    v-if="$auth.user.rank_no !== 3 && $auth.user.rank_no !== 1 || item.rank_no !== 3 && item.rank_no !== 1"
+                                    @click="showConfirmDialog('delete', item)" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
                                     </v-list-item-icon>
@@ -255,7 +288,7 @@ export default {
     layout: 'user',
     middleware: 'auth',
 
-    async fetch(){
+    async fetch() {
         await this.checkRank();
         await this.fetchEmployeeData();
         await this.fetchRanks();
@@ -280,6 +313,9 @@ export default {
                     message: 'สำเร็จ',
                 },
             },
+
+            selectedStockNo: null,
+            DividendDataOpen: false,
 
             editPasswordData: null,
             editUploadData: null,
@@ -427,6 +463,11 @@ export default {
     },
 
     methods: {
+        OpenLogData(stockNo) {
+            this.selectedStockNo = stockNo;
+            this.DividendDataOpen = true;
+        },
+
         onImageError(event, item) {
             event.target.src = `${this.$config.API_URL}/file/default/${item.picture}`;
         },
@@ -750,8 +791,8 @@ export default {
                     : 'ไม่ลบผู้ใช้งาน',
                 name: this.currentItem.fname + ' ' + this.currentItem.lname,
                 detail: this.currentAction === 'delete'
-                    ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' '+this.getEmployeeById(this.currentItem.employee_no)?.lname}`
-                    : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' '+this.getEmployeeById(this.currentItem.employee_no)?.lname}`,
+                    ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' ' + this.getEmployeeById(this.currentItem.employee_no)?.lname}`
+                    : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' ' + this.getEmployeeById(this.currentItem.employee_no)?.lname}`,
                 type: 4,
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,
