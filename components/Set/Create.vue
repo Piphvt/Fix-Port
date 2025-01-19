@@ -143,7 +143,6 @@ export default {
 
                 this.modal.complete.message = 'เพิ่มประเภทหุ้นสำเร็จ';
                 this.modal.complete.open = true;
-                this.recordLog();
                 this.set = '';
                 this.$emit('update:open', false);
             } catch (error) {
@@ -161,22 +160,6 @@ export default {
         cancel() {
             this.set = '';
             this.$emit('update:open', false);
-        },
-        recordLog() {
-            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
-            const Employee_Email = this.$auth.user.email;
-            const Employee_Picture = this.$auth.user.picture;
-            const log = {
-                action: 'เพิ่มประเภทหุ้นใหม่',
-                name: this.set,
-                detail: 'ไม่มีข้อมูลเพิ่มเติม',
-                type: 2,
-                employee_name: Employee_Name,
-                employee_email: Employee_Email,
-                employee_picture: Employee_Picture,
-                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

@@ -146,7 +146,6 @@ export default {
                     await this.$store.dispatch('api/commission/deleteCommission', this.currentItem.no);
                     this.modal.complete.message = 'ลบค่าธรรมเนียมนี้เรียบร้อยแล้ว';
                     this.modal.complete.open = true;
-                    this.recordLog();
                 } catch (error) {
                     this.modal.error.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
                     this.modal.error.open = true;
@@ -173,22 +172,6 @@ export default {
                 return moment(date).format('DD/MM/YYYY HH:mm');
             }
             return 'Invalid Date';
-        },
-        recordLog() {
-            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
-            const Employee_Email = this.$auth.user.email;
-            const Employee_Picture = this.$auth.user.picture;
-            const log = {
-                action: 'ลบประเภทหุ้น',
-                name: this.currentItem.set,
-                detail: 'ไม่มีข้อมูลเพิ่มเติม',
-                type: 2,
-                employee_name: Employee_Name,
-                employee_email: Employee_Email,
-                employee_picture: Employee_Picture,
-                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };
