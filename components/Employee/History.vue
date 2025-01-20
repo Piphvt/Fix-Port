@@ -16,12 +16,6 @@
             <v-card-text>
                 <v-data-table :headers="headers" :items="filteredDividends" item-value="no" item-key="no"
                     :items-per-page="5">
-                    <template v-slot:item.stock_no="{ item }">
-                        <td class="text-center">{{ getStockName(item.stock_no) }}</td>
-                    </template>
-                    <template v-slot:item.dividend="{ item }">
-                        <td class="text-center">{{ item.dividend }}</td>
-                    </template>
                     <template v-slot:item.created_date="{ item }">
                         <td class="text-center">{{ formatDateTime(item.created_date) }}</td>
                     </template>
@@ -34,13 +28,15 @@
                         </div>
                     </template>
                 </v-data-table>
-                <v-dialog v-model="history" max-width="300px">
+                <v-dialog v-model="history" max-width="400px">
                     <v-card>
                         <v-card-title class="headline" style="justify-content: center; display: flex;">
                             {{ 'รายละเอียด' }}
                         </v-card-title>
-                        <v-card-text>
-                            <div v-for="line in formattedDetailLines" :key="line">
+                        <v-card-text
+                            style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                            <div v-for="line in formattedDetailLines" :key="line"
+                                style="text-align: center; width: 100%;">
                                 <template
                                     v-if="line.includes('.jpg') || line.includes('.png') || line.includes('.jpeg')">
                                     <div class="image-container">
@@ -49,7 +45,7 @@
                                     </div>
                                 </template>
                                 <template v-else>
-                                    {{ line }}
+                                    <div v-html="highlightKeywords(line)"></div>
                                 </template>
                             </div>
                         </v-card-text>
@@ -119,23 +115,15 @@ export default {
                 },
 
                 {
-                    text: 'การกระทำ',
-                    value: 'action',
-                    sortable: false,
-                    align: 'center',
-                    cellClass: 'text-center',
-                },
-
-                {
                     text: 'ทำรายการโดย',
-                    value: 'employee_no',
+                    value: 'employee_name',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
                 },
 
                 {
-                    text: '',
+                    text: 'รายละเอียด',
                     value: 'detail',
                     sortable: false,
                     align: 'center',
@@ -179,6 +167,12 @@ export default {
     },
 
     methods: {
+        highlightKeywords(text) {
+            return text
+                .replace(/จาก/g, '<span style="color: yellow;">จาก</span>')
+                .replace(/เป็น/g, '<span style="color: #38b6ff;">เป็น</span>');
+        },
+        
         openDetail(item) {
             this.selectedItemDetail = item;
             this.history = true;
@@ -215,7 +209,7 @@ export default {
         },
 
         async fetchDividendData() {
-            const dividendsData = await this.$store.dispatch('api/log/getLogByType', '4');
+            const dividendsData = await this.$store.dispatch('api/log/getLogByType', '6');
             this.dividends = dividendsData;
         },
 

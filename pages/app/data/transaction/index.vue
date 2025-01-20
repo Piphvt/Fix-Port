@@ -591,16 +591,23 @@ export default {
             this.isSelectingItems = !this.isSelectingItems;
         },
 
-        async deleteSelectedItems() {
+        getCurrentItem(no) {
+            return this.transactions.find(item => item.no === no);
+        },
 
+        async deleteSelectedItems() {
             this.handleConfirm = async () => {
                 const selectedIds = this.selectedItems;
 
                 for (let i = 0; i < selectedIds.length; i++) {
                     try {
                         await this.$store.dispatch('api/transaction/deleteTransaction', selectedIds[i]);
+
+                        this.currentItem = this.getCurrentItem(selectedIds[i]);
+
+                        this.recordLog();
                     } catch (error) {
-                        console.error(`Error deleting customer with id ${selectedIds[i]}:`, error);
+                        console.error(`Error deleting item with id ${selectedIds[i]}:`, error);
                     }
                 }
 
@@ -610,7 +617,6 @@ export default {
 
                 this.modal.complete.message = 'ลบรายการที่เลือกสำเร็จ';
                 this.modal.complete.open = true;
-                this.recordLog()
                 this.modalConfirmOpen = false;
             };
 
@@ -1035,22 +1041,27 @@ export default {
         },
 
         recordLog() {
-            const stock = this.getStockByNo(this.currentItem.stock_no);
-            const from = this.getFromByNo(this.currentItem.from_no);
-            const customer = this.getCustomerByNo(this.currentItem.customer_no)
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
+            const stock = this.getStockByNo(this.currentItem.stock_no)?.stock;
+            const from = this.getFromByNo(this.currentItem.from_no)?.from;
+            const customer = this.getCustomerByNo(this.currentItem.customer_no)?.id;
+            const created_date = this.formatDateTime(this.currentItem.created_date);
+            const type = this.currentItem.type === 1 ? 'ซื้อ' : this.currentItem.type === 2 ? 'ขาย' : 'ยังไม่ระบุ';
             const log = {
-                customer_no: `${customer ? customer.id : 'ไม่พบรหัสลูกค้า'}`,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
-                detail: this.currentAction === 'delete'
-                    ? `ชื่อหุ้น : ${stock ? stock.name : 'ไม่พบชื่อหุ้น'}\nที่มาที่ไป : ${from ? from.from : 'ไม่พบที่มาที่ไป'}\nราคาที่ติด : ${this.currentItem.price}\nจำนวนที่ติด : ${this.currentItem.amount}`
-                    : `ชื่อหุ้น : ${stock ? stock.name : 'ไม่พบชื่อหุ้น'}\nที่มาที่ไป : ${from ? from.from : 'ไม่พบที่มาที่ไป'}\nราคาที่ติด : ${this.currentItem.price}\nจำนวนที่ติด : ${this.currentItem.amount}`,
+                action: 'ลบการซื้อขายหุ้น',
+                name: stock + ' ของ ' +customer,
+                detail:`วันที่ : ${created_date}\n
+                    ประเภท : ${type}\n
+                    ที่มาที่ไป : ${from}\n
+                    ราคา : ${this.currentItem.price}\n
+                    จำนวน : ${this.currentItem.amount}`,
                 type: 1,
-                picture: this.$auth.user.picture || 'Unknown',
-                action: this.currentAction === 'delete'
-                    ? 'ลบข้อมูลหุ้นของลูกค้า'
-                    : 'ไม่ลบข้อมูลหุ้นของลูกค้า',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLog', log);
         },

@@ -112,7 +112,8 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -200,18 +201,19 @@
             </div>
         </v-card>
 
-        <v-dialog v-model="dialog" max-width="300px">
+        <v-dialog v-model="dialog" max-width="400px">
             <v-card>
                 <v-card-title class="headline" style="justify-content: center; display: flex;">
                     {{ getDetailTitle(selectedItemDetail.action) }}
                 </v-card-title>
-                <v-card-text>
-                    <div v-for="(line, index) in formattedDetailLines" :key="`${line}-${index}`">
-                        <template v-if="line.includes('-')">
-                            {{ line }}
+                <v-card-text
+                    style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                    <div v-for="(line, index) in formattedDetailLines" :key="line + index" style="text-align: center; width: 100%;">
+                        <template v-if="line">
+                            <div v-html="line ? highlightKeywords(line) : line"></div>
                         </template>
                         <template v-else>
-                            {{ line }}
+                            <div v-html="line"></div>
                         </template>
                     </div>
                 </v-card-text>
@@ -395,18 +397,8 @@ export default {
             if (!this.selectedItemDetail || !this.selectedItemDetail.detail) {
                 return [];
             }
-
             if (typeof this.selectedItemDetail.detail === 'string') {
-                const lines = this.selectedItemDetail.detail.split('\n');
-                const formattedLines = [];
-
-                lines.forEach((line, index) => {
-                    formattedLines.push(line);
-                    if (line.trim() === '' && index < lines.length - 1) {
-                        formattedLines.push('----------------------------------------------------------');
-                    }
-                });
-                return formattedLines;
+                return this.selectedItemDetail.detail.split('\n');
             }
             return [];
         },
@@ -417,6 +409,12 @@ export default {
     },
 
     methods: {
+        highlightKeywords(text) {
+            return text
+                .replace(/จาก/g, '<span style="color: yellow;">จาก</span>')
+                .replace(/เป็น/g, '<span style="color: #38b6ff;">เป็น</span>');
+        },
+
         goBack() {
             window.location.reload();
         },
@@ -451,9 +449,9 @@ export default {
         },
 
         getDetailTitle(action) {
-            if (['เพิ่มหุ้นใหม่', 'ลบหุ้น', 'เพิ่มประเภทหุ้นใหม่', 'ลบประเภทหุ้น'].includes(action)) {
+            if (['ลบการซื้อขายหุ้น'].includes(action)) {
                 return 'ข้อมูลเพิ่มเติม';
-            } else if (['แก้ไขข้อมูลหุ้น', 'แก้ไขข้อมูลประเภทหุ้น'].includes(action)) {
+            } else if (['แก้ไขการซื้อขายหุ้น'].includes(action)) {
                 return 'ข้อมูลที่ถูกแก้ไข';
             }
             return 'ข้อมูลทั่วไป';
@@ -501,20 +499,11 @@ export default {
         },
 
         getActionColor(action) {
-            if (action === 'เพิ่มหุ้นใหม่') {
-                return '#24b224';
-            } else if (action === 'ลบหุ้น') {
+            if (action === 'ลบการซื้อขายหุ้น') {
                 return '#e50211';
-            } else if (action === 'แก้ไขข้อมูลหุ้น') {
+            } else if (action === 'แก้ไขการซื้อขายหุ้น') {
                 return '#ffc800';
-            } else if (action === 'เพิ่มประเภทหุ้นใหม่') {
-                return '#c1ff72';
-            } else if (action === 'ลบประเภทหุ้น') {
-                return '#ff5757';
-            } else if (action === 'แก้ไขข้อมูลประเภทหุ้น') {
-                return '#ff66c4';
-            }
-            else {
+            } else {
                 return 'inherit';
             }
         },
