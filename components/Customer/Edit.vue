@@ -317,29 +317,29 @@ export default {
       const Employee_Picture = this.$auth.user.picture;
       const changes = [];
       if (this.formData.id !== this.originalData.id) {
-        changes.push('รหัส : ' + this.formData.id + '\n');
+        changes.push('รหัสสมาชิก จาก : ' + this.originalData.id + ' เป็น : '+ this.formData.id + '\n');
       }
       if (this.formData.nickname !== this.originalData.nickname) {
-        changes.push('ชื่อเล่น : ' + this.formData.nickname + '\n');
+        changes.push('ชื่อเล่น จาก : ' + this.originalData.nickname + ' เป็น : '+ this.formData.nickname + '\n');
       }
 
       const typeText = this.getTypeName(this.formData.type_no);
       const originalTypeText = this.getTypeName(this.originalData.type_no);
       if (typeText !== originalTypeText) {
-        changes.push('ประเภท : ' + typeText + '\n');
+        changes.push('ประเภท จาก : ' + originalTypeText + ' เป็น : '+ typeText + '\n');
       }
 
       const baseText = this.getBaseName(this.formData.base_no);
       const originalBaseText = this.getBaseName(this.originalData.base_no);
       if (baseText !== originalBaseText) {
-        changes.push('ฐานทุน : ' + baseText + '\n');
+        changes.push('ฐานทุน จาก : ' + originalBaseText + ' เป็น : '+ baseText + '\n');
       }
 
       const log = {
         action: 'แก้ไขข้อมูลลูกค้า',
-        name: this.originalData.id,
+        edit_no: this.originalData.no,
         detail: changes.join(''),
-        type: 3,
+        type: 6,
         employee_name: Employee_Name,
         employee_email: Employee_Email,
         employee_picture: Employee_Picture,
