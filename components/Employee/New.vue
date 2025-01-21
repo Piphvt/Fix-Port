@@ -265,12 +265,12 @@ export default {
             const log = {
                 action: this.currentAction === 'approve'
                     ? 'อนุมัติผู้ใช้งาน'
-                    : 'ไม่อนุมัติผู้ใช้งาน',
+                    : 'ไม่อนุมัติสมาชิก',
                 name: this.currentItem.fname + ' ' + this.currentItem.lname,
                 detail: this.currentAction === 'approve'
                     ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`
                     : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`,
-                type: 4,
+                type: 3,
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,
                 employee_picture: Employee_Picture,

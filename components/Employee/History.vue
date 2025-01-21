@@ -19,6 +19,11 @@
                     <template v-slot:item.created_date="{ item }">
                         <td class="text-center">{{ formatDateTime(item.created_date) }}</td>
                     </template>
+                    <template v-slot:item.action="{ item }">
+                        <div class="text-center" :style="{ color: getActionColor(item.action) }">
+                            {{ item.action }}
+                        </div>
+                    </template>
                     <template v-slot:item.employee_no="{ item }">
                         <td class="text-center">{{ getEmployeeName(item.edit_no) }}</td>
                     </template>
@@ -31,7 +36,7 @@
                 <v-dialog v-model="history" max-width="400px">
                     <v-card>
                         <v-card-title class="headline" style="justify-content: center; display: flex;">
-                            {{ 'รายละเอียด' }}
+                            {{ 'ข้อมูลที่แก้ไข' }}
                         </v-card-title>
                         <v-card-text
                             style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
@@ -41,7 +46,7 @@
                                     v-if="line.includes('.jpg') || line.includes('.png') || line.includes('.jpeg')">
                                     <div class="image-container">
                                         <img :src="`${$config.API_URL}/file/profile/${line}`" alt="detail image"
-                                            width="100" height="100" />
+                                            width="150" height="150" />
                                     </div>
                                 </template>
                                 <template v-else>
@@ -115,6 +120,13 @@ export default {
                 },
 
                 {
+                    text: 'การกระทำ',
+                    value: 'action',
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
                     text: 'ทำรายการโดย',
                     value: 'employee_name',
                     sortable: false,
@@ -167,12 +179,27 @@ export default {
     },
 
     methods: {
+        getActionColor(action) {
+            if (action === 'ออกจากระบบ') {
+                return '#e50211';
+            } else if (action === 'เข้าสู่ระบบ') {
+                return '#24b224';
+            } else if (action === 'ไม่อนุมัติสมาชิก') {
+                return '#ffc800';
+            } else if (action === 'เปลี่ยนรูปภาพ') {
+                return '#ff66c4';
+            }
+            else {
+                return 'inherit';
+            }
+        },
+
         highlightKeywords(text) {
             return text
                 .replace(/จาก/g, '<span style="color: yellow;">จาก</span>')
                 .replace(/เป็น/g, '<span style="color: #38b6ff;">เป็น</span>');
         },
-        
+
         openDetail(item) {
             this.selectedItemDetail = item;
             this.history = true;
@@ -209,7 +236,7 @@ export default {
         },
 
         async fetchDividendData() {
-            const dividendsData = await this.$store.dispatch('api/log/getLogByType', '6');
+            const dividendsData = await this.$store.dispatch('api/log/getLogByType', '4');
             this.dividends = dividendsData;
         },
 

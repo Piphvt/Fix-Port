@@ -10,7 +10,7 @@
         <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="300" max-height="300"
             content-class="rounded-xl">
             <v-card class="rounded-xl">
-                <v-card-title class="d-flex align-center justify-center mb-3">แก้ไขผู้ติดตามหุ้น</v-card-title>
+                <v-card-title class="d-flex align-center justify-center mb-3">แก้ไข</v-card-title>
                 <v-card-text>
                     <v-form ref="form" v-model="valid" lazy-validation>
                         <v-row>
@@ -160,6 +160,16 @@ export default {
             }
         },
 
+        getStaffNameByNo(No) {
+            const staff = this.employees.find(item => item.no === No);
+            return staff ? staff.name : "ยังไม่ระบุ";
+        },
+
+        getStockNameByNo(No) {
+            const stock = this.stocks.find(item => item.no === No);
+            return stock ? stock.stock : "ยังไม่ระบุ";
+        },
+
         handleKeydown(event) {
             if (event.key === 'Escape') {
                 this.cancel();
@@ -185,9 +195,9 @@ export default {
             const Employee_Email = this.$auth.user.email;
             const Employee_Picture = this.$auth.user.picture;
             const log = {
-                action: 'แก้ไขข้อมูลประเภทหุ้น',
-                name: this.originalData.set,
-                detail: 'ชื่อ : ' + this.formData.set,
+                action: 'หุ้น',
+                name: this.getStockNameByNo(this.originalData.stock_no),
+                detail: 'ผู้ติดตามหุ้น จาก : ' + this.getStaffNameByNo(this.originalData.staff_no) + ' เป็น : ' + this.getStaffNameByNo(this.formData.staff_no),
                 type: 2,
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,

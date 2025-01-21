@@ -10,7 +10,7 @@
         <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
             content-class="rounded-xl">
             <v-card class="rounded-xl">
-                <v-card-title class="card-title-center mb-7">แก้ไขรายละเอียดหุ้นของลูกค้า</v-card-title>
+                <v-card-title class="card-title-center mb-3">แก้ไข</v-card-title>
                 <v-card-text>
                     <v-form ref="form" v-model="valid" lazy-validation>
                         <v-row>
@@ -57,16 +57,15 @@
                             </v-col>
                         </v-row>
                     </v-form>
-                </v-card-text>
-
-                <v-card-actions class="card-title-center pa-0">
+                    <v-card-actions class="card-title-center pa-0">
                     <v-btn @click="confirm" :disabled="!valid || !hasChanges" depressed color="#24b224"
-                        class="font-weight-medium mr-2 mb-5">
+                        class="font-weight-medium mr-2">
                         บันทึก
                     </v-btn>
-                    <v-btn color="#e50211" @click="cancel" class="font-weight-medium mb-5">ยกเลิก
+                    <v-btn color="#e50211" @click="cancel" class="font-weight-medium">ยกเลิก
                     </v-btn>
                 </v-card-actions>
+                </v-card-text>
             </v-card>
         </v-dialog>
     </div>

@@ -243,14 +243,16 @@
                                         style="font-size: 0.8rem;">ประวัติการแก้ไข</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item
-                                    v-if="$auth.user.rank_no !== 3 && $auth.user.rank_no !== 1 || item.rank_no !== 3 && item.rank_no !== 1"
-                                    @click="showConfirmDialog('delete', item)" class="custom-list-item">
+                                <v-list-item v-if="($auth.user.rank_no === 1 && item.rank_no !== 1) ||
+                                    ($auth.user.rank_no === 3 && item.rank_no !== 1 && item.rank_no !== 3) ||
+                                    ($auth.user.rank_no !== 1 && $auth.user.rank_no !== 3)" @click="showConfirmDialog('delete', item)"
+                                    class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">ลบ</v-list-item-content>
                                 </v-list-item>
+
                             </v-list>
                         </v-menu>
                     </div>
@@ -535,7 +537,7 @@ export default {
                 }
                 try {
                     await this.$store.dispatch('api/employee/deleteEmployee', this.currentItem.no);
-                    this.modal.complete.message = 'ลบผู้ใช้งานนี้เรียบร้อยแล้ว';
+                    this.modal.complete.message = 'ลบสมาชิกนี้เรียบร้อยแล้ว';
                     this.recordLog();
                     this.modal.complete.open = true;
                 } catch (warning) {
@@ -787,13 +789,13 @@ export default {
             const Employee_Picture = employee ? employee.picture : 'ยังไม่ระบุ';
             const log = {
                 action: this.currentAction === 'delete'
-                    ? 'ลบผู้ใช้งาน'
+                    ? 'ลบสมาชิก'
                     : 'ไม่ลบผู้ใช้งาน',
                 name: this.currentItem.fname + ' ' + this.currentItem.lname,
                 detail: this.currentAction === 'delete'
-                    ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' ' + this.getEmployeeById(this.currentItem.employee_no)?.lname}`
-                    : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' ' + this.getEmployeeById(this.currentItem.employee_no)?.lname}`,
-                type: 4,
+                    ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nตำแหน่ง : ${this.getRankName(this.currentItem.rank_no)}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' ' + this.getEmployeeById(this.currentItem.employee_no)?.lname}`
+                    : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}\nตำแหน่ง : ${this.getRankName(this.currentItem.rank_no)}\nผู้อนุมัติ : ${this.getEmployeeById(this.currentItem.employee_no)?.fname + ' ' + this.getEmployeeById(this.currentItem.employee_no)?.lname}`,
+                type: 3,
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,
                 employee_picture: Employee_Picture,

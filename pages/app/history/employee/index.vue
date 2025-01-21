@@ -204,10 +204,11 @@
         <v-dialog v-model="dialog" max-width="300px">
             <v-card>
                 <v-card-title class="headline" style="justify-content: center; display: flex;">
-                    {{ getDetailTitle(selectedItemDetail.action) }}
+                    {{ 'ข้อมูลเพิ่มเติม' }}
                 </v-card-title>
-                <v-card-text>
-                    <div v-for="line in formattedDetailLines" :key="line">
+                <v-card-text
+                    style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                    <div v-for="line in formattedDetailLines" :key="line" style="text-align: center; width: 100%;">
                         <template v-if="line.includes('.jpg') || line.includes('.png') || line.includes('.jpeg')">
                             <div class="image-container">
                                 <img :src="`${$config.API_URL}/file/profile/${line}`" alt="detail image" width="100"
@@ -442,16 +443,6 @@ export default {
             this.modalConfirmOpen = true;
         },
 
-        getDetailTitle(action) {
-            // เพิ่มฟังก์ชันเพื่อคืนค่าชื่อหัวเรื่องตาม action
-            if (['เข้าสู่ระบบ', 'ออกจากระบบ', 'อนุมัติผู้ใช้งาน', 'ไม่อนุมัติผู้ใช้งาน', 'ลบผู้ใช้งาน'].includes(action)) {
-                return 'ข้อมูลเพิ่มเติม';
-            } else if (['เปลี่ยนรหัสผ่าน', 'อัพโหลดรูปภาพ', 'แก้ไขข้อมูลส่วนตัว', 'แก้ไขข้อมูลผู้ใช้งาน'].includes(action)) {
-                return 'ข้อมูลที่ถูกแก้ไข';
-            }
-            return 'ข้อมูลทั่วไป';
-        },
-
         getSearchItems(type) {
             if (type === 'employee_name') {
                 return this.logs.map(log => log.employee_name);
@@ -490,7 +481,7 @@ export default {
         },
 
         async fetchLogData() {
-            this.logs = await this.$store.dispatch('api/log/getLogByType', '4');
+            this.logs = await this.$store.dispatch('api/log/getLogByType', '3');
         },
 
         getActionColor(action) {
@@ -498,19 +489,9 @@ export default {
                 return '#e50211';
             } else if (action === 'เข้าสู่ระบบ') {
                 return '#24b224';
-            } else if (action === 'เปลี่ยนรหัสผ่าน') {
+            } else if (action === 'ไม่อนุมัติสมาชิก') {
                 return '#ffc800';
-            } else if (action === 'อัพโหลดรูปภาพ') {
-                return '#38b6ff';
-            } else if (action === 'แก้ไขข้อมูลส่วนตัว') {
-                return '#8c52ff';
-            } else if (action === 'แก้ไขข้อมูลผู้ใช้งาน') {
-                return '#ff914d';
-            } else if (action === 'อนุมัติผู้ใช้งาน') {
-                return '#c1ff72';
-            } else if (action === 'ไม่อนุมัติผู้ใช้งาน') {
-                return '#ff5757';
-            } else if (action === 'ลบผู้ใช้งาน') {
+            } else if (action === 'ลบสมาชิก') {
                 return '#ff66c4';
             }
             else {
@@ -607,7 +588,7 @@ export default {
                 const searchQuery = search.query.toLowerCase();
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
             }
-            
+
             return queryMatched;
         },
 

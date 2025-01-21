@@ -161,7 +161,7 @@ export default {
       const log = {
         action: 'เข้าสู่ระบบ',
         detail: `ที่อยู่ : ${userLocation}\nไอพี : ${userIP}`,
-        type: 4,
+        type: 3,
         employee_name: Employee_Name,
         employee_email: Employee_Email,
         employee_picture: Employee_Picture,

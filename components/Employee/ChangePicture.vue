@@ -146,8 +146,8 @@
         const Employee_Email = this.$auth.user.email;
         const Employee_Picture = this.$auth.user.picture;
         const log = {
-          action: 'อัพโหลดรูปภาพ',
-          name: this.data.fname + ' ' + this.data.lname,
+          action: 'เปลี่ยนรูปภาพ',
+          edit_no: this.data.no,
           detail: this.file.name,
           type: 4,
           employee_name: Employee_Name,

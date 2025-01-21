@@ -10,7 +10,7 @@
     <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
       content-class="rounded-xl">
       <v-card class="rounded-xl">
-        <v-card-title class="card-title-center mb-3">แก้ไขรายละเอียดสมาชิก</v-card-title>
+        <v-card-title class="card-title-center mb-3">แก้ไข</v-card-title>
         <v-card-text>
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
@@ -38,18 +38,6 @@
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-select v-model="formData.status" :items="statusOptions" :rules="[(v) => !!v || 'โปรดเลือกสถานะ']"
-                  label="สถานะ" dense outlined required>
-                  <template v-slot:item="data">
-                    <v-icon left :style="{ color: data.item.color }">
-                      {{ data.item.icon }}
-                    </v-icon>
-                    {{ data.item.text }}
-                  </template>
-                </v-select>
-              </v-col>
-
-              <v-col cols="6" sm="5" class="pa-0">
                 <v-select v-model="formData.gender" :items="genderOptions" :item-text="item => item.text"
                   :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกเพศ']" label="เพศ" dense outlined
                   required>
@@ -62,7 +50,7 @@
                 </v-select>
               </v-col>
 
-              <v-col v-if="$auth.user.rank_no === 1" cols="5" sm="11" class="pa-0 ml-4">
+              <v-col cols="6" sm="5" class="pa-0" v-if="$auth.user.rank_no === 1">
                 <v-select v-model="formData.rank_no" :items="rankOptions" :item-text="item => item.text"
                   :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกตำแหน่ง']" label="ตำแหน่ง" dense
                   outlined required>
@@ -73,7 +61,6 @@
                     {{ data.item.text }}
                   </template>
                 </v-select>
-
               </v-col>
             </v-row>
           </v-form>
@@ -390,36 +377,30 @@ export default {
       const Employee_Picture = this.$auth.user.picture;
       const changes = [];
       if (this.formData.fname !== this.originalData.fname) {
-        changes.push('ชื่อเล่น : ' + this.formData.fname + '\n');
+        changes.push('ชื่อเล่น จาก : ' + this.originalData.fname + ' เป็น : '+ this.formData.fname + '\n');
       }
       if (this.formData.lname !== this.originalData.lname) {
-        changes.push('ชื่อ : ' + this.formData.lname + '\n');
+        changes.push('ชื่อ จาก : ' + this.originalData.lname + ' เป็น : '+ this.formData.lname + '\n');
       }
       if (this.formData.phone !== this.originalData.phone) {
-        changes.push('เบอร์โทรศัพท์ : ' + this.formData.phone + '\n');
+        changes.push('เบอร์โทรศัพท์ จาก : ' + this.originalData.phone + ' เป็น : '+ this.formData.phone + '\n');
       }
       if (this.formData.gender !== this.originalData.gender) {
-        changes.push('เพศ : ' + this.formData.gender + '\n');
+        changes.push('เพศ จาก : ' + this.originalData.gender + ' เป็น : '+ this.formData.gender + '\n');
       }
       if (this.formData.email !== this.originalData.email) {
-        changes.push('อีเมล : ' + this.formData.email + '\n');
+        changes.push('อีเมล จาก : ' + this.originalData.email + ' เป็น : '+ this.formData.email + '\n');
       }
 
       const rankText = this.getRankName(this.formData.rank_no);
       const originalRankText = this.getRankName(this.originalData.rank_no);
       if (rankText !== originalRankText) {
-        changes.push('ตำแหน่ง : ' + rankText + '\n');
-      }
-
-      const statusText = this.getStatusText(this.formData.status);
-      const originalStatusText = this.getStatusText(this.originalData.status);
-      if (statusText !== originalStatusText) {
-        changes.push('สถานะ : ' + statusText + '\n');
+        changes.push('ตำแหน่ง จาก : ' + rankText + ' เป็น : '+ originalRankText + '\n');
       }
 
       const log = {
         action: 'แก้ไขข้อมูลผู้ใช้งาน',
-        name: this.originalData.fname + ' ' + this.originalData.lname,
+        edit_no: this.originalData.no,
         detail: changes.join(''),
         type: 4,
         employee_name: Employee_Name,
