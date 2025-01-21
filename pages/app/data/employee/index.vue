@@ -17,7 +17,7 @@
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
                             <v-icon class="little-icon" color="#85d7df">mdi-home-account</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลสมาชิก</h3>
+                            <h3 class="mb-0">สมาชิก</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">

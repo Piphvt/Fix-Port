@@ -16,7 +16,7 @@
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
                             <v-icon class="little-icon" color="#85d7df">mdi-cash</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลการซื้อขายหุ้นของลูกค้า</h3>
+                            <h3 class="mb-0">การซื้อขายหุ้นของลูกค้า</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">
@@ -165,7 +165,7 @@
                     </v-btn>
                     <v-btn @click="TransactionCreateOpen = true" class="tab-icon-two"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-cash-plus</v-icon> เพิ่มการซื้อขายหุ้น
+                        <v-icon left color="#24b224">mdi-cash-plus</v-icon> เพิ่ม
                     </v-btn>
                 </div>
             </div>

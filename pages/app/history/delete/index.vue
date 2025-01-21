@@ -299,7 +299,7 @@ export default {
             searchTypes: [
                 { text: 'ทำรายการโดย', value: 'employee_name' },
                 { text: 'อีเมล', value: 'employee_email' },
-                { text: 'การกระทำ', value: 'action' },
+                { text: 'ประเภท', value: 'action' },
                 { text: 'เวลา', value: 'created_date' }
             ],
 
@@ -346,7 +346,7 @@ export default {
                 },
 
                 {
-                    text: 'การกระทำ',
+                    text: 'ประเภท',
                     value: 'action',
                     sortable: false,
                     align: 'center',

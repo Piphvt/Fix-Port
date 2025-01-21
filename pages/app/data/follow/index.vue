@@ -144,15 +144,15 @@
                     </v-btn>
                     <v-btn @click="FollowBotDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-archive-edit</v-icon> หุ้นที่รอการตรวจสอบ
+                        <v-icon left color="#85d7df">mdi-archive-edit</v-icon> รอการตรวจสอบ
                     </v-btn>
                     <v-btn @click="FollowReachDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-archive-alert</v-icon> หุ้นที่ถึงเป้าแล้ว
+                        <v-icon left color="#85d7df">mdi-archive-alert</v-icon> ถึงเป้าแล้ว
                     </v-btn>
                     <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4" @click="FollowCreateOpen = true" class="tab-icon-two"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-archive-star</v-icon> เพิ่มการเฝ้าหุ้น
+                        <v-icon left color="#24b224">mdi-archive-star</v-icon> เพิ่ม
                     </v-btn>
                 </div>
             </div>
@@ -684,7 +684,7 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('หุ้นของลูกค้า');
+            const worksheet = workbook.addWorksheet('สรุปหุ้น');
 
             const headers = this.filteredHeaders
                 .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'select')
@@ -699,40 +699,14 @@ export default {
             this.filtered.forEach((item, index) => {
                 const rowData = {};
                 this.filteredHeaders.forEach(header => {
-                    if (header.value === 'updated_date') {
+                    if (header.value === 'created_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value === 'created_date') {
-                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD');
-                    } else if (header.value === 'price') {
-                        rowData[header.value] = item.price.toLocaleString(2);
-                    } else if (header.value === 'amount') {
-                        rowData[header.value] = item.amount.toLocaleString(2);
-                    } else if (header.value === 'money') {
-                        rowData[header.value] = item.money;
-                    } else if (header.value === 'total_percent') {
-                        rowData[header.value] = item.total_percent + '%';
-                    } else if (header.value === 'present_profit') {
-                        rowData[header.value] = item.present_profit;
-                    } else if (header.value === 'total') {
-                        rowData[header.value] = item.total;
-                    } else if (header.value === 'dividend_amount') {
-                        rowData[header.value] = item.dividend_amount;
-                    } else if (header.value === 'present_price') {
-                        rowData[header.value] = item.present_price;
-                    } else if (header.value === 'balance_dividend') {
-                        rowData[header.value] = item.balance_dividend;
-                    } else if (header.value === 'from_no') {
-                        rowData[header.value] = this.getFromByNo(item.from_no).from;
+                    } else if (header.value === 'low_price') {
+                        rowData[header.value] = item.low_price.toLocaleString(2);
+                    } else if (header.value === 'up_price') {
+                        rowData[header.value] = item.up_price.toLocaleString(2);
                     } else if (header.value === 'stock_no') {
-                        rowData[header.value] = this.getStockByNo(item.stock_no).stock;
-                    } else if (header.value === 'customer_no') {
-                        rowData[header.value] = this.getCustomerByNo(item.customer_no).id;
-                    } else if (header.value === 'customer_name') {
-                        rowData[header.value] = this.getCustomerByNo(item.customer_no).nickname;
-                    } else if (header.value === 'port') {
-                        rowData[header.value] = this.getPortText(item.total_percent).text;
-                    } else if (header.value === 'type_no') {
-                        rowData[header.value] = this.getTypeByNo(this.getCustomerByNo(item.customer_no)?.type_no)?.type;
+                        rowData[header.value] = this.getStockName(item.stock_no);
                     } else if (header.value !== 'detail' && header.value !== 'action' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }

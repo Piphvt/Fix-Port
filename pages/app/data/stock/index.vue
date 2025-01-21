@@ -19,7 +19,7 @@
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
                             <v-icon class="little-icon" color="#85d7df">mdi-archive</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลหุ้น</h3>
+                            <h3 class="mb-0">หุ้น</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">
@@ -151,15 +151,15 @@
                 <div>
                     <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="StockUpdateOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-archive-arrow-up</v-icon> อัพเดทหุ้น
+                        <v-icon left color="#85d7df">mdi-archive-arrow-up</v-icon> อัพเดท
                     </v-btn>
                     <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="SetDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-archive-settings</v-icon> ประเภทหุ้น
+                        <v-icon left color="#85d7df">mdi-archive-settings</v-icon> ประเภท
                     </v-btn>
                     <v-btn @click="StockCreateOpen = true" class="tab-icon-two"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-archive-plus</v-icon> เพิ่มหุ้น
+                        <v-icon left color="#24b224">mdi-archive-plus</v-icon> เพิ่ม
                     </v-btn>
                 </div>
             </div>
@@ -214,14 +214,6 @@
                                         <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
-                                </v-list-item>
-
-                                <v-list-item @click="OpenLogData(item.no)" class="custom-list-item">
-                                    <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#ffffff">mdi-clock-time-four</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content
-                                        style="font-size: 0.8rem;">ประวัติการแก้ไข</v-list-item-content>
                                 </v-list-item>
 
                                 <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="toggleSelectItems" class="custom-list-item">

@@ -16,7 +16,7 @@
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
                             <v-icon class="little-icon" color="#85d7df">mdi-bank</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลหุ้นของลูกค้า</h3>
+                            <h3 class="mb-0">หุ้นของลูกค้า</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">
@@ -174,12 +174,12 @@
 
                     <v-btn @click="SoldOutStockDataOpen = true" class="tab-icon-three"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-piggy-bank</v-icon> หุ้นที่ขายหมดแล้ว
+                        <v-icon left color="#85d7df">mdi-piggy-bank</v-icon> ขายหมดแล้ว
                     </v-btn>
 
                     <v-btn @click="DetailCreateOpen = true" class="tab-icon-two"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-bank-plus</v-icon> เพิ่มข้อมูลหุ้น
+                        <v-icon left color="#24b224">mdi-bank-plus</v-icon> เพิ่ม
                     </v-btn>
                 </div>
             </div>

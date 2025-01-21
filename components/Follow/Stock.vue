@@ -6,83 +6,10 @@
             </div>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#ffc800">mdi-account-cowboy-hat</v-icon>
-                <span class="headline">หุ้นของโค้ช</span>
+                <span class="headline">สรุปหุ้น</span>
             </v-card-title>
 
             <v-card-text>
-                <v-container>
-                    <v-row justify="center" align="center">
-                        <v-col cols="auto">
-                            <div class="d-flex align-center justify-center">
-                                <div class="d-flex align-center justify-center">
-                                    <v-icon class="small-icon" @click="toggleSavedSearchesDialog">
-                                        mdi-format-list-bulleted-type
-                                    </v-icon>
-                                    <span>{{ savedSearches.length }}</span>
-                                </div>
-
-                                <v-dialog v-model="showSavedSearchesDialog" max-width="400px">
-                                    <v-card>
-                                        <v-card-title class="headline"
-                                            style="justify-content: center; display: flex;">บันทึกการค้นหา</v-card-title>
-                                        <v-card-text>
-                                            <v-list>
-                                                <v-list-item-group v-if="savedSearches.length > 0">
-                                                    <v-list-item v-for="(search, index) in savedSearches" :key="index">
-                                                        <v-list-item-content>
-                                                            <v-list-item-title>
-                                                                <strong>ประเภท :</strong>
-                                                                {{ getSearchTypeText(search.type) }}
-                                                            </v-list-item-title>
-                                                            <v-list-item-subtitle v-if="search.query">
-                                                                <strong>รายละเอียด :</strong> {{ search.query }}
-                                                            </v-list-item-subtitle>
-                                                            <v-list-item-subtitle v-if="search.topics">
-                                                                <strong>หัวข้อ :</strong> {{ search.topics.join(', ') }}
-                                                            </v-list-item-subtitle>
-                                                        </v-list-item-content>
-                                                        <v-list-item-action>
-                                                            <v-btn icon @click="deleteSearch(index)">
-                                                                <v-icon color=#e50211>mdi-delete</v-icon>
-                                                            </v-btn>
-                                                        </v-list-item-action>
-                                                    </v-list-item>
-                                                </v-list-item-group>
-                                                <v-list-item v-else>
-                                                    <v-list-item-content
-                                                        style="justify-content: center; display: flex;">
-                                                        <v-icon color=#e50211>mdi-alert-circle</v-icon>
-                                                        ไม่มีข้อมูลการค้นหา</v-list-item-content>
-                                                </v-list-item>
-                                            </v-list>
-                                        </v-card-text>
-                                        <v-card-actions>
-                                            <v-spacer></v-spacer>
-                                            <v-btn color="#e50211" @click="showSavedSearchesDialog = false">ปิด</v-btn>
-                                            <v-spacer></v-spacer>
-                                        </v-card-actions>
-                                    </v-card>
-                                </v-dialog>
-
-                                <v-select v-model="searchType" :items="searchTypes" dense outlined
-                                    class="mx-2 search-size small-font"></v-select>
-
-                                <v-autocomplete v-if="searchType === 'stock_no'" v-model="selectedStocks"
-                                    class="mx-2 search-size small-font" :items="getSearchItems('stock_no')"
-                                    label="ค้นหาชื่อหุ้น" dense outlined clearable multiple>
-                                </v-autocomplete>
-
-                                <v-btn icon @click="addSearch">
-                                    <v-icon class="small-icon ">mdi-plus</v-icon>
-                                </v-btn>
-
-                                <v-btn color="success" v-if="$auth.user.rank_no === 1" @click="exportExcel" icon>
-                                    <v-icon>mdi-file-excel</v-icon>
-                                </v-btn>
-                            </div>
-                        </v-col>
-                    </v-row>
-                </v-container>
                 <v-data-table :headers="headers" :items="filteredDetails" item-value="no" item-key="no"
                     :items-per-page="5">
                     <template v-slot:item.stock_no="{ item }">
@@ -284,19 +211,15 @@ export default {
             this.details = await this.$store.dispatch('api/detail/getDetail');
             const transactions = await this.$store.dispatch('api/transaction/getTransaction');
             const stocks = await this.$store.dispatch('api/stock/getStock');
+            const follows = await this.$store.dispatch('api/follow/getFollow');
 
-            if (!transactions || !Array.isArray(transactions)) {
-                console.error('Transactions data is missing or invalid:', transactions);
-                transactions = [];
-            }
+            const filteredFollows = (follows || []).filter(item => item.result === 1 || item.result === 2);
 
-            if (!stocks || !Array.isArray(stocks)) {
-                console.error('Stocks data is missing or invalid:', stocks);
-                stocks = [];
-            }
+            const validTransactions = Array.isArray(transactions) ? transactions : [];
+            const validStocks = Array.isArray(stocks) ? stocks : [];
 
             const filteredDetails = this.details.filter(detail => {
-                const relatedTransactions = transactions.filter(
+                const relatedTransactions = validTransactions.filter(
                     transaction => transaction.stock_detail_no === detail.no
                 );
 
@@ -329,13 +252,14 @@ export default {
                 return acc;
             }, {});
 
-            const uniqueDetails = [];
+            let uniqueDetails = [];
             filteredDetails.forEach(detail => {
                 const stockNo = detail.stock_no;
 
                 if (!uniqueDetails.some(item => item.stock_no === stockNo)) {
-                    const matchingStock = stocks.find(stock => stock.no === stockNo);
+                    const matchingStock = validStocks.find(stock => stock.no === stockNo);
                     const staffNo = matchingStock ? matchingStock.staff_no : null;
+
                     if (staffNo === this.$auth.user.no) {
                         detail.staff_no = staffNo;
                         detail.stock_amount = stockCount[stockNo].count;
@@ -346,9 +270,12 @@ export default {
                 }
             });
 
+            uniqueDetails = uniqueDetails.filter(detail => {
+                return !filteredFollows.some(follow => follow.stock_no === detail.stock_no);
+            });
+
             this.details = uniqueDetails;
-        }
-        ,
+        },
 
         async fetchStockData() {
             this.stocks = await this.$store.dispatch('api/stock/getStock')

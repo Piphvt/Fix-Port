@@ -173,9 +173,8 @@ export default {
                     console.error('Error adding stock:', error);
                 }
             }
-            this.modal.complete.message = 'เพิ่มการติดตามหุ้นเรียบร้อยแล้ว!';
+            this.modal.complete.message = 'เพิ่มข้อมูลเรียบร้อย!';
             this.modal.complete.open = true;
-            this.recordLog();
             this.showModalResult = false;
         },
 
@@ -212,32 +211,8 @@ export default {
         },
 
         cancel() {
-            this.localOpen = false; // Close the dialog
+            this.localOpen = false;
             this.$emit('update:edit', false);
-        },
-
-        recordLog() {
-            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
-            const Employee_Email = this.$auth.user.email;
-            const Employee_Picture = this.$auth.user.picture;
-            const details = this.withdrawalItems.map((item, index) => {
-                const stockName = this.stocks.find(stock => stock.no === item.stock_no)?.name || 'ยังไม่ระบุ';
-                return `หุ้นที่ ${index + 1}\n` +
-                    `ชื่อหุ้น : ${stockName || 'ยังไม่ระบุ'}\n` +
-                    `Up Price : ${item.low_price}\n` +
-                    `Low Price : ${item.up_price}\n` +
-                    `หมายเหตุ : ${item.remark || 'ยังไม่ระบุ'}`;
-            }).join('\n\n');
-            const log = {
-                action: 'เพิ่มการติดตามหุ้นใหม่',
-                detail: details.trim(),
-                type: 2,
-                employee_name: Employee_Name,
-                employee_email: Employee_Email,
-                employee_picture: Employee_Picture,
-                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

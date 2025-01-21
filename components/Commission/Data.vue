@@ -12,7 +12,7 @@
             </div>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-credit-card</v-icon>
-                <span class="headline">ข้อมูลค่าธรรมเนียม</span>
+                <span class="headline">ค่าธรรมเนียม</span>
             </v-card-title>
             <v-card-text>
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">

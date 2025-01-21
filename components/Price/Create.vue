@@ -165,9 +165,8 @@ export default {
                     updated_date,
                 });
 
-                this.modal.complete.message = 'เพิ่มราคาปิดสำเร็จ';
+                this.modal.complete.message = 'เพิ่มข้อมูลเรียบร้อย';
                 this.modal.complete.open = true;
-                this.recordLog();
                 this.stock_no = '';
                 this.selectedDate = '';
                 this.price = '';
@@ -189,25 +188,6 @@ export default {
         cancel() {
             this.price = '';
             this.$emit('update:open', false);
-        },
-
-        recordLog() {
-            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
-            const Employee_Email = this.$auth.user.email;
-            const Employee_Picture = this.$auth.user.picture;
-            const stockName = this.stocks.find(stock => stock.no === this.stock_no)?.name
-            const created_date = this.selectedDate ? moment(this.selectedDate).format('YYYY-MM-DD HH:mm') : '';
-            const log = {
-                action: 'เพิ่มราคาปิดหุ้น',
-                name: stockName,
-                detail: 'ข้อมูลวันที่ : ' + created_date + '\nราคาปิด : ' + this.price,
-                type: 2,
-                employee_name: Employee_Name,
-                employee_email: Employee_Email,
-                employee_picture: Employee_Picture,
-                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

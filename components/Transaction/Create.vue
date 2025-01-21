@@ -476,7 +476,7 @@ export default {
             }
 
             if (isTransactionAdded) {
-                this.modal.complete.message = 'เพิ่มการซื้อขายหุ้นเรียบร้อยแล้ว!';
+                this.modal.complete.message = 'เพิ่มข้อมูลเรียบร้อย!';
                 this.modal.complete.open = true;
             }
 

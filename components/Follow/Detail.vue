@@ -650,7 +650,6 @@ export default {
         async fetchDetailData(data) {
             try {
                 if (!data || !data.stock_no) {
-                    console.error("Data or stock_no is missing!");
                     return;
                 }
                 await this.fetchStockData();

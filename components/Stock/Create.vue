@@ -207,7 +207,7 @@ export default {
                     }
                 }
             }
-            this.modal.complete.message = 'เพิ่มหุ้นเรียบร้อยแล้ว!';
+            this.modal.complete.message = 'เพิ่มข้อมูลเรียบร้อย!';
             this.modal.complete.open = true;
             this.showModalResult = false;
         },

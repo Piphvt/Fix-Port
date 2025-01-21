@@ -145,9 +145,8 @@ export default {
                     updated_date,
                 });
 
-                this.modal.complete.message = 'เพิ่มจำนวนปันผลสำเร็จ';
+                this.modal.complete.message = 'เพิ่มข้อมูลเรียบร้อย';
                 this.modal.complete.open = true;
-                this.recordLog();
                 this.stock_no = '';
                 this.selectedDate = '';
                 this.dividend = '';
@@ -169,24 +168,6 @@ export default {
         cancel() {
             this.dividend = '';
             this.$emit('update:open', false);
-        },
-        
-        recordLog() {
-            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
-            const Employee_Email = this.$auth.user.email;
-            const Employee_Picture = this.$auth.user.picture;
-            const stockName = this.stocks.find(stock => stock.no === this.stock_no)?.name
-            const log = {
-                action: 'เพิ่มเงินปันผลหุ้นใหม่',
-                name: stockName,
-                detail: 'วันที่จ่ายเงินปันผล : ' + this.selectedDate + '\nเงินปันผล : ' + this.dividend,
-                type: 2,
-                employee_name: Employee_Name,
-                employee_email: Employee_Email,
-                employee_picture: Employee_Picture,
-                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

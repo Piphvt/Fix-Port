@@ -475,8 +475,7 @@ export default {
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                         updated_date: null,
                     });
-                    this.recordLog();
-                    this.modal.complete.message = 'ส่งไปที่รอการตรวจสอบเรียบร้อยแล้ว';
+                    this.modal.complete.message = 'อัพเดทข้อมูลเรียบร้อย!';
                 } else if (this.currentAction === 'following') {
                     await this.$store.dispatch('api/follow/updateFollow', {
                         no: this.currentItem.no,
@@ -490,12 +489,10 @@ export default {
                         created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
                         updated_date: null,
                     });
-                    this.recordLog();
-                    this.modal.complete.message = 'ส่งไปที่เฝ้าหุ้นเรียบร้อยแล้ว';
+                    this.modal.complete.message = 'อัพเดทข้อมูลเรียบร้อย!';
                 } else if (this.currentAction === 'reject') {
                     await this.$store.dispatch('api/follow/deleteFollow', this.currentItem.no);
-                    this.modal.complete.message = 'ลบเรียบร้อยแล้ว';
-                    this.recordLog();
+                    this.modal.complete.message = 'ลบเรียบร้อยแล้ว!';
                 }
 
                 this.modal.complete.open = true;
@@ -601,27 +598,6 @@ export default {
                 link.click();
                 document.body.removeChild(link);
             });
-        },
-
-        recordLog() {
-            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
-            const Employee_Email = this.$auth.user.email;
-            const Employee_Picture = this.$auth.user.picture;
-            const log = {
-                action: this.currentAction === 'approve'
-                    ? 'อนุมัติผู้ใช้งาน'
-                    : 'ไม่อนุมัติผู้ใช้งาน',
-                name: this.currentItem.fname + ' ' + this.currentItem.lname,
-                detail: this.currentAction === 'approve'
-                    ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`
-                    : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`,
-                type: 4,
-                employee_name: Employee_Name,
-                employee_email: Employee_Email,
-                employee_picture: Employee_Picture,
-                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

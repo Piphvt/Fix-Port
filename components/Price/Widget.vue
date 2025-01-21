@@ -12,7 +12,7 @@
             </div>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-wallet</v-icon>
-                <span class="headline">ข้อมูลราคาปิด</span></v-card-title>
+                <span class="headline">ราคาปิด</span></v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="filteredPrices" item-value="no" item-key="no"
                     :items-per-page="5">

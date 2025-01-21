@@ -12,7 +12,7 @@
             </div>
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-basket</v-icon>
-                <span class="headline">ข้อมูลเงินปันผล</span></v-card-title>
+                <span class="headline">เงินปันผล</span></v-card-title>
             <v-card-text>
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                     <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="createDividendOpen = true" style="font-size: 1.5 rem; margin-left: auto;"

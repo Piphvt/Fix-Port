@@ -15,7 +15,7 @@
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
                             <v-icon class="little-icon" color="#85d7df">mdi-account</v-icon>&nbsp;
-                            <h3 class="mb-0">ข้อมูลลูกค้า</h3>
+                            <h3 class="mb-0">ลูกค้า</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">
@@ -141,7 +141,7 @@
                 <div>
                     <v-btn @click="CustomerCreateOpen = true" class="tab-icon-two"
                         style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-account-plus</v-icon> เพิ่มลูกค้า
+                        <v-icon left color="#24b224">mdi-account-plus</v-icon> เพิ่ม
                     </v-btn>
                 </div>
             </div>
@@ -189,14 +189,6 @@
                                         <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
-                                </v-list-item>
-
-                                <v-list-item @click="OpenLogData(item.no)" class="custom-list-item">
-                                    <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#ffffff">mdi-clock-time-four</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content
-                                        style="font-size: 0.8rem;">ประวัติการแก้ไข</v-list-item-content>
                                 </v-list-item>
 
                                 <v-list-item

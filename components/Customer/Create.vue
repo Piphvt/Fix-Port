@@ -227,9 +227,8 @@ export default {
                 }
             }
 
-            this.modal.complete.message = 'เพิ่มลูกค้าเรียบร้อยแล้ว!';
+            this.modal.complete.message = 'เพิ่มข้อมูลเรียบร้อย!';
             this.modal.complete.open = true;
-            this.recordLog();
             this.showModalResult = false;
         },
 
@@ -271,27 +270,6 @@ export default {
         cancel() {
             this.newStockType = '';
             this.$emit('update:open', false);
-        },
-
-        recordLog() {
-            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
-            const Employee_Email = this.$auth.user.email;
-            const Employee_Picture = this.$auth.user.picture;
-            const details = this.withdrawalItems.map((item, index) => {
-                const typeName = this.types.find(type => type.id === item.type_no)?.name || 'ยังไม่ระบุ';
-                const baseName = this.bases.find(base => base.id === item.base_no)?.name || 'ยังไม่ระบุ';
-                return `ลูกค้าคนที่ ${index + 1}\nรหัส : ${item.id}\nชื่อเล่น : ${item.nickname}\nประเภท : ${typeName}\nฐานทุน : ${baseName}`;
-            }).join('\n\n');
-            const log = {
-                action: 'เพิ่มลูกค้าใหม่',
-                detail: details.trim(),
-                type: 3,
-                employee_name: Employee_Name,
-                employee_email: Employee_Email,
-                employee_picture: Employee_Picture,
-                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

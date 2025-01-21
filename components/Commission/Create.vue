@@ -139,7 +139,7 @@ export default {
                     updated_date,
                 });
 
-                this.modal.complete.message = 'เพิ่มค่าธรรมเนียมสำเร็จ';
+                this.modal.complete.message = 'เพิ่มข้อมูลเรียบร้อย';
                 this.modal.complete.open = true;
                 this.commission = '';
                 this.$emit('update:open', false);

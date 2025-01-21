@@ -141,7 +141,7 @@ export default {
                     updated_date,
                 });
 
-                this.modal.complete.message = 'เพิ่มประเภทหุ้นสำเร็จ';
+                this.modal.complete.message = 'เพิ่มข้อมูลเรียบร้อย';
                 this.modal.complete.open = true;
                 this.set = '';
                 this.$emit('update:open', false);
