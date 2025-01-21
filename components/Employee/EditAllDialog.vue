@@ -399,7 +399,7 @@ export default {
       }
 
       const log = {
-        action: 'แก้ไขข้อมูลผู้ใช้งาน',
+        action: 'แก้ไขข้อมูลสมาชิก',
         edit_no: this.originalData.no,
         detail: changes.join(''),
         type: 4,

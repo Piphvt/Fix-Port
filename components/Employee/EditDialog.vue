@@ -16,16 +16,16 @@
             <v-row>
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                 <v-text-field v-model="formData.fname" :rules="[
-                  (v) => !!v || 'โปรดกรอกชื่อ',
-                  (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'ชื่อต้องเป็นภาษาไทยเท่านั้น'
-                ]" label="ชื่อ" dense outlined required />
+                  (v) => !!v || 'โปรดกรอกชื่อเล่น',
+                  (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'ชื่อเล่นต้องเป็นภาษาไทยเท่านั้น'
+                ]" label="ชื่อเล่น" dense outlined required />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
                 <v-text-field v-model="formData.lname" :rules="[
-                  (v) => !!v || 'โปรดกรอกนามสกุล',
-                  (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'นามสกุลต้องเป็นภาษาไทยเท่านั้น'
-                ]" label="นามสกุล" dense outlined required />
+                  (v) => !!v || 'โปรดกรอกชื่อ',
+                  (v) => /^[\u0E00-\u0E7F]+$/.test(v) || 'ชื่อต้องเป็นภาษาไทยเท่านั้น'
+                ]" label="ชื่อ" dense outlined required />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
@@ -217,20 +217,21 @@ export default {
       const Employee_Picture = this.$auth.user.picture;
       const changes = [];
       if (this.formData.fname !== this.originalData.fname) {
-        changes.push('ชื่อเล่น : ' + this.formData.fname + '\n');
+        changes.push('ชื่อเล่น จาก : ' + this.originalData.fname + ' เป็น : '+ this.formData.fname +  '\n');
       }
       if (this.formData.lname !== this.originalData.lname) {
-        changes.push('ชื่อ : ' + this.formData.lname + '\n');
+        changes.push('ชื่อ จาก : ' + this.originalData.lname + ' เป็น : '+ this.formData.lname +  '\n');
       }
       if (this.formData.phone !== this.originalData.phone) {
-        changes.push('เบอร์โทรศัพท์ : ' + this.formData.phone + '\n');
+        changes.push('เบอร์โทรศัพท์ จาก : ' + this.originalData.phone + ' เป็น : '+ this.formData.phone +  '\n');
       }
       if (this.formData.gender !== this.originalData.gender) {
-        changes.push('เพศ : ' + this.formData.gender + '\n');
+        changes.push('เพศ จาก : ' + this.originalData.gender + ' เป็น : '+ this.formData.gender +  '\n');
       }
 
       const log = {
         action: 'แก้ไขข้อมูลส่วนตัว',
+        edit_no: this.originalData.no,
         detail: changes.join(''),
         type: 4,
         employee_name: Employee_Name,

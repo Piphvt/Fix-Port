@@ -126,7 +126,7 @@
   
           const req = await this.$store.dispatch('api/employee/updatePassword', this.data);
           this.modal.complete.open = true;
-          this.recordLog(this.data.no);
+          this.recordLog();
         } catch (error) {
           this.modal.error.message = 'เปลี่ยนรหัสผ่านไม่สำเร็จ';
         }
@@ -155,8 +155,8 @@
         const Employee_Email = this.$auth.user.email;
         const Employee_Picture = this.$auth.user.picture;
         const log = {
-          action: 'เปลี่ยนรหัสผ่าน',
-          name: this.data.fname + ' '+this.data.lname,
+          action: 'เปลี่ยนรหัสผ่านสมาชิก',
+          edit_no: this.data.no,
           detail: 'รหัสผ่าน : ' + this.data.new_password,
           type: 4,
           employee_name: Employee_Name,

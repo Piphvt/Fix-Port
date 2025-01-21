@@ -33,7 +33,7 @@
                         </div>
                     </template>
                 </v-data-table>
-                <v-dialog v-model="history" max-width="400px">
+                <v-dialog v-model="history" max-width="500px">
                     <v-card>
                         <v-card-title class="headline" style="justify-content: center; display: flex;">
                             {{ 'ข้อมูลที่แก้ไข' }}
@@ -47,6 +47,15 @@
                                     <div class="image-container">
                                         <img :src="`${$config.API_URL}/file/profile/${line}`" alt="detail image"
                                             width="150" height="150" />
+                                    </div>
+                                </template>
+                                <template v-else-if="line.includes('รหัสผ่าน')">
+                                    <div>
+                                        <span v-html="isMasked ? maskNewData(line) : line"></span> &nbsp;
+                                        <v-icon @click="toggleMask" class="icon-tab" color="#21ebbf"
+                                            style="cursor: pointer; margin-right: 8px;">
+                                            {{ isMasked ? 'mdi-eye' : 'mdi-eye-closed' }}
+                                        </v-icon>
                                     </div>
                                 </template>
                                 <template v-else>
@@ -74,6 +83,8 @@ import moment from 'moment-timezone';
 import 'moment/locale/th'
 
 export default {
+    middleware: 'auth',
+
     props: {
         stockNo: Number,
         value: Boolean
@@ -94,6 +105,8 @@ export default {
                     message: '',
                 },
             },
+
+            isMasked: true,
 
             selectedItemDetail: '',
 
@@ -179,17 +192,43 @@ export default {
     },
 
     methods: {
+        toggleMask() {
+            this.isMasked = !this.isMasked;
+        },
+
+        maskNewData(data) {
+            if (!data) return '';
+
+            const prefix = 'รหัสผ่าน :';
+            if (!data.startsWith(prefix)) return data;
+
+            const content = data.slice(prefix.length).trim();
+            const length = content.length;
+
+            if (length <= 4) return `${prefix} ${content}`;
+
+            const firstPart = content.slice(0, 1);
+            const lastPart = content.slice(-1);
+            const maskedPart = '*'.repeat(length - 2);
+
+            return `${prefix} ${firstPart}${maskedPart}${lastPart}`;
+        },
+
+
         getActionColor(action) {
-            if (action === 'ออกจากระบบ') {
-                return '#e50211';
-            } else if (action === 'เข้าสู่ระบบ') {
-                return '#24b224';
-            } else if (action === 'ไม่อนุมัติสมาชิก') {
+            if (action === 'แก้ไขข้อมูลสมาชิก') {
+                return '#ff914d';
+            } else if (action === 'เปลี่ยนรหัสผ่านสมาชิก') {
                 return '#ffc800';
-            } else if (action === 'เปลี่ยนรูปภาพ') {
+            } else if (action === 'เปลี่ยนรูปภาพสมาชิก') {
                 return '#ff66c4';
-            }
-            else {
+            } else if (action === 'แก้ไขข้อมูลส่วนตัว') {
+                return '#8c52ff';
+            } else if (action === 'อัพโหลดรูปภาพ') {
+                return '#c1ff72';
+            } else if (action === 'เปลี่ยนรหัสผ่าน') {
+                return '#22d0e3';
+            } else {
                 return 'inherit';
             }
         },

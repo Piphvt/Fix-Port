@@ -147,6 +147,7 @@ export default {
       const Employee_Picture = this.$auth.user.picture;
       const log = {
         action: 'อัพโหลดรูปภาพ',
+        edit_no: this.data.no,
         detail: this.file.name,
         type: 4,
         employee_name: Employee_Name,

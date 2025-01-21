@@ -155,7 +155,8 @@ export default {
       const Employee_Email = this.$auth.user.email;
       const Employee_Picture = this.$auth.user.picture;
       const log = {
-        action: 'เปลี่ยนรหัสผ่านเอง',
+        action: 'เปลี่ยนรหัสผ่าน',
+        edit_no: this.data.no,
         detail: 'รหัสผ่าน : ' + this.data.new_password,
         type: 4,
         employee_name: Employee_Name,
