@@ -750,15 +750,13 @@ export default {
             const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
             const Employee_Email = this.$auth.user.email;
             const Employee_Picture = this.$auth.user.picture;
-
-
             const log = {
-                action: 'ลบลูกค้า',
+                action: 'ลูกค้า',
                 name: this.currentItem.id,
                 detail: 'ชื่อเล่น : ' + this.currentItem.nickname +
                     '\nประเภท : ' + this.getTypeName(this.currentItem.type_no) +
                     '\nฐานทุน : ' + this.getBaseName(this.currentItem.base_no),
-                type: 3,
+                type: 1,
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,
                 employee_picture: Employee_Picture,

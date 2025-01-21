@@ -109,31 +109,21 @@
           </template>
 
           <v-list class="custom-list">
-            <v-list-item @click="goToTransHist" class="custom-list-item">
+            <v-list-item @click="goToDeleteHist" class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
-                <v-icon class="icon-tab">mdi-cash-clock</v-icon>
+                <v-icon class="icon-tab">mdi-delete-clock</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title style="font-size: 0.8rem;">ประวัติการซื้อขายหุ้น</v-list-item-title>
+                <v-list-item-title style="font-size: 0.8rem;">ประวัติข้อมูลที่ลบ</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4"
-              @click="goToStocksHist" class="custom-list-item">
+            <v-list-item @click="goToEditHist" class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
-                <v-icon class="icon-tab">mdi-archive-clock</v-icon>
+                <v-icon class="icon-tab">mdi-invoice-clock</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title style="font-size: 0.8rem;">ประวัติหุ้น</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-
-            <v-list-item @click="goToUsersHist" class="custom-list-item">
-              <v-list-item-icon style="margin-right: 5px;">
-                <v-icon class="icon-tab">mdi-account-clock</v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title style="font-size: 0.8rem;">ประวัติลูกค้า</v-list-item-title>
+                <v-list-item-title style="font-size: 0.8rem;">ประวัติข้อมูลที่แก้ไข</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
 
@@ -347,16 +337,12 @@ export default {
       this.$router.push('/app/data/employee');
     },
 
-    goToTransHist() {
-      this.$router.push('/app/history/transaction');
+    goToDeleteHist() {
+      this.$router.push('/app/history/delete');
     },
 
-    goToStocksHist() {
-      this.$router.push('/app/history/stock');
-    },
-
-    goToUsersHist() {
-      this.$router.push('/app/history/user');
+    goToEditHist() {
+      this.$router.push('/app/history/edit');
     },
 
     goToEmpsHist() {

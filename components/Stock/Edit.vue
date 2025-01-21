@@ -248,7 +248,7 @@ export default {
         this.formData.employee_no = this.$auth.user.no;
         const req = await this.$store.dispatch('api/stock/updateStock', this.formData);
         this.modal.complete.open = true;
-        this.recordLogUpdate();
+        this.recordLog();
       } catch (warning) {
         this.modal.warning.open = true;
       }
@@ -265,6 +265,11 @@ export default {
     getStockNameByNo(stockNo) {
       const stock = this.stocks.find(item => item.no === stockNo);
       return stock ? stock.stock : "ไม่พบข้อมูลหุ้น";
+    },
+
+    getStaffNameByNo(No) {
+      const staff = this.employees.find(item => item.no === No);
+      return staff ? staff.name : "ยังไม่ระบุ";
     },
 
     handleKeydown(event) {
@@ -287,7 +292,7 @@ export default {
       this.updateData();
     },
 
-    recordLogUpdate() {
+    recordLog() {
       const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
       const Employee_Email = this.$auth.user.email;
       const Employee_Picture = this.$auth.user.picture;
@@ -304,8 +309,12 @@ export default {
       if (this.formData.comment !== this.originalData.comment) {
         changes.push('หมายเหตุ : ' + this.formData.comment + '\n');
       }
+
+      if (this.formData.staff_no !== this.originalData.staff_no) {
+        changes.push('ผู้ติดตามหุ้น : ' + this.getStaffNameByNo(this.formData.staff_no) + '\n');
+      }
       const log = {
-        action: 'แก้ไขข้อมูลหุ้น',
+        action: 'หุ้น',
         name: this.originalData.stock,
         detail: changes.join(''),
         type: 2,

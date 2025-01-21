@@ -209,7 +209,6 @@ export default {
             }
             this.modal.complete.message = 'เพิ่มหุ้นเรียบร้อยแล้ว!';
             this.modal.complete.open = true;
-            this.recordLog();
             this.showModalResult = false;
         },
 
@@ -242,26 +241,6 @@ export default {
         cancel() {
             this.newStockType = '';
             this.$emit('update:open', false);
-        },
-
-        recordLog() {
-            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
-            const Employee_Email = this.$auth.user.email;
-            const Employee_Picture = this.$auth.user.picture;
-            const details = this.withdrawalItems.map((item, index) => {
-                const setName = this.sets.find(set => set.no === item.set_no)?.name || 'ยังไม่ระบุ';
-                return `หุ้นที่ ${index + 1}\n` + `ชื่อ : ${item.stock || 'ยังไม่ระบุ'}\n` + `ประเภท : ${setName}`;
-            }).join('\n\n');
-            const log = {
-                action: 'เพิ่มหุ้นใหม่',
-                detail: details.trim(),
-                type: 2,
-                employee_name: Employee_Name,
-                employee_email: Employee_Email,
-                employee_picture: Employee_Picture,
-                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

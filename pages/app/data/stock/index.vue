@@ -862,12 +862,12 @@ export default {
             const Employee_Email = this.$auth.user.email;
             const Employee_Picture = this.$auth.user.picture;
             const log = {
-                action: 'ลบหุ้น',
+                action: 'หุ้น',
                 name: this.currentItem.stock,
                 detail: `ประเภท : ${this.getSetName(this.currentItem.set_no) || 'ยังไม่ระบุ'}\n` +
-                    `หมายเหตุ : ${this.currentItem.comment || 'ยังไม่ระบุ'}\n`+
+                    `หมายเหตุ : ${this.currentItem.comment}'}\n`+
                     `ผู้ติดตามหุ้น : ${this.getEmployeeName(this.currentItem.staff_no)}\n`,
-                type: 2,
+                type: 1,
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,
                 employee_picture: Employee_Picture,

@@ -15,31 +15,7 @@
                     <v-form ref="form" v-model="valid" lazy-validation>
                         <v-row>
 
-                            <v-col cols="5" sm="11" class="pa-0 ml-4">
-                                <v-menu ref="menu" v-model="menu" :close-on-content-click="false" :nudge-right="40"
-                                    :return-value.sync="formData.updated_date" transition="scale-transition" offset-y
-                                    min-width="290px">
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-text-field v-model="formattedUpdatedDate" label="วันที่ซื้อ/ขายหุ้น" outlined
-                                            dense readonly v-bind="attrs" v-on="on" :rules="[
-                                                (v) => !!v || 'โปรดเลือกวันที่',
-                                                (v) => moment(v).isValid() || 'วันที่ไม่ถูกต้อง'
-                                            ]"></v-text-field>
-                                    </template>
-                                    <date-picker v-model="formData.updated_date" no-title scrollable
-                                        @input="onDateSelected" @change="onDateChange" format="YYYY-MM-DD HH:mm"
-                                        type="datetime" :locale="'th'" />
-                                </v-menu>
-                            </v-col>
-
                             <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                                <v-autocomplete v-model="formData.customer_no" :items="customers"
-                                    :item-text="item => item.text" :item-value="item => item.value"
-                                    :rules="[(v) => !!v || 'โปรดกรอกรหัสสมาชิก']" label="รหัสสมาชิก" dense outlined
-                                    clearable solo hide-no-data hide-details />
-                            </v-col>
-
-                            <v-col cols="6" sm="5" class="pa-0">
                                 <v-select v-model="formData.type" :items="typeOptions" :item-text="item => item.text"
                                     :item-value="item => item.value" :rules="[(v) => !!v || 'โปรดเลือกซื้อ/ขาย']"
                                     label="ซื้อ/ขาย" dense outlined required>
@@ -50,13 +26,6 @@
                                         {{ data.item.text }}
                                     </template>
                                 </v-select>
-                            </v-col>
-
-                            <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                                <v-autocomplete v-model="formData.stock_no" :items="stocks"
-                                    :item-text="item => item.text" :item-value="item => item.value"
-                                    :rules="[(v) => !!v || 'โปรดกรอกชื่อหุ้น']" label="ชื่อหุ้น" dense outlined
-                                    clearable solo hide-no-data hide-details />
                             </v-col>
 
                             <v-col cols="6" sm="5" class="pa-0">
@@ -74,16 +43,17 @@
 
                             <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
                                 <v-text-field v-model="formData.price" :rules="[
-                                    (v) => !!v || 'โปรดกรอกราคาที่ติด',
+                                    (v) => !!v || 'โปรดกรอกราคา',
                                     (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
-                                ]" label="ราคาที่ติด" dense outlined required />
+                                ]" label="ราคา" dense outlined required />
                             </v-col>
 
                             <v-col cols="6" sm="5" class="pa-0">
+                                
                                 <v-text-field v-model="formData.amount" :rules="[
-                                    (v) => !!v || 'โปรดกรอกจำนวนที่ติด',
+                                    (v) => !!v || 'โปรดกรอกจำนวน',
                                     (v) => /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข'
-                                ]" label="จำนวนที่ติด" dense outlined required />
+                                ]" label="จำนวน" dense outlined required />
                             </v-col>
                         </v-row>
                     </v-form>
@@ -393,21 +363,7 @@ export default {
             const Employee_Email = employee ? employee.email : 'ยังไม่ระบุ';
             const Employee_Picture = employee ? employee.picture : 'ยังไม่ระบุ';
             const changes = [];
-            const StockText = this.getStockName(this.formData.stock_no);
             const originalStockText = this.getStockName(this.originalData.stock_no);
-
-            const originalDate = moment(this.originalData.updated_date).format('YYYY-MM-DD HH:mm');
-            const dateHasChanged = moment(this.formData.updated_date).format('YYYY-MM-DD HH:mm');
-
-            // ตรวจสอบการเปลี่ยนแปลงวันที่
-            if (!moment(this.formData.updated_date).isSame(this.originalData.updated_date)) {
-                changes.push('วันที่ จาก : ' + originalDate + ' เป็น : ' + dateHasChanged + '\n');
-            }
-
-            // ตรวจสอบการเปลี่ยนแปลงชื่อหุ้น
-            if (StockText !== originalStockText) {
-                changes.push('ชื่อหุ้น จาก : ' + originalStockText + ' เป็น : ' + StockText + '\n');
-            }
 
             // ตรวจสอบประเภท (ซื้อหรือขาย)
             if (this.originalData.type !== this.formData.type) {
@@ -423,13 +379,6 @@ export default {
                 changes.push('ที่มาที่ไป จาก : ' + originalfromText + ' เป็น : ' + fromText + '\n');
             }
 
-            // ตรวจสอบการเปลี่ยนแปลงรหัสสมาชิก
-            const CustomerText = this.getCustomerID(this.formData.customer_no);
-            const originalCustomerText = this.getCustomerID(this.originalData.customer_no);
-            if (CustomerText !== originalCustomerText) {
-                changes.push('รหัสสมาชิก จาก : ' + originalCustomerText + ' เป็น : ' + CustomerText + '\n');
-            }
-
             // ตรวจสอบการเปลี่ยนแปลงราคา
             if (this.formData.price !== this.originalData.price) {
                 changes.push('ราคา จาก : ' + this.originalData.price + ' เป็น : ' + this.formData.price + '\n');
@@ -441,18 +390,17 @@ export default {
             }
 
             const log = {
-                action: 'แก้ไขการซื้อขายหุ้น',
+                action: 'การซื้อขายหุ้นของลูกค้า',
                 name: originalStockText + ' ของ ' + originalCustomerText,
                 detail: changes.join(''),
-                type: 1,
+                type: 2,
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,
                 employee_picture: Employee_Picture,
                 created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
             this.$store.dispatch('api/log/addLog', log);
-        }
-        ,
+        },
     },
 };
 

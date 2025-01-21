@@ -6,14 +6,13 @@
         <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen" @update:confirm="modalConfirmOpen = false" />
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
-
         <v-card flat>
             <v-container>
                 <v-row justify="center" align="center">
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
-                            <v-icon class="little-icon" color="#85d7df">mdi-account-clock</v-icon>&nbsp;
-                            <h3 class="mb-0">ประวัติลูกค้า</h3>
+                            <v-icon class="little-icon" color="#85d7df">mdi-invoice-clock</v-icon>&nbsp;
+                            <h3 class="mb-0">ประวัติข้อมูลที่แก้ไข</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">
@@ -113,7 +112,8 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -146,7 +146,7 @@
                             : `${$config.API_URL}/file/default/${item.employee_picture}`" alt="picture" />
                     </v-avatar>
                 </template>
-                <template v-slot:item.select="{ item }">
+                <template v-if="$auth.user.rank_no === 1" v-slot:item.select="{ item }">
                     <div class="text-center"
                         style="display: flex; justify-content: center; align-items: center; height: 100%;">
                         <v-checkbox v-if="isSelectingItems" v-model="selectedItems" :value="item.no"
@@ -201,17 +201,19 @@
             </div>
         </v-card>
 
-        <v-dialog v-model="dialog" max-width="300px">
+        <v-dialog v-model="dialog" max-width="400px">
             <v-card>
                 <v-card-title class="headline" style="justify-content: center; display: flex;">
-                    {{ getDetailTitle(selectedItemDetail.action) }}
+                    {{ 'ข้อมูลที่แก้ไข' }}
                 </v-card-title>
-                <v-card-text>
-                    <div v-for="(line, index) in formattedDetailLines" :key="`${line}-${index}`">
-                        <template v-if="line.includes('-')">{{ line }}
+                <v-card-text
+                    style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                    <div v-for="(line, index) in formattedDetailLines" :key="line + index" style="text-align: center; width: 100%;">
+                        <template v-if="line">
+                            <div v-html="line ? highlightKeywords(line) : line"></div>
                         </template>
                         <template v-else>
-                            {{ line }}
+                            <div v-html="line"></div>
                         </template>
                     </div>
                 </v-card-text>
@@ -228,11 +230,13 @@
 
 <script>
 
+
 import ExcelJS from 'exceljs';
 import moment from 'moment-timezone';
 import 'moment/locale/th'
 import DatePicker from 'vue2-datepicker';
 import 'vue2-datepicker/index.css';
+
 
 export default {
 
@@ -352,7 +356,7 @@ export default {
                 },
 
                 {
-                    text: 'รหัสสมาชิก',
+                    text: 'สิ่งที่ถูกกระทำ',
                     value: 'name',
                     sortable: false,
                     align: 'center',
@@ -405,6 +409,12 @@ export default {
     },
 
     methods: {
+        highlightKeywords(text) {
+            return text
+                .replace(/จาก/g, '<span style="color: yellow;">จาก</span>')
+                .replace(/เป็น/g, '<span style="color: #38b6ff;">เป็น</span>');
+        },
+
         goBack() {
             window.location.reload();
         },
@@ -438,15 +448,6 @@ export default {
             this.modalConfirmOpen = true;
         },
 
-        getDetailTitle(action) {
-            if (['เพิ่มลูกค้าใหม่', 'ลบลูกค้า'].includes(action)) {
-                return 'ข้อมูลเพิ่มเติม';
-            } else if (['แก้ไขข้อมูลลูกค้า'].includes(action)) {
-                return 'ข้อมูลที่ถูกแก้ไข';
-            }
-            return 'ข้อมูลทั่วไป';
-        },
-
         getSearchItems(type) {
             if (type === 'employee_name') {
                 return this.logs.map(log => log.employee_name);
@@ -468,13 +469,13 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/history/user');
+                        this.$router.push('/app/history/edit');
                     } else if (RankID === '2') {
-                        this.$router.push('/app/history/user');
+                        this.$router.push('/app/history/edit');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/history/user');
+                        this.$router.push('/app/history/edit');
                     } else if (RankID === '4') {
-                        this.$router.push('/app/history/user');
+                        this.$router.push('/app/history/edit');
                     } else {
                         this.$router.push('/auth');
                     }
@@ -485,25 +486,26 @@ export default {
         },
 
         async fetchLogData() {
-            this.logs = await this.$store.dispatch('api/log/getLogByType', '3');
+            this.logs = await this.$store.dispatch('api/log/getLogByType', '2');
         },
 
         getActionColor(action) {
-            if (action === 'เพิ่มลูกค้าใหม่') {
-                return '#24b224';
-            } else if (action === 'ลบลูกค้า') {
-                return '#e50211';
-            } else if (action === 'แก้ไขข้อมูลลูกค้า') {
+            if (action === 'การซื้อขายหุ้นของลูกค้า') {
                 return '#ffc800';
-            }
-            else {
+            } else if (action === 'หุ้นของลูกค้า') {
+                return '#2783f2';
+            } else if (action === 'หุ้น') {
+                return '#ec29f0';
+            } else if (action === 'ลูกค้า') {
+                return '#29f06b';
+            }else {
                 return 'inherit';
             }
         },
 
         formatDateTime(date) {
             if (moment(date).isValid()) {
-                return moment(date).format('YYYY-MM-DD HH:mm');
+                return moment(date).format('YYYY/MM/DD HH:mm');
             }
             return 'Invalid Date';
         },
@@ -617,10 +619,10 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('ประวัติลูกค้า');
+            const worksheet = workbook.addWorksheet('ประวัติการซื้อขายหุ้น');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'employee_picture' && header.value !== 'select' && header.value !== 'edit')
+                .filter(header => header.value !== 'employee_picture')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -634,7 +636,7 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'created_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value !== 'employee_picture' && header.value !== 'select' && header.value !== 'edit') {
+                    } else if (header.value !== 'employee_picture') {
                         rowData[header.value] = item[header.value];
                     }
                 });
@@ -662,7 +664,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ประวัติลูกค้า-${currentDate}.xlsx`);
+                link.setAttribute('download', `ประวัติการซื้อขายหุ้น-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

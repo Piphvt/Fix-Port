@@ -783,8 +783,8 @@ export default {
             this.isSelectingItems = !this.isSelectingItems;
         },
 
-        getCurrentItem(id) {
-            return this.stocks.find(item => item.no === id);
+        getCurrentItem(no) {
+            return this.details.find(item => item.no === no);
         },
 
         async deleteSelectedItems() {
@@ -1471,24 +1471,27 @@ export default {
         },
 
         recordLog() {
-            const stock = this.getStockByNo(this.currentItem.stock_no);
-            const from = this.getFromByNo(this.currentItem.from_no);
-            const customer = this.getCustomerByNo(this.currentItem.customer_no)
+            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
+            const Employee_Email = this.$auth.user.email;
+            const Employee_Picture = this.$auth.user.picture;
+            const stock = this.getStockByNo(this.currentItem.stock_no)?.stock;
+            const from = this.getFromByNo(this.currentItem.from_no)?.from;
+            const customer = this.getCustomerByNo(this.currentItem.customer_no)?.id;
+            const created_date = this.formatDate(this.currentItem.created_date);
             const log = {
-                customer_no: `${customer ? customer.id : 'ไม่พบรหัสลูกค้า'}`,
-                emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                emp_email: this.$auth.user.email,
-                detail: this.currentAction === 'delete'
-                    ? `ชื่อหุ้น : ${stock ? stock.name : 'ไม่พบชื่อหุ้น'}\nที่มาที่ไป : ${from ? from.from : 'ไม่พบที่มาที่ไป'}\nราคาที่ติด : ${this.currentItem.price}\nจำนวนที่ติด : ${this.currentItem.amount}`
-                    : `ชื่อหุ้น : ${stock ? stock.name : 'ไม่พบชื่อหุ้น'}\nที่มาที่ไป : ${from ? from.from : 'ไม่พบที่มาที่ไป'}\nราคาที่ติด : ${this.currentItem.price}\nจำนวนที่ติด : ${this.currentItem.amount}`,
+                action: 'หุ้นของลูกค้า',
+                name: stock + ' ของ ' +customer,
+                detail:`วันที่ซื้อหุ้น : ${created_date}\n
+                    ที่มาที่ไป : ${from}\n
+                    ราคา : ${this.currentItem.price}\n
+                    จำนวน : ${this.currentItem.amount}`,
                 type: 1,
-                picture: this.$auth.user.picture || 'Unknown',
-                action: this.currentAction === 'delete'
-                    ? 'ลบข้อมูลหุ้นของลูกค้า'
-                    : 'ไม่ลบข้อมูลหุ้นของลูกค้า',
-                time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                employee_name: Employee_Name,
+                employee_email: Employee_Email,
+                employee_picture: Employee_Picture,
+                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
             };
-            this.$store.dispatch('api/log/addLogs', log);
+            this.$store.dispatch('api/log/addLog', log);
         },
     },
 };

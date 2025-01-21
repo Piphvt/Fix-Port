@@ -11,8 +11,8 @@
                 <v-row justify="center" align="center">
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
-                            <v-icon class="little-icon" color="#85d7df">mdi-archive-clock</v-icon>&nbsp;
-                            <h3 class="mb-0">ประวัติหุ้น</h3>
+                            <v-icon class="little-icon" color="#85d7df">mdi-delete-clock</v-icon>&nbsp;
+                            <h3 class="mb-0">ประวัติข้อมูลที่ลบ</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
                             <div class="d-flex align-center mt-2 justify-center">
@@ -203,10 +203,10 @@
         <v-dialog v-model="dialog" max-width="300px">
             <v-card>
                 <v-card-title class="headline" style="justify-content: center; display: flex;">
-                    {{ getDetailTitle(selectedItemDetail.action) }}
+                    {{ 'ข้อมูลเพิ่มเติม' }}
                 </v-card-title>
-                <v-card-text>
-                    <div v-for="(line, index) in formattedDetailLines" :key="`${line}-${index}`">
+                <v-card-text style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                    <div v-for="(line, index) in formattedDetailLines" :key="`${line}-${index}`" style="text-align: center; width: 100%;">
                         <template v-if="line.includes('-')">
                             {{ line }}
                         </template>
@@ -354,7 +354,7 @@ export default {
                 },
 
                 {
-                    text: 'หุ้น/ประเภทหุ้น',
+                    text: 'สิ่งที่ถูกกระทำ',
                     value: 'name',
                     sortable: false,
                     align: 'center',
@@ -395,18 +395,8 @@ export default {
             if (!this.selectedItemDetail || !this.selectedItemDetail.detail) {
                 return [];
             }
-
             if (typeof this.selectedItemDetail.detail === 'string') {
-                const lines = this.selectedItemDetail.detail.split('\n');
-                const formattedLines = [];
-
-                lines.forEach((line, index) => {
-                    formattedLines.push(line);
-                    if (line.trim() === '' && index < lines.length - 1) {
-                        formattedLines.push('----------------------------------------------------------');
-                    }
-                });
-                return formattedLines;
+                return this.selectedItemDetail.detail.split('\n');
             }
             return [];
         },
@@ -450,15 +440,6 @@ export default {
             this.modalConfirmOpen = true;
         },
 
-        getDetailTitle(action) {
-            if (['เพิ่มหุ้นใหม่', 'ลบหุ้น', 'เพิ่มประเภทหุ้นใหม่', 'ลบประเภทหุ้น'].includes(action)) {
-                return 'ข้อมูลเพิ่มเติม';
-            } else if (['แก้ไขข้อมูลหุ้น', 'แก้ไขข้อมูลประเภทหุ้น'].includes(action)) {
-                return 'ข้อมูลที่ถูกแก้ไข';
-            }
-            return 'ข้อมูลทั่วไป';
-        },
-
         getSearchItems(type) {
             if (type === 'employee_name') {
                 return this.logs.map(log => log.employee_name);
@@ -480,13 +461,13 @@ export default {
                 }
                 else {
                     if (RankID === '1') {
-                        this.$router.push('/app/history/stock');
+                        this.$router.push('/app/history/delete');
                     } else if (RankID === '2') {
-                        this.$router.push('/app/home');
+                        this.$router.push('/app/history/delete');
                     } else if (RankID === '3') {
-                        this.$router.push('/app/history/stock');
+                        this.$router.push('/app/history/delete');
                     } else if (RankID === '4') {
-                        this.$router.push('/app/history/stock');
+                        this.$router.push('/app/history/delete');
                     } else {
                         this.$router.push('/auth');
                     }
@@ -497,27 +478,19 @@ export default {
         },
 
         async fetchLogData() {
-            this.logs = await this.$store.dispatch('api/log/getLogByType', '2');
+            this.logs = await this.$store.dispatch('api/log/getLogByType', '1');
         },
 
         getActionColor(action) {
-            if (action === 'เพิ่มหุ้นใหม่') {
-                return '#24b224';
-            } else if (action === 'ลบหุ้น') {
-                return '#e50211';
-            } else if (action === 'แก้ไขข้อมูลหุ้น') {
+            if (action === 'การซื้อขายหุ้นของลูกค้า') {
                 return '#ffc800';
-            } else if (action === 'เพิ่มประเภทหุ้นใหม่') {
-                return '#c1ff72';
-            } else if (action === 'ลบประเภทหุ้น') {
-                return '#ff5757';
-            } else if (action === 'แก้ไขข้อมูลประเภทหุ้น') {
-                return '#ff66c4';
-            } else if (action === 'ลบเงินปันผลหุ้น') {
-                return '#ff914d';
-            } else if (action === 'เพิ่มเงินปันผลหุ้นใหม่') {
-                return '#8c52ff';
-            } else {
+            } else if (action === 'หุ้นของลูกค้า') {
+                return '#2783f2';
+            } else if (action === 'หุ้น') {
+                return '#ec29f0';
+            } else if (action === 'ลูกค้า') {
+                return '#29f06b';
+            }else {
                 return 'inherit';
             }
         },

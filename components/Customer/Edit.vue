@@ -53,8 +53,8 @@
             </v-row>
           </v-form>
           <v-card-actions class="card-title-center pa-0">
-            <v-btn @click="confirm" :disabled="!valid || !hasChanges" depressed
-              color="#24b224" class="font-weight-medium mr-2">
+            <v-btn @click="confirm" :disabled="!valid || !hasChanges" depressed color="#24b224"
+              class="font-weight-medium mr-2">
               บันทึก
             </v-btn>
             <v-btn color="#e50211" @click="cancel" class="font-weight-medium">ยกเลิก
@@ -317,29 +317,29 @@ export default {
       const Employee_Picture = this.$auth.user.picture;
       const changes = [];
       if (this.formData.id !== this.originalData.id) {
-        changes.push('รหัสสมาชิก จาก : ' + this.originalData.id + ' เป็น : '+ this.formData.id + '\n');
+        changes.push('รหัสสมาชิก จาก : ' + this.originalData.id + ' เป็น : ' + this.formData.id + '\n');
       }
       if (this.formData.nickname !== this.originalData.nickname) {
-        changes.push('ชื่อเล่น จาก : ' + this.originalData.nickname + ' เป็น : '+ this.formData.nickname + '\n');
+        changes.push('ชื่อเล่น จาก : ' + this.originalData.nickname + ' เป็น : ' + this.formData.nickname + '\n');
       }
 
       const typeText = this.getTypeName(this.formData.type_no);
       const originalTypeText = this.getTypeName(this.originalData.type_no);
       if (typeText !== originalTypeText) {
-        changes.push('ประเภท จาก : ' + originalTypeText + ' เป็น : '+ typeText + '\n');
+        changes.push('ประเภท จาก : ' + originalTypeText + ' เป็น : ' + typeText + '\n');
       }
 
       const baseText = this.getBaseName(this.formData.base_no);
       const originalBaseText = this.getBaseName(this.originalData.base_no);
       if (baseText !== originalBaseText) {
-        changes.push('ฐานทุน จาก : ' + originalBaseText + ' เป็น : '+ baseText + '\n');
+        changes.push('ฐานทุน จาก : ' + originalBaseText + ' เป็น : ' + baseText + '\n');
       }
 
       const log = {
-        action: 'แก้ไขข้อมูลลูกค้า',
-        edit_no: this.originalData.no,
+        action: 'ลูกค้า',
+        name: this.originalData.id,
         detail: changes.join(''),
-        type: 6,
+        type: 2,
         employee_name: Employee_Name,
         employee_email: Employee_Email,
         employee_picture: Employee_Picture,

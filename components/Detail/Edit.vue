@@ -127,13 +127,16 @@ export default {
       originalData: {},
       customers: [],
       stocks: [],
+      employees: [],
+
+      initialCreatedDate: '',
 
     };
   },
 
   computed: {
     hasChanges() {
-      const dateHasChanged = !moment(this.formData.created_date).isSame(this.originalData.created_date, 'day');
+      const dateHasChanged = !moment(this.formData.created_date).isSame(this.formattedCreatedDate, 'day');
       const customerNoHasChanged = this.formData.customer_no !== this.originalData.customer_no;
       const stockNoHasChanged = this.formData.stock_no !== this.originalData.stock_no;
       const fromNoHasChanged = this.formData.from_no !== this.originalData.from_no;
@@ -144,16 +147,19 @@ export default {
   },
 
   async mounted() {
-    await this.fetchStockData()
+    await this.fetchStockData();
+    await this.fetchEmployeeData();
   },
 
   mounted() {
+    this.fetchEmployeeData();
     this.fetchCustomerData();
     this.fetchStockData();
     this.setFromOptions();
 
     this.formData = JSON.parse(JSON.stringify(this.data));
     this.originalData = JSON.parse(JSON.stringify(this.data));
+    this.initialCreatedDate = this.originalData.created_date;
     if (moment(this.formData.created_date).isValid()) {
       this.formattedCreatedDate = moment(this.formData.created_date).format('YYYY-MM-DD');
     } else {
@@ -193,9 +199,9 @@ export default {
   methods: {
     onDateSelected(date) {
       if (moment(date).isValid()) {
-        this.formData.created_date = date;
-        this.formattedCreatedDate = moment(date).format('DD-MM-YYYY');
-        this.originalData.created_date = date;
+        this.formData.created_date = moment(date).toDate();
+        this.formattedCreatedDate = moment(date).format('YYYY-MM-DD');
+        
       } else {
         this.formData.created_date = null;
         this.formattedCreatedDate = '';
@@ -203,7 +209,14 @@ export default {
       this.menu = false;
     },
 
-    onDateChange() {
+    onDateChange(date) {
+      if (moment(date).isValid()) {
+        this.formData.created_date = moment(date).toDate();
+        this.formattedCreatedDate = moment(date).format('YYYY-MM-DD');
+      } else {
+        this.formData.created_date = null;
+        this.formattedCreatedDate = '';
+      }
       this.menu = false;
     },
 
@@ -317,7 +330,7 @@ export default {
         this.formData.amount = this.formData.detailamount
         const req = await this.$store.dispatch('api/detail/updateDetail', this.formData);
         this.modal.complete.open = true;
-        this.recordLogUpdate();
+        this.recordLog();
       } catch (warning) {
         this.modal.warning.open = true;
         this.modal.warning.message = 'มีบางอย่างผิดปกติ';
@@ -344,37 +357,67 @@ export default {
       this.updateData();
     },
 
-    recordLogUpdate() {
+    async fetchEmployeeData() {
+      this.employees = await this.$store.dispatch('api/employee/getEmployee');
+    },
+
+    recordLog() {
+      const Employee_No = this.$auth.user.no;
+      const employee = this.employees.find(employee => employee.no === Employee_No);
+      const Employee_Name = employee ? employee.fname + ' ' + employee.lname : 'ไม่รู้จัก';
+      const Employee_Email = employee ? employee.email : 'ยังไม่ระบุ';
+      const Employee_Picture = employee ? employee.picture : 'ยังไม่ระบุ';
       const changes = [];
       const StockText = this.getStockName(this.formData.stock_no);
       const originalStockText = this.getStockName(this.originalData.stock_no);
-      if (StockText !== originalStockText) {
-        changes.push('ชื่อหุ้น : ' + StockText + '\n');
+
+      const formattedDate = moment(this.formData.created_date).format('YYYY-MM-DD');
+      const originalFormattedDate = moment(this.originalData.created_date).format('YYYY-MM-DD');
+      const dateHasChanged = !moment(this.formData.created_date).isSame(this.originalData.created_date, 'day');
+
+      // ตรวจสอบการเปลี่ยนแปลงวันที่
+      if (dateHasChanged) {
+        changes.push('วันที่ซื้อหุ้น จาก : ' + originalFormattedDate + ' เป็น : ' + formattedDate + '\n');
       }
 
+      // ตรวจสอบการเปลี่ยนแปลงชื่อหุ้น
+      if (StockText !== originalStockText) {
+        changes.push('ชื่อหุ้น จาก : ' + originalStockText + ' เป็น : ' + StockText + '\n');
+      }
+
+      // ตรวจสอบการเปลี่ยนแปลงที่มาที่ไป
       const fromText = this.getFromName(this.formData.from_no);
       const originalfromText = this.getFromName(this.originalData.from_no);
       if (fromText !== originalfromText) {
-        changes.push('ที่มาที่ไป : ' + fromText + '\n');
+        changes.push('ที่มาที่ไป จาก : ' + originalfromText + ' เป็น : ' + fromText + '\n');
       }
 
+      // ตรวจสอบการเปลี่ยนแปลงรหัสสมาชิก
+      const CustomerText = this.getCustomerID(this.formData.customer_no);
+      const originalCustomerText = this.getCustomerID(this.originalData.customer_no);
+      if (CustomerText !== originalCustomerText) {
+        changes.push('รหัสสมาชิก จาก : ' + originalCustomerText + ' เป็น : ' + CustomerText + '\n');
+      }
+
+      // ตรวจสอบการเปลี่ยนแปลงราคา
       if (this.formData.price !== this.originalData.price) {
-        changes.push('ราคาที่ติด : ' + this.formData.price + '\n');
+        changes.push('ราคา จาก : ' + this.originalData.price + ' เป็น : ' + this.formData.price + '\n');
       }
 
+      // ตรวจสอบการเปลี่ยนแปลงจำนวน
       if (this.formData.amount !== this.originalData.amount) {
-        changes.push('จำนวนที่ติด : ' + this.formData.amount + '\n');
+        changes.push('จำนวน จาก : ' + this.originalData.amount + ' เป็น : ' + this.formData.amount + '\n');
       }
 
       const log = {
-        customer_no: this.getCustomerID(this.originalData.customer_no),
-        emp_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-        emp_email: this.$auth.user.email,
+        action: 'หุ้นของลูกค้า',
+        name: originalStockText + ' ของ ' + originalCustomerText,
         detail: changes.join(''),
-        type: 1,
-        picture: this.$auth.user.picture || 'ไม่รู้จัก',
-        action: 'แก้ไขข้อมูลหุ้นของลูกค้า',
-        time: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        type: 2,
+        employee_name: Employee_Name,
+        employee_email: Employee_Email,
+        employee_picture: Employee_Picture,
+        created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
       };
       this.$store.dispatch('api/log/addLog', log);
     },

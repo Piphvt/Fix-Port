@@ -1050,9 +1050,9 @@ export default {
             const created_date = this.formatDateTime(this.currentItem.created_date);
             const type = this.currentItem.type === 1 ? 'ซื้อ' : this.currentItem.type === 2 ? 'ขาย' : 'ยังไม่ระบุ';
             const log = {
-                action: 'ลบการซื้อขายหุ้น',
+                action: 'การซื้อขายหุ้นของลูกค้า',
                 name: stock + ' ของ ' +customer,
-                detail:`วันที่ : ${created_date}\n
+                detail:`วันที่ทำรายการ : ${created_date}\n
                     ประเภท : ${type}\n
                     ที่มาที่ไป : ${from}\n
                     ราคา : ${this.currentItem.price}\n
