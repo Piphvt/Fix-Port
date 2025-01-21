@@ -298,20 +298,20 @@ export default {
       const Employee_Picture = this.$auth.user.picture;
       const changes = [];
       if (this.formData.stock !== this.originalData.stock) {
-        changes.push('ชื่อ : ' + this.formData.stock + '\n');
+        changes.push('ชื่อ จาก : '  + this.originalData.stock + ' เป็น : ' + this.formData.stock + '\n');
       }
       const setText = this.getSetName(this.formData.set_no);
       const originalTypeText = this.getSetName(this.originalData.set_no);
       if (setText !== originalTypeText) {
-        changes.push('ประเภท : ' + setText + '\n');
+        changes.push('ประเภท จาก : '  + originalTypeText + ' เป็น : ' + setText + '\n');
       }
 
       if (this.formData.comment !== this.originalData.comment) {
-        changes.push('หมายเหตุ : ' + this.formData.comment + '\n');
+        changes.push('หมายเหตุ จาก : '  + this.originalData.comment + ' เป็น : ' + this.formData.comment + '\n');
       }
 
       if (this.formData.staff_no !== this.originalData.staff_no) {
-        changes.push('ผู้ติดตามหุ้น : ' + this.getStaffNameByNo(this.formData.staff_no) + '\n');
+        changes.push('ผู้ติดตามหุ้น จาก : '  + this.getStaffNameByNo(this.originalData.staff_no) + ' เป็น : ' + this.getStaffNameByNo(this.formData.staff_no) + '\n');
       }
       const log = {
         action: 'หุ้น',
