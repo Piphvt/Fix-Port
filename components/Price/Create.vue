@@ -7,7 +7,7 @@
 
         <v-card class="custom-card" flat>
             <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon color="#24b224">mdi-wallet-plus</v-icon>&nbsp;
+                <v-icon color="#24b224">mdi-bank-plus</v-icon>&nbsp;
                 <h3 class="custom-title">เพิ่มราคาปิด</h3>
             </v-card-title>
             <v-card-text>

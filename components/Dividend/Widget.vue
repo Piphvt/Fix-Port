@@ -11,7 +11,7 @@
                 <DividendEdit :open="editDividend" :data="editAllData" @update:edit="editDividend = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-basket</v-icon>
+                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-star</v-icon>
                 <span class="headline">เงินปันผล</span></v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="filteredDividends" item-value="no" item-key="no"

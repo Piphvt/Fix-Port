@@ -15,7 +15,7 @@
                 <v-row justify="center" align="center">
                     <v-col cols="auto">
                         <v-card-title class="d-flex align-center justify-center">
-                            <v-icon class="little-icon" color="#85d7df">mdi-bank</v-icon>&nbsp;
+                            <v-icon class="little-icon" color="#85d7df">mdi-wallet</v-icon>&nbsp;
                             <h3 class="mb-0">หุ้นของลูกค้า</h3>
                         </v-card-title>
                         <div class="d-flex align-center mt-2 justify-center">
@@ -195,7 +195,7 @@
 
                             <v-list-item @click="DetailCreateOpen = true" class="custom-list-item">
                                 <v-list-item-icon style="margin-right: 5px;">
-                                    <v-icon class="icon-tab" color="#24b224">mdi-bank-plus</v-icon>
+                                    <v-icon class="icon-tab" color="#24b224">mdi-wallet-plus</v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-content>
                                     <v-list-item-title style="font-size: 0.8rem;">เพิ่ม</v-list-item-title>

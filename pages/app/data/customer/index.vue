@@ -7,7 +7,6 @@
             :complete.sync="modal.complete.open" :method="goBack" />
         <CustomerEdit :open="editCustomer" :data="editAllData" @update:edit="editCustomer = false" />
         <CustomerCreate :open="CustomerCreateOpen" @update:open="CustomerCreateOpen = false" />
-        <CustomerHistory :stockNo="selectedStockNo" v-model="DividendDataOpen" />
 
         <v-card class="custom-card" flat>
             <v-container>
@@ -268,9 +267,6 @@ export default {
                 },
             },
 
-            selectedStockNo: null,
-            DividendDataOpen: false,
-
             customers: [],
             types: [],
             employees: [],
@@ -403,10 +399,6 @@ export default {
     },
 
     methods: {
-        OpenLogData(stockNo) {
-            this.selectedStockNo = stockNo;
-            this.DividendDataOpen = true;
-        },
 
         toggleSelectItems() {
             this.isSelectingItems = !this.isSelectingItems;

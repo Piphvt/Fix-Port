@@ -158,7 +158,7 @@
 
                             <v-list-item @click="FollowBotDataOpen = true" class="custom-list-item">
                                 <v-list-item-icon style="margin-right: 5px;">
-                                    <v-icon class="icon-tab" color="#ffc800">mdi-archive-edit</v-icon>
+                                    <v-icon class="icon-tab" color="#ffc800">mdi-archive-sync</v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-content>
                                     <v-list-item-title style="font-size: 0.8rem;">รอการตรวจสอบ</v-list-item-title>

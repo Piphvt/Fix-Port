@@ -6,9 +6,9 @@
         <ModalConfirm :open="modal.confirm.open" :confirm.sync="modal.confirm.open" :method="submitForm" />
 
         <v-card flat>
-            <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon color="#24b224" size="30">mdi-credit-card-plus</v-icon>&nbsp;
-                <h3 class="custom-title">เพิ่มค่าธรรมเนียม</h3>
+            <v-card-title class="d-flex justify-center mb-3">
+                <v-icon justify="center" size="30" color="#24b224">mdi-credit-card-plus</v-icon>&nbsp;
+                <span class="custom-title">เพิ่มค่าธรรมเนียม</span>
             </v-card-title>
 
             <v-card-text>
@@ -171,7 +171,7 @@ export default {
     text-align: center;
 }
 
-.custom-title {
-    font-size: 1rem;
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

@@ -8,9 +8,9 @@
             @update:open="showModalResult = $event" />
 
         <v-card flat>
-            <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon color="#24b224" size="30">mdi-account-plus</v-icon>&nbsp;
-                <h2 class="custom-title">เพิ่มลูกค้าใหม่</h2>
+            <v-card-title class="d-flex justify-center mb-3">
+                <v-icon justify="center" size="30" color="#24b224">mdi-account-plus</v-icon>&nbsp;
+                <span class="custom-title">เพิ่มลูกค้าใหม่</span>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" lazy-validation>

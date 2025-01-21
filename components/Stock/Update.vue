@@ -10,9 +10,9 @@
                 <StockClosePrice :open.sync="isLoadingClosePrice" @cancel-fetch="cancelFetchClosePriceData" />
                 <StockDividendYield :open.sync="isLoadingDividendYield" @cancel-fetch="cancelFetchDividendYieldData" />
             </div>
-            <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-archive-arrow-up</v-icon>
-                <span class="headline">อัพเดทหุ้น</span>
+            <v-card-title class="d-flex align-center justify-center">
+                <v-icon color="#ffc800" size="30">mdi-archive-arrow-up</v-icon>&nbsp;
+                <span class="custom-title">อัพเดทหุ้น</span>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" lazy-validation>
@@ -21,17 +21,17 @@
                             <v-menu bottom right :offset-y="true" :nudge-top="8" :nudge-right="8" class="user-menu">
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-icon text v-bind="attrs" v-on="on" rounded class="icon-host"
-                                        color="#38b6ff">mdi-upload</v-icon>
+                                        color="#ded30b">mdi-list-box</v-icon>
                                 </template>
 
                                 <v-list class="custom-list">
                                     <v-list-item @click="fetchClosePriceData"
                                         :disabled="isLoadingClosePrice || csvData.length > 0" class="custom-list-item">
                                         <v-list-item-icon style="margin-right: 5px;">
-                                            <v-icon class="icon-tab" color="#ffc800">mdi-wallet</v-icon>
+                                            <v-icon class="icon-tab" color="#ffffff">mdi-cloud-download</v-icon>
                                         </v-list-item-icon>
                                         <v-list-item-content>
-                                            <v-list-item-title style="font-size: 0.8rem;">ราคาปิด</v-list-item-title>
+                                            <v-list-item-title style="font-size: 0.8rem;">อัพเดทราคาปิด</v-list-item-title>
                                         </v-list-item-content>
                                     </v-list-item>
 
@@ -39,10 +39,21 @@
                                         :disabled="isLoadingDividendYield || csvData.length > 0"
                                         class="custom-list-item">
                                         <v-list-item-icon style="margin-right: 5px;">
-                                            <v-icon class="icon-tab" color="#85d7df">mdi-basket</v-icon>
+                                            <v-icon class="icon-tab" color="#38b6ff">mdi-briefcase-download</v-icon>
                                         </v-list-item-icon>
                                         <v-list-item-content>
-                                            <v-list-item-title style="font-size: 0.8rem;">เงินปันผล</v-list-item-title>
+                                            <v-list-item-title style="font-size: 0.8rem;">อัพเดทเงินปันผล</v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+
+                                    <v-list-item @click="fetchDividendYieldData"
+                                        :disabled="isLoadingDividendYield || csvData.length > 0"
+                                        class="custom-list-item">
+                                        <v-list-item-icon style="margin-right: 5px;">
+                                            <v-icon class="icon-tab" color="#24b224">mdi-file-download</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content>
+                                            <v-list-item-title style="font-size: 0.8rem;">นำเข้าไฟล์</v-list-item-title>
                                         </v-list-item-content>
                                     </v-list-item>
                                 </v-list>
@@ -443,7 +454,7 @@ export default {
     text-align: center;
 }
 
-.custom-title {
-    font-size: 1rem;
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

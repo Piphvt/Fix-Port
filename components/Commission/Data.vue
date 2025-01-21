@@ -11,7 +11,7 @@
                 <CommissionEdit :open="editCommission" :data="editAllData" @update:edit="editCommission = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="30" color="#85d7df">mdi-credit-card</v-icon>
+                <v-icon justify="center" size="30" color="#85d7df">mdi-credit-card</v-icon>&nbsp;
                 <span class="custom-title">ค่าธรรมเนียม</span>
             </v-card-title>
             <v-card-text>

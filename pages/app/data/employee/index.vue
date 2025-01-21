@@ -9,7 +9,6 @@
         <EmployeeForgotPassword :open="editPasswordDialog" :edit.sync="editPasswordDialog" :data="editPasswordData" />
         <EmployeeChangePicture :open="editUploadDialog" :edit.sync="editUploadDialog" :data="editUploadData" />
         <EmployeeNew v-model="EmployeeDataOpen" />
-        <EmployeeHistory :stockNo="selectedStockNo" v-model="DividendDataOpen" />
 
         <v-card flat>
             <v-container>
@@ -314,9 +313,6 @@ export default {
                 },
             },
 
-            selectedStockNo: null,
-            DividendDataOpen: false,
-
             editPasswordData: null,
             editUploadData: null,
             editPasswordDialog: false,
@@ -463,11 +459,6 @@ export default {
     },
 
     methods: {
-        OpenLogData(stockNo) {
-            this.selectedStockNo = stockNo;
-            this.DividendDataOpen = true;
-        },
-
         onImageError(event, item) {
             event.target.src = `${this.$config.API_URL}/file/default/${item.picture}`;
         },
