@@ -45,11 +45,6 @@
                                                             <v-list-item-subtitle v-if="search.query">
                                                                 <strong>รายละเอียด :</strong> {{ search.query }}
                                                             </v-list-item-subtitle>
-                                                            <v-list-item-subtitle v-if="search.start && search.end">
-                                                                <strong>ระยะเวลา :</strong> {{
-                                                                    formatDateTime(search.start)
-                                                                }} - {{ formatDateTime(search.end) }}
-                                                            </v-list-item-subtitle>
                                                             <v-list-item-subtitle v-if="search.topics">
                                                                 <strong>หัวข้อ :</strong> {{ search.topics.join(', ') }}
                                                             </v-list-item-subtitle>
@@ -78,7 +73,7 @@
                                 </v-dialog>
 
                                 <v-select v-model="searchType" :items="searchTypes" dense outlined
-                                    class="mx-2 search-size small-font" @change="onSearchTypeChange"></v-select>
+                                    class="mx-2 search-size small-font"></v-select>
 
                                 <v-autocomplete v-if="searchType === 'customer_no'" v-model="selectedCustomerIDs"
                                     class="mx-2 search-size small-font" :items="getSearchItems('customer_no')"
@@ -89,28 +84,6 @@
                                     class="mx-2 search-size small-font" :items="getSearchItems('customer_name')"
                                     label="ค้นหาชื่อเล่น" dense outlined clearable multiple>
                                 </v-autocomplete>
-
-                                <v-menu v-if="searchType === 'updated_date'" v-model="datePickerMenu"
-                                    :close-on-content-click="false" transition="scale-transition" offset-y>
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <div v-bind="attrs" v-on="on" class="date-picker-activator">
-                                            <v-icon class="small-label">mdi-calendar-start-outline</v-icon>
-                                            <date-picker v-model="startDateTime" format="YYYY-MM-DD HH:mm"
-                                                type="datetime" />
-                                        </div>
-                                    </template>
-                                </v-menu>
-
-                                <v-menu v-if="searchType === 'updated_date'" v-model="endDatePickerMenu"
-                                    :close-on-content-click="false" transition="scale-transition" offset-y>
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <div v-bind="attrs" v-on="on" class="date-picker-activator ml-2">
-                                            <v-icon class="small-label">mdi-calendar-end-outline</v-icon>
-                                            <date-picker v-model="endDateTime" format="YYYY-MM-DD HH:mm"
-                                                type="datetime" />
-                                        </div>
-                                    </template>
-                                </v-menu>
 
                                 <v-btn icon @click="addSearch">
                                     <v-icon class="small-icon ">mdi-plus</v-icon>
@@ -138,14 +111,8 @@
                             </v-list-item>
                         </v-list>
                     </v-menu>
-                    <div>
-                        <v-btn v-if="isSelectingItems && selectedItems.length > 0" color="red"
-                            @click="deleteSelectedItems" class="mb-4" style="font-size: 1.5 rem; margin-left: auto;">
-                            <v-icon left color="white">mdi-delete</v-icon> ลบ
-                        </v-btn>
-                    </div>
                 </div>
-                <v-data-table :headers="filteredHeaders" :items="details" :item-value="customer_no"
+                <v-data-table :headers="filteredHeaders" :items="filteredDetails" :item-value="customer_no"
                     item-key="customer_no">
                     <template v-slot:body="{ items }">
                         <template v-for="(group, index) in items" :key="group.customer_no + '-' + index">
@@ -305,7 +272,6 @@ export default {
             searchTypes: [
                 { text: 'รหัสสมาชิก', value: 'customer_no' },
                 { text: 'ชื่อเล่น', value: 'customer_name' },
-                { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
             visibleColumns: ['action', 'updated_date', 'customer_no', 'customer_name', 'base_stock', 'new_stock', 'tactic_stock', 'total', 'detail', 'export'],
@@ -392,6 +358,7 @@ export default {
             ],
 
             filtered: [],
+            filteredDetails: null,
 
             showAllDialog: false,
             showAllData: {},
@@ -442,10 +409,12 @@ export default {
             this.fetchFromData(),
             this.fetchCommissionData(),
             this.fetchTransactionData(),
-            this.fetchDetailData()
+            this.fetchDetailData(),
+
         ]);
 
         this.filtered = this.details;
+        this.filteredDetails = this.details;
     },
 
     computed: {
@@ -827,38 +796,17 @@ export default {
             this.dialog = true;
         },
 
-        onSearchTypeChange() {
-            this.isSearchFieldVisible = this.searchType !== 'updated_date';
-        },
-
-        validateDateRange() {
-            const start = moment(this.startDateTime);
-            const end = moment(this.endDateTime);
-
-            if (start.isValid() && end.isValid() && start.isAfter(end)) {
-                this.modal.warning.open = true;
-                return false;
-            }
-            return true;
-        },
-
         addSearch() {
-            if (!this.validateDateRange()) {
-                return;
-            }
-
             if (this.searchType === 'customer_no' || this.searchType === 'customer_name') {
                 this.addSearchItemsToSearch();
+                this.filterDetails();
             } else {
                 this.savedSearches.push({
                     query: this.searchQuery,
                     type: this.searchType,
-                    start: this.startDateTime,
-                    end: this.endDateTime
                 });
                 this.searchQuery = '';
-                this.startDateTime = '';
-                this.endDateTime = '';
+                this.filterDetails();
             }
         },
 
@@ -871,8 +819,6 @@ export default {
                 this.savedSearches.push({
                     query: selectedItems,
                     type: this.searchType,
-                    start: this.startDateTime,
-                    end: this.endDateTime
                 });
 
                 if (this.searchType === 'customer_no') {
@@ -880,9 +826,6 @@ export default {
                 } else if (this.searchType === 'customer_name') {
                     this.selectedCustomerNames = [];
                 }
-
-                this.startDateTime = '';
-                this.endDateTime = '';
             }
         },
 
@@ -891,20 +834,18 @@ export default {
 
             let field;
             if (search.type === 'customer_no') {
-                field = this.getCustomerByNo(detail.customer_no).id;
+                field = this.getCustomerByNo(detail.customer_no)?.id;
             } else if (search.type === 'customer_name') {
-                field = this.getCustomerByNo(detail.customer_no).nickname || 'ยังไม่ระบุ';
+                field = this.getCustomerByNo(detail.customer_no)?.nickname || 'ยังไม่ระบุ';
             } else {
                 field = detail[search.type];
             }
 
             if (search.type === 'customer_no' || search.type === 'customer_name') {
-                queryMatched = search.query.some(query => {
+                queryMatched = search.query && search.query.length > 0 && search.query.some(query => {
                     const lowerCaseField = typeof field === 'string' ? field.toLowerCase() : '';
                     return lowerCaseField === query.toLowerCase();
                 });
-            } else if (search.type === 'updated_date') {
-                return this.checkTimeRange(detail, search);
             } else {
                 const searchQuery = search.query.toLowerCase();
                 queryMatched = typeof field === 'string' && field.toLowerCase() === searchQuery;
@@ -913,13 +854,16 @@ export default {
             return queryMatched;
         },
 
-
-        checkTimeRange(detail, search) {
-            const detailTime = moment(detail.updated_date);
-            const startTime = moment(search.start);
-            const endTime = moment(search.end);
-            return (!startTime.isValid() || detailTime.isSameOrAfter(startTime)) &&
-                (!endTime.isValid() || detailTime.isSameOrBefore(endTime));
+        filterDetails() {
+            if (this.savedSearches.length > 0) {
+                this.filteredDetails = this.details.filter(detail => {
+                    return this.savedSearches.every(search => {
+                        return this.applySearchFilter(detail, search);
+                    });
+                });
+            } else {
+                this.filteredDetails = this.details;
+            }
         },
 
         toggleSavedSearchesDialog() {
@@ -928,6 +872,7 @@ export default {
 
         deleteSearch(index) {
             this.savedSearches.splice(index, 1);
+            this.filterDetails();
         },
 
         getSearchTypeText(type) {

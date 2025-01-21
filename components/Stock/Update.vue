@@ -1,8 +1,8 @@
 <template>
     <v-dialog v-model="dialog" max-width="800px">
-        <v-card>
+        <v-card class="custom-card" flat>
             <div>
-                <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen"
+                <ModalConfirm :method="handleSaveUpdate" :open="modalConfirmOpen"
                     @update:confirm="modalConfirmOpen = false" />
                 <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
                     :complete.sync="modal.complete.open" :method="goBack" />
@@ -10,41 +10,41 @@
                 <StockClosePrice :open.sync="isLoadingClosePrice" @cancel-fetch="cancelFetchClosePriceData" />
                 <StockDividendYield :open.sync="isLoadingDividendYield" @cancel-fetch="cancelFetchDividendYieldData" />
             </div>
+            <v-card-title class="d-flex justify-center">
+                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-archive-arrow-up</v-icon>
+                <span class="headline">อัพเดทหุ้น</span>
+            </v-card-title>
+            <v-card-text>
+                <v-form ref="form" lazy-validation>
+                    <v-row justify="center" align="center">
+                        <v-col cols="auto">
+                            <v-btn color="#ffc800" @click="fetchClosePriceData"
+                                :disabled="isLoadingClosePrice || csvData.length > 0" class="mr-2">
+                                <v-icon>mdi-upload</v-icon>ราคาปิด
+                            </v-btn>
+                            <v-btn color="#38b6ff" @click="fetchDividendYieldData"
+                                :disabled="isLoadingDividendYield || csvData.length > 0" class="mr-2">
+                                <v-icon>mdi-upload</v-icon>เงินปันผล
+                            </v-btn>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-col>
+                            <v-data-table v-if="true" :headers="isDataLoaded ? headers : []" :items="csvData"
+                                class="mt-4 elevation-1" :items-per-page="5"
+                                no-data-text="ยังไม่มีข้อมูลในขณะนี้"></v-data-table>
+                        </v-col>
+                    </v-row>
+                </v-form>
 
-            <v-card class="custom-card" flat>
-                <v-card-title class="d-flex justify-center">
-                    <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-archive-arrow-up</v-icon>
-                    <span class="headline">อัพเดทหุ้น</span>
-                </v-card-title>
-                <v-card-text>
-                    <v-form ref="form" lazy-validation>
-                        <v-row justify="center" align="center">
-                            <v-col cols="auto">
-                                <v-btn color="#ffc800" @click="fetchClosePriceData"
-                                    :disabled="isLoadingClosePrice || csvData.length > 0" class="mr-2">
-                                    <v-icon>mdi-upload</v-icon>อัพเดทราคาปิด
-                                </v-btn>
-                                <v-btn color="#38b6ff" @click="fetchDividendYieldData"
-                                    :disabled="isLoadingDividendYield || csvData.length > 0" class="mr-2">
-                                    <v-icon>mdi-upload</v-icon>อัพเดทจำนวนปันผล
-                                </v-btn>
-                            </v-col>
-                        </v-row>
-                        <v-row>
-                            <v-col>
-                                <v-data-table v-if="true" :headers="isDataLoaded ? headers : []" :items="csvData"
-                                    class="mt-4 elevation-1" :items-per-page="5"></v-data-table>
-                            </v-col></v-row>
-                    </v-form>
-                    <v-card-actions class="card-title-center pa-0">
-                        <v-btn class="mt-3 mr-2" color="#24b224" @click="saveUpdate"
-                            :disabled="csvData.length === 0 || isLoadingClosePrice">
-                            <v-icon>mdi-content-save</v-icon>บันทึก
-                        </v-btn>
-                        <v-btn class="mt-3" @click="dialog = false" color="#e50211">ปิด</v-btn>
-                    </v-card-actions>
-                </v-card-text>
-            </v-card>
+                <v-card-actions class="card-title-center pa-0">
+                    <v-btn class="mt-3 mr-2" color="#24b224" @click="handleSaveUpdate"
+                        :disabled="csvData.length === 0 || isLoadingClosePrice">
+                        <v-icon>mdi-content-save</v-icon>บันทึก
+                    </v-btn>
+                    <v-btn class="mt-3" @click="dialog = false" color="#e50211">ปิด</v-btn>
+                </v-card-actions>
+            </v-card-text>
         </v-card>
     </v-dialog>
 </template>
@@ -105,6 +105,14 @@ export default {
     },
 
     methods: {
+        handleSaveUpdate() {
+            if (this.modalConfirmOpen) {
+                this.saveUpdate();
+            } else {
+                this.showConfirmDialog('save', null);
+            }
+        },
+
         async fetchStockData() {
             this.stocks = await this.$store.dispatch('api/stock/getStock')
         },
@@ -121,31 +129,6 @@ export default {
             this.currentAction = action;
             this.currentItem = item;
             this.modalConfirmOpen = true;
-        },
-
-        async handleConfirm() {
-            try {
-                if (this.currentAction === 'approve') {
-                    await this.$store.dispatch('api/employee/updateEmployeeStatus', {
-                        no: this.currentItem.no,
-                        status: 1,
-                        employee_no: this.$auth.user.no
-                    });
-                    this.recordLog();
-                    this.modal.complete.message = 'อนุมัติผู้ใช้งานเรียบร้อยแล้ว';
-                } else if (this.currentAction === 'reject') {
-                    await this.$store.dispatch('api/employee/deleteEmployee', this.currentItem.no);
-                    this.modal.complete.message = 'ลบผู้ใช้งานนี้เรียบร้อยแล้ว';
-                    this.recordLog();
-                }
-
-                this.modal.complete.open = true;
-            } catch (error) {
-                this.modal.complete.message = 'เกิดข้อผิดพลาดในการดำเนินการ';
-                this.modal.complete.open = true;
-            }
-
-            this.modalConfirmOpen = false;
         },
 
         fetchClosePriceData() {
@@ -344,7 +327,7 @@ export default {
 
                     if (stockData.close !== undefined) {
                         const closePrice = stockData.close;
-                        const price_created_date = stockData.datetime
+                        const price_created_date = stockData.datetime;
                         await this.$store.dispatch('api/price/addPrice', {
                             updated_date: moment.tz(new Date(), 'Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
                             created_date: moment(price_created_date).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
@@ -352,6 +335,7 @@ export default {
                             stock_no: stockId,
                             price: closePrice,
                         });
+                        this.recordLog();
                     }
 
                     if (stockData.dividend !== undefined) {
@@ -364,7 +348,6 @@ export default {
                             x_date: moment(created_date).tz('Asia/Bangkok').format('YYYY-MM-DD'),
                             stock_no: stockId
                         });
-
 
                         const isDuplicate = existingDividend.some(item => {
                             const existingCreatedDate = moment.tz(item.created_date, 'Asia/Bangkok').toDate();
@@ -383,6 +366,7 @@ export default {
                             stock_no: stockId,
                             dividend: dividend,
                         });
+                        this.recordLog();
                     }
                 }
 
@@ -391,6 +375,8 @@ export default {
             } catch (error) {
                 alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + error.message);
             }
+
+            this.modalConfirmOpen = false;
         },
 
         formatDateTime(date) {
@@ -405,14 +391,10 @@ export default {
             const Employee_Email = this.$auth.user.email;
             const Employee_Picture = this.$auth.user.picture;
             const log = {
-                action: this.currentAction === 'approve'
-                    ? 'อนุมัติผู้ใช้งาน'
-                    : 'ไม่อนุมัติผู้ใช้งาน',
+                action: 'อัพเดทราคาปิด',
                 name: this.currentItem.fname + ' ' + this.currentItem.lname,
-                detail: this.currentAction === 'approve'
-                    ? `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`
-                    : `อีเมล : ${this.currentItem.email}\nเบอร์โทรศัพท์ : ${this.currentItem.phone}\nเพศ : ${this.currentItem.gender}`,
-                type: 4,
+                detail: '',
+                type: 5,
                 employee_name: Employee_Name,
                 employee_email: Employee_Email,
                 employee_picture: Employee_Picture,
