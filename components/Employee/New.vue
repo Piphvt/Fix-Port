@@ -8,9 +8,9 @@
                     :complete.sync="modal.complete.open" :method="goBack" />
                 <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
             </div>
-            <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-home-plus</v-icon>
-                <span class="headline">คำร้องขอสมัครสมาชิก</span>
+            <v-card-title class="d-flex justify-center mb-3">
+                <v-icon justify="center" size="30" color="#24b224">mdi-home-plus</v-icon>&nbsp;
+                <span class="custom-title">คำร้องขอสมัครสมาชิก</span>
             </v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="employees" item-value="no" item-key="no" :items-per-page="5">
@@ -293,5 +293,9 @@ export default {
 
 .icon-tab {
     font-size: 120% !important;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

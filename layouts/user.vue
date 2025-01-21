@@ -4,6 +4,7 @@
     <ModalConfirmLogout :open="modal.confirmLogout.open" :message="modal.confirmLogout.message"
       @update:confirmLogout="(value) => (modal.confirmLogout.open = value)"
       @update:message="(value) => (modal.confirmLogout.message = value)" :method="sign_out" />
+    <EmployeeProfile v-model="EmployeeProfileOpen" />
 
     <v-app :class="appBackground" :style="appBackgroundStyle">
       <v-app-bar :clipped-left="clipped" fixed app :color="navBarColor" dark>
@@ -83,7 +84,7 @@
           <v-list class="custom-list">
             <v-list-item @click="goToStockDetail" class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
-                <v-icon class="icon-tab">mdi-bank</v-icon>
+                <v-icon class="icon-tab">mdi-wallet</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
                 <v-list-item-title style="font-size: 0.8rem;">หุ้นของลูกค้า</v-list-item-title>
@@ -162,7 +163,7 @@
                 </v-img>
               </v-card>
 
-              <v-list-item @click="gotoProfile" class="custom-list-item">
+              <v-list-item @click="EmployeeProfileOpen = true" class="custom-list-item">
                 <v-list-item-icon style="margin-right: 5px;">
                   <v-icon class="icon-tab">mdi-card-account-details-outline</v-icon>
                 </v-list-item-icon>
@@ -227,6 +228,7 @@ export default {
           open: false,
         },
       },
+      EmployeeProfileOpen: false,
     };
   },
 
@@ -273,10 +275,6 @@ export default {
 
     onImageError() {
       this.profileImage = `${this.$config.API_URL}/file/default/${this.$auth.user.picture}`;
-    },
-
-    gotoProfile() {
-      this.$router.push('/app/profile');
     },
 
     toggleTheme() {

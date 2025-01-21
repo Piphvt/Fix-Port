@@ -34,19 +34,19 @@
                     <v-row class="mb-0 mt-0 pa-0" v-for="(item, index) in withdrawalItems" :key="index" align="center">
                         <v-col cols="2" class="ml-3">
                             <v-autocomplete v-model="item.stock_no" :items="stocks" item-text="name" item-value="no"
-                                label="ชื่อหุ้นที่ติด" dense outlined :disabled="!isSearchValid" :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable>
+                                label="ชื่อหุ้น" dense outlined :disabled="!isSearchValid" :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable>
                             </v-autocomplete>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-text-field v-model="item.price" label="ราคาที่ติด" type="text" dense outlined
+                            <v-text-field v-model="item.price" label="ราคา" type="text" dense outlined
                                 :disabled="!canEditItem(item)"
                                 :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
                             </v-text-field>
                         </v-col>
 
                         <v-col cols="2">
-                            <v-text-field v-model="item.amount" label="จำนวนที่ติด" type="text" dense outlined
+                            <v-text-field v-model="item.amount" label="จำนวน" type="text" dense outlined
                                 :disabled="!canEditItem(item)"
                                 :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
                             </v-text-field>

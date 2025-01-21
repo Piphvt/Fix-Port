@@ -54,7 +54,7 @@
                                         <span v-html="isMasked ? maskNewData(line) : line"></span> &nbsp;
                                         <v-icon @click="toggleMask" class="icon-tab" color="#21ebbf"
                                             style="cursor: pointer; margin-right: 8px;">
-                                            {{ isMasked ? 'mdi-eye' : 'mdi-eye-closed' }}
+                                            {{ isMasked ? 'mdi-eye-closed' : 'mdi-eye' }}
                                         </v-icon>
                                     </div>
                                 </template>

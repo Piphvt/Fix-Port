@@ -242,7 +242,7 @@
                                 <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
                                     @click="OpenPriceData(item.no)" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#ffffff">mdi-bank-circle</v-icon>
+                                        <v-icon class="icon-tab" color="#ffffff">mdi-cloud-circle</v-icon>
                                     </v-list-item-icon>
                                     <v-list-item-content style="font-size: 0.8rem;">ราคาปิด</v-list-item-content>
                                 </v-list-item>
@@ -820,10 +820,10 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
+            const worksheet = workbook.addWorksheet('หุ้นทั้งหมด');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'picture' && header.value !== 'detail')
+                .filter(header => header.value !== 'select' && header.value !== 'detail'  && header.value !== 'action')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -838,12 +838,16 @@ export default {
                     if (header.value === 'updated_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
                     } else if (header.value === 'set_no') {
-                        rowData[header.value] = this.getSetName(item.set_no);
+                        rowData[header.value] = this.getSetName(item.set_no) || 'ยังไม่ระบุ';
                     } else if (header.value === 'employee_no') {
                         rowData[header.value] = this.getEmployeeName(item.employee_no);
+                    } else if (header.value === 'staff_no') {
+                        rowData[header.value] = this.getEmployeeName(item.staff_no);
                     } else if (header.value === 'dividend_amount') {
-                        rowData[header.value] = this.getTotalDividends(item.no);
-                    } else if (header.value !== 'picture' && header.value !== 'detail') {
+                        rowData[header.value] = item.dividend || 0;
+                    } else if (header.value === 'closing_price') {
+                        rowData[header.value] = item.price || 0;
+                    } else if (header.value !== 'select' && header.value !== 'detail' && header.value !== 'action') {
                         rowData[header.value] = item[header.value];
                     }
                 });

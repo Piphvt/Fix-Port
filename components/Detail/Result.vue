@@ -3,7 +3,7 @@
         <v-card>
             <v-card-title class="d-flex align-center justify-center">
                 <v-icon color="#24b224" size="30">mdi-alert-circle</v-icon>&nbsp;
-                <h3 class="custom-title">ตรวจสอบความถูกต้อง</h3>
+                <span class="custom-title">ตรวจสอบความถูกต้อง</span>
             </v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="formattedStocks" class="elevation-1" hide-default-footer>

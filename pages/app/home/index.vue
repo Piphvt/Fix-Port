@@ -10,7 +10,9 @@
       <v-row justify="space-evenly">
         <v-col cols="12" sm="6" md="4" lg="6">
           <v-card>
-            <v-card-title class="d-flex align-center justify-center">ราคาปิด</v-card-title>
+            <v-card-title class="d-flex justify-center">
+                <v-icon justify="center" class="mr-3" size="30" color="#ffffff">mdi-cloud</v-icon>
+                <span class="custom-title">ราคาปิด</span></v-card-title>
             <v-card-text>
               <v-simple-table>
                 <thead>
@@ -38,7 +40,10 @@
 
         <v-col cols="12" sm="6" md="4" lg="6">
           <v-card>
-            <v-card-title class="d-flex align-center justify-center">เงินปันผล</v-card-title>
+            <v-card-title class="d-flex justify-center">
+              <v-icon justify="center" class="mr-3" size="30" color="#38b6ff">mdi-star</v-icon>
+              <span class="custom-title">เงินปันผล</span>
+            </v-card-title>
             <v-card-text>
               <v-simple-table>
                 <thead>
@@ -66,7 +71,9 @@
 
         <v-col cols="12" sm="6" md="4" lg="6" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3">
           <v-card>
-            <v-card-title class="d-flex align-center justify-center">คำร้องขอสมัครสมาชิก</v-card-title>
+            <v-card-title class="d-flex justify-center">
+              <v-icon justify="center" size="30" color="#24b224">mdi-home-plus</v-icon>&nbsp;
+              <span class="custom-title">คำร้องขอสมัครสมาชิก</span></v-card-title>
             <v-card-text>
               <v-simple-table>
                 <thead>
@@ -101,7 +108,10 @@
 
         <v-col cols="12" sm="6" md="4" lg="6" v-if="$auth.user.rank_no === 2 || $auth.user.rank_no === 4">
           <v-card>
-            <v-card-title class="d-flex align-center justify-center">หุ้นที่ลูกค้ามี</v-card-title>
+            <v-card-title class="d-flex justify-center">
+                <v-icon justify="center" class="mr-3" size="30" color="#ffc800">mdi-wallet</v-icon>
+                <span class="custom-title">หุ้นที่ลูกค้ามี</span>
+            </v-card-title>
             <v-card-text>
               <v-simple-table>
                 <thead>
@@ -136,7 +146,10 @@
 
         <v-col cols="12" sm="6" md="4" lg="6">
           <v-card>
-            <v-card-title class="d-flex align-center justify-center">หุ้นที่ถึงเป้าแล้ว</v-card-title>
+            <v-card-title class="d-flex justify-center">
+                <v-icon justify="center" class="mr-3" size="30" color="#85d7df">mdi-archive-alert</v-icon>
+                <span class="custom-title">หุ้นที่ถึงเป้าแล้ว</span>
+            </v-card-title>
             <v-card-text>
               <v-simple-table>
                 <thead>
@@ -228,72 +241,72 @@ export default {
 
   methods: {
     updateRandomData() {
-  if (this.prices.length > 0) {
-    const randomPriceIndexes = [];
-    while (randomPriceIndexes.length < 3 && randomPriceIndexes.length < this.prices.length) {
-      const randomPriceIndex = Math.floor(Math.random() * this.prices.length);
-      if (!randomPriceIndexes.includes(randomPriceIndex)) {
-        randomPriceIndexes.push(randomPriceIndex);
+      if (this.prices.length > 0) {
+        const randomPriceIndexes = [];
+        while (randomPriceIndexes.length < 3 && randomPriceIndexes.length < this.prices.length) {
+          const randomPriceIndex = Math.floor(Math.random() * this.prices.length);
+          if (!randomPriceIndexes.includes(randomPriceIndex)) {
+            randomPriceIndexes.push(randomPriceIndex);
+          }
+        }
+
+        this.randomPrice = randomPriceIndexes.map(index => this.prices[index]);
       }
-    }
 
-    this.randomPrice = randomPriceIndexes.map(index => this.prices[index]);
-  }
+      if (this.dividends.length > 0) {
+        const randomDividendIndexes = [];
+        while (randomDividendIndexes.length < 3 && randomDividendIndexes.length < this.dividends.length) {
+          const randomDividendIndex = Math.floor(Math.random() * this.dividends.length);
+          if (!randomDividendIndexes.includes(randomDividendIndex)) {
+            randomDividendIndexes.push(randomDividendIndex);
+          }
+        }
 
-  if (this.dividends.length > 0) {
-    const randomDividendIndexes = [];
-    while (randomDividendIndexes.length < 3 && randomDividendIndexes.length < this.dividends.length) {
-      const randomDividendIndex = Math.floor(Math.random() * this.dividends.length);
-      if (!randomDividendIndexes.includes(randomDividendIndex)) {
-        randomDividendIndexes.push(randomDividendIndex);
+        this.randomDividend = randomDividendIndexes.map(index => this.dividends[index]);
       }
-    }
 
-    this.randomDividend = randomDividendIndexes.map(index => this.dividends[index]);
-  }
+      if (this.details.length > 0) {
+        const randomDetailIndexes = [];
+        while (randomDetailIndexes.length < 3 && randomDetailIndexes.length < this.details.length) {
+          const randomDetailIndex = Math.floor(Math.random() * this.details.length); // Fixed variable name here
+          if (!randomDetailIndexes.includes(randomDetailIndex)) {
+            randomDetailIndexes.push(randomDetailIndex);
+          }
+        }
 
-  if (this.details.length > 0) {
-    const randomDetailIndexes = [];
-    while (randomDetailIndexes.length < 3 && randomDetailIndexes.length < this.details.length) {
-      const randomDetailIndex = Math.floor(Math.random() * this.details.length); // Fixed variable name here
-      if (!randomDetailIndexes.includes(randomDetailIndex)) {
-        randomDetailIndexes.push(randomDetailIndex);
+        this.randomDetail = randomDetailIndexes.map(index => this.details[index]);
       }
-    }
-
-    this.randomDetail = randomDetailIndexes.map(index => this.details[index]);
-  }
 
 
-  if (this.follows.length > 0) {
-    const randomFollowIndexes = [];
-    while (randomFollowIndexes.length < 3 && randomFollowIndexes.length < this.follows.length) {
-      const randomFollowIndex = Math.floor(Math.random() * this.follows.length);
-      if (!randomFollowIndexes.includes(randomFollowIndex)) {
-        randomFollowIndexes.push(randomFollowIndex);
+      if (this.follows.length > 0) {
+        const randomFollowIndexes = [];
+        while (randomFollowIndexes.length < 3 && randomFollowIndexes.length < this.follows.length) {
+          const randomFollowIndex = Math.floor(Math.random() * this.follows.length);
+          if (!randomFollowIndexes.includes(randomFollowIndex)) {
+            randomFollowIndexes.push(randomFollowIndex);
+          }
+        }
+
+        this.randomFollow = randomFollowIndexes.map(index => this.follows[index]);
+      } else {
+        this.randomFollow = [];
       }
-    }
 
-    this.randomFollow = randomFollowIndexes.map(index => this.follows[index]);
-  } else {
-    this.randomFollow = [];
-  }
+      if (this.employees.length > 0) {
+        const randomEmployeeIndexes = [];
+        while (randomEmployeeIndexes.length < 3 && randomEmployeeIndexes.length < this.employees.length) {
+          const randomEmployeeIndex = Math.floor(Math.random() * this.employees.length);
+          if (!randomEmployeeIndexes.includes(randomEmployeeIndex)) {
+            randomEmployeeIndexes.push(randomEmployeeIndex);
+          }
+        }
 
-  if (this.employees.length > 0) {
-    const randomEmployeeIndexes = [];
-    while (randomEmployeeIndexes.length < 3 && randomEmployeeIndexes.length < this.employees.length) {
-      const randomEmployeeIndex = Math.floor(Math.random() * this.employees.length);
-      if (!randomEmployeeIndexes.includes(randomEmployeeIndex)) {
-        randomEmployeeIndexes.push(randomEmployeeIndex);
+        this.randomEmployee = randomEmployeeIndexes.map(index => this.employees[index]);
+      } else {
+        this.randomEmployee = [];
       }
-    }
 
-    this.randomEmployee = randomEmployeeIndexes.map(index => this.employees[index]);
-  } else {
-    this.randomEmployee = [];
-  }
-
-},
+    },
 
 
     openDetailData(item) {
@@ -436,7 +449,7 @@ export default {
 
     getStaffName(staffNo) {
       const employee = this.allemployees.find(e => e.no === staffNo);
-      return employee ? employee.fname + ' '+ employee.lname : '';
+      return employee ? employee.fname + ' ' + employee.lname : '';
     },
 
     getReachText(reach) {
@@ -493,3 +506,9 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.v-card-title .custom-title {
+  font-size: 1.5rem !important;
+}
+</style>

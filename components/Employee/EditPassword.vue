@@ -9,7 +9,10 @@
     <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
       content-class="rounded-xl">
       <v-card class="rounded-xl">
-        <v-card-title class="headline font-weight-bold card-title-center mb-3">เปลี่ยนรหัสผ่าน</v-card-title>
+        <v-card-title class="d-flex align-center justify-center mb-3">
+          <v-icon color="#24b224" size="30">mdi-sync</v-icon>&nbsp;
+          <span class="custom-title">เปลี่ยนรหัสผ่าน</span>
+        </v-card-title>
         <v-card-text>
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
@@ -177,5 +180,9 @@ export default {
   justify-content: center;
   align-items: center;
   text-align: center;
+}
+
+.v-card-title .custom-title {
+  font-size: 1.5rem !important;
 }
 </style>

@@ -4,9 +4,9 @@
             <DetailChange :open="editStock" :data="editAllData" @update:edit="editStock = false" />
         </div>
         <v-card>
-            <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-bank-check</v-icon>
-                <span class="headline">สรุปหุ้น</span>
+            <v-card-title class="d-flex align-center justify-center">
+                <v-icon color="#ffc800" size="30">mdi-account-hard-hat</v-icon>&nbsp;
+                <span class="custom-title">สรุปหุ้น</span>
             </v-card-title>
 
             <v-card-text>
@@ -607,5 +607,9 @@ export default {
 
 .custom-list {
     padding: 0.4px 2px;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

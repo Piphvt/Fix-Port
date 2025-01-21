@@ -11,8 +11,9 @@
                 <DividendEdit :open="editDividend" :data="editAllData" @update:edit="editDividend = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-star</v-icon>
-                <span class="headline">เงินปันผล</span></v-card-title>
+                <v-icon justify="center" size="30" color="#85d7df">mdi-star</v-icon>&nbsp;
+                <span class="custom-title">เงินปันผล</span>
+            </v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="filteredDividends" item-value="no" item-key="no"
                     :items-per-page="5">
@@ -175,7 +176,6 @@ export default {
             if (this.currentAction === 'delete') {
                 try {
                     await this.$store.dispatch('api/dividend/deleteDividend', this.currentItem.no);
-                    this.recordLog();
                     this.modal.complete.message = 'ลบเงินปันผลนี้เรียบร้อยแล้ว';
                     this.modal.complete.open = true;
                 } catch (error) {
@@ -219,23 +219,6 @@ export default {
             const employee = this.employees.find(e => e.no === employeeNo);
             return employee ? employee.fname + ' ' + employee.lname : '';
         },
-
-        recordLog() {
-            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
-            const Employee_Email = this.$auth.user.email;
-            const Employee_Picture = this.$auth.user.picture;
-            const log = {
-                action: 'ลบเงินปันผลหุ้น',
-                name: this.getStockName(this.currentItem.stock_no),
-                detail: 'วันที่จ่ายเงินปันผล : ' + this.formatDateTime(this.currentItem.created_date) + '\nเงินปันผล : ' + this.currentItem.dividend,
-                type: 2,
-                employee_name: Employee_Name,
-                employee_email: Employee_Email,
-                employee_picture: Employee_Picture,
-                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
-        },
     }
 };
 </script>
@@ -251,5 +234,9 @@ export default {
 
 .icon-tab {
     font-size: 120% !important;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

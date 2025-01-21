@@ -716,7 +716,7 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('สรุปหุ้น');
+            const worksheet = workbook.addWorksheet('หุ้นที่กำลังเฝ้าทั้งหมด');
 
             const headers = this.filteredHeaders
                 .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'select')
@@ -739,6 +739,8 @@ export default {
                         rowData[header.value] = item.up_price.toLocaleString(2);
                     } else if (header.value === 'stock_no') {
                         rowData[header.value] = this.getStockName(item.stock_no);
+                    } else if (header.value === 'employee_no') {
+                        rowData[header.value] = this.getEmployeeName(item.employee_no);
                     } else if (header.value !== 'detail' && header.value !== 'action' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }
@@ -767,7 +769,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `หุ้นของลูกค้า-${currentDate}.xlsx`);
+                link.setAttribute('download', `หุ้นที่กำลังเฝ้า-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

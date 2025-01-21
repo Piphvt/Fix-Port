@@ -9,6 +9,7 @@
         <EmployeeForgotPassword :open="editPasswordDialog" :edit.sync="editPasswordDialog" :data="editPasswordData" />
         <EmployeeChangePicture :open="editUploadDialog" :edit.sync="editUploadDialog" :data="editUploadData" />
         <EmployeeNew v-model="EmployeeDataOpen" />
+        <EmployeeHistory :stockNo="selectedNo" v-model="LogDataOpen" />
 
         <v-card flat>
             <v-container>
@@ -136,7 +137,8 @@
                             color="#38b6ff">mdi-checkbox-multiple-marked</v-icon>
                     </template>
                     <v-list class="header-list">
-                        <v-list-item v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select' && header.value !== 'action')"
+                        <v-list-item
+                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select' && header.value !== 'action')"
                             :key="header.value" class="header-item">
                             <v-list-item-content>
                                 <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
@@ -207,7 +209,7 @@
                             </template>
                             <v-list class="custom-list">
                                 <v-list-item
-                                    v-if="$auth.user.rank_no !== 1 || item.rank_no !== 1 || $auth.user.rank_no == item.no"
+                                    v-if="$auth.user.rank_no !== 1 || item.rank_no !== 1"
                                     @click="openEditAllDialog(item)" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>
@@ -325,6 +327,9 @@ export default {
             selectedEmail: [],
             selectedPhone: [],
             selectedRank: [],
+
+            selectedNo: null,
+            LogDataOpen: false,
 
             EmployeeDataOpen: false,
 
@@ -459,6 +464,11 @@ export default {
     },
 
     methods: {
+        OpenLogData(No) {
+            this.selectedNo = No;
+            this.LogDataOpen = true;
+        },
+
         onImageError(event, item) {
             event.target.src = `${this.$config.API_URL}/file/default/${item.picture}`;
         },
@@ -708,7 +718,7 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('พนักงานทั้งหมด');
+            const worksheet = workbook.addWorksheet('สมาชิกทั้งหมด');
 
             const headers = this.filteredHeaders
                 .filter(header => header.value !== 'picture' && header.value !== 'detail')
@@ -759,7 +769,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ข้อมูลผู้ใช้งาน-${currentDate}.xlsx`);
+                link.setAttribute('download', `ข้อมูลสมาชิก-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

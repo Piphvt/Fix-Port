@@ -10,9 +10,10 @@
                 <PriceCreate :open="createDividendOpen" @update:open="createDividendOpen = false" />
                 <PriceEdit :open="editDividend" :data="editAllData" @update:edit="editDividend = false" />
             </div>
-            <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-bank</v-icon>
-                <span class="headline">ราคาปิด</span></v-card-title>
+            <v-card-title class="d-flex justify-center mb-3">
+                <v-icon justify="center" size="30" color="#24b224">mdi-cloud-plus</v-icon>&nbsp;
+                <span class="custom-title">เพิ่มราคาปิด</span>
+            </v-card-title>
             <v-card-text>
                 <v-data-table :headers="headers" :items="filteredPrices" item-value="no" item-key="no"
                     :items-per-page="5">
@@ -251,5 +252,9 @@ export default {
 
 .icon-tab {
     font-size: 120% !important;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

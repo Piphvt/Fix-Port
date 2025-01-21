@@ -9,9 +9,9 @@
             @cancel="showModalResult = false" @update:open="showModalResult = $event" />
 
         <v-card flat>
-            <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon color="#24b224">mdi-cash-plus</v-icon>&nbsp;
-                <h2 class="custom-title">เพิ่มการซื้อขายหุ้นของลูกค้า</h2>
+            <v-card-title class="d-flex justify-center mb-3">
+                <v-icon justify="center" size="30" color="#24b224">mdi-cash-plus</v-icon>&nbsp;
+                <span class="custom-title">เพิ่มการซื้อขายหุ้นของลูกค้า</span>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" lazy-validation>
@@ -519,7 +519,7 @@ export default {
     text-align: center;
 }
 
-.custom-title {
-    font-size: 1rem;
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

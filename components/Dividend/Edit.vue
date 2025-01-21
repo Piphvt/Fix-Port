@@ -10,7 +10,10 @@
         <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
             content-class="rounded-xl">
             <v-card class="rounded-xl">
-                <v-card-title class="card-title-center mb-3">แก้ไข</v-card-title>
+                <v-card-title class="d-flex align-center justify-center mb-3">
+                    <v-icon color="#ffc800" size="30">mdi-star-cog</v-icon>&nbsp;
+                    <span class="custom-title">แก้ไข</span>
+                </v-card-title>
                 <v-card-text>
                     <v-form ref="form" v-model="valid" lazy-validation>
                         <v-row>
@@ -189,7 +192,6 @@ export default {
                 this.formData.emp_id = this.$auth.user.no;
                 const req = await this.$store.dispatch('api/dividend/updateDividend', this.formData);
                 this.modal.complete.open = true;
-                this.recordLogUpdate();
             } catch (warning) {
                 this.modal.warning.open = true;
             }
@@ -230,28 +232,6 @@ export default {
             this.modal.confirm.open = false;
             this.updateData();
         },
-
-        recordLogUpdate() {
-            const changes = [];
-            if (this.formData.stock_no !== this.originalData.stock_no) {
-                changes.push('ชื่อ : ' + this.formData.stock_no + '\n');
-            }
-
-            if (this.formData.comment !== this.originalData.comment) {
-                changes.push('หมายเหตุ : ' + this.formData.comment + '\n');
-            }
-            const log = {
-                action_id: this.originalData.stock_no,
-                employee_name: this.$auth.user.fname + ' ' + this.$auth.user.lname,
-                employee_email: this.$auth.user.email,
-                employee_picture: this.$auth.user.picture || 'ไม่รู้จัก',
-                detail: changes.join(''),
-                type: 2,
-                action: 'แก้ไขข้อมูลหุ้น',
-                created_date: moment(new Date()).format('DD-MM-YYYY HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
-        },
     },
 };
 
@@ -275,5 +255,9 @@ export default {
 
 .v-btn {
     margin-top: 0px !important;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

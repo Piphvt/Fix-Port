@@ -2,9 +2,9 @@
     <v-dialog v-model="dialogOpen" persistent max-width="800px">
         <v-card>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#24b224">mdi-cash-register</v-icon>
-                <span class="headline">หุ้นที่ซื้อขายหุ้นของลูกค้า</span></v-card-title>
-            <v-card-text class="text-center">
+                <v-icon justify="center" size="30" color="#85d7df">mdi-cash-register</v-icon>&nbsp;
+                <span class="custom-title">หุ้นที่ซื้อขายหุ้นของลูกค้า</span></v-card-title>
+            <v-card-text class="custom-title">
                 <span v-if="stockData.length > 0 && stockData[0] && stockData[0][0]">
                     รหัสสมาชิก : {{ getCustomerByNo(stockData[0][0].customer_no)?.id }}
                 </span>
@@ -252,3 +252,9 @@ export default {
     }
 };
 </script>
+
+<style scoped>
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
+}
+</style>

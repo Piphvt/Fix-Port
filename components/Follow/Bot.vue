@@ -469,7 +469,7 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('สรุปหุ้นที่รอการตรวจสอบ');
+            const worksheet = workbook.addWorksheet('หุ้นที่รอการตรวจสอบทั้งหมด');
 
             const headers = this.headers.filter(header => header.value !== 'detail')
                 .map(header => ({
@@ -523,7 +523,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `สรุปหุ้นที่รอการตรวจสอบ-${currentDate}.xlsx`);
+                link.setAttribute('download', `หุ้นที่รอการตรวจสอบ-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

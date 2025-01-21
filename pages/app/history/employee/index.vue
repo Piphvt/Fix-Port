@@ -123,8 +123,8 @@
 
             <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
                 <template v-slot:activator="{ on }">
-                    <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
-                        color="#85d7df">mdi-playlist-check</v-icon>
+                    <v-icon v-on="on" class="tab-icon" style="font-size: 1.8rem;"
+                        color="#38b6ff">mdi-checkbox-multiple-marked</v-icon>
                 </template>
                 <v-list class="header-list">
                     <v-list-item
@@ -357,7 +357,7 @@ export default {
                 },
 
                 {
-                    text: 'ผู้ใช้งาน',
+                    text: 'สมาชิก',
                     value: 'name',
                     sortable: false,
                     align: 'center',
@@ -615,7 +615,7 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('ประวัติพนักงาน');
+            const worksheet = workbook.addWorksheet('ประวัติสมาชิก');
 
             const headers = this.filteredHeaders
                 .filter(header => header.value !== 'employee_picture' && header.value !== 'select' && header.value !== 'edit')
@@ -660,24 +660,11 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ประวัติพนักงาน-${currentDate}.xlsx`);
+                link.setAttribute('download', `ประวัติสมาชิก-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             });
-        },
-
-        maskNewData(data) {
-            if (!data) return '';
-
-            const length = data.length;
-            if (length <= 4) return data;
-
-            const firstPart = data.slice(0, 1);
-            const lastPart = data.slice(-1);
-            const maskedPart = '*'.repeat(length - 4)
-
-            return `${firstPart}${maskedPart}${lastPart}`;
         },
     },
 };

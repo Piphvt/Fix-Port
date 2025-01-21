@@ -123,8 +123,8 @@
 
             <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
                 <template v-slot:activator="{ on }">
-                    <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
-                        color="#85d7df">mdi-playlist-check</v-icon>
+                    <v-icon v-on="on" class="tab-icon" style="font-size: 1.8rem;"
+                        color="#38b6ff">mdi-checkbox-multiple-marked</v-icon>
                 </template>
                 <v-list class="header-list">
                     <v-list-item
@@ -208,7 +208,8 @@
                 </v-card-title>
                 <v-card-text
                     style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
-                    <div v-for="(line, index) in formattedDetailLines" :key="line + index" style="text-align: center; width: 100%;">
+                    <div v-for="(line, index) in formattedDetailLines" :key="line + index"
+                        style="text-align: center; width: 100%;">
                         <template v-if="line">
                             <div v-html="line ? highlightKeywords(line) : line"></div>
                         </template>
@@ -498,7 +499,7 @@ export default {
                 return '#ec29f0';
             } else if (action === 'ลูกค้า') {
                 return '#29f06b';
-            }else {
+            } else {
                 return 'inherit';
             }
         },
@@ -619,10 +620,10 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('ประวัติการซื้อขายหุ้น');
+            const worksheet = workbook.addWorksheet('ข้อมูลที่แก้ไขทั้งหมด');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'employee_picture')
+                .filter(header => header.value !== 'employee_picture' && header.value !== 'select' && header.value !== 'edit')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -636,7 +637,7 @@ export default {
                 this.filteredHeaders.forEach(header => {
                     if (header.value === 'created_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
-                    } else if (header.value !== 'employee_picture') {
+                    } else if (header.value !== 'employee_picture' && header.value !== 'select' && header.value !== 'edit') {
                         rowData[header.value] = item[header.value];
                     }
                 });
@@ -664,7 +665,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ประวัติการซื้อขายหุ้น-${currentDate}.xlsx`);
+                link.setAttribute('download', `ประวัติข้อมูลที่แก้ไข-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

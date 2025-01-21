@@ -11,9 +11,9 @@
                     :warning.sync="modal.warning.open" />
                 <DetailEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
             </div>
-            <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-piggy-bank</v-icon>
-                <span class="headline">หุ้นที่ขายหมดแล้ว</span>
+            <v-card-title class="d-flex align-center justify-center">
+                <v-icon color="#85d7df" size="30">mdi-piggy-bank</v-icon>&nbsp;
+                <span class="custom-title">หุ้นที่ขายหมดแล้ว</span>
             </v-card-title>
 
             <v-card-text>
@@ -493,7 +493,7 @@ export default {
                 },
 
                 {
-                    text: 'ชื่อหุ้นที่ติด',
+                    text: 'ชื่อหุ้น',
                     value: 'stock_no',
                     sortable: false,
                     align: 'center',
@@ -517,7 +517,7 @@ export default {
                 },
 
                 {
-                    text: 'ราคาที่ติด',
+                    text: 'ราคา',
                     value: 'price',
                     sortable: false,
                     align: 'center',
@@ -525,7 +525,7 @@ export default {
                 },
 
                 {
-                    text: 'จำนวนที่ติด',
+                    text: 'จำนวน',
                     value: 'amount',
                     sortable: false,
                     align: 'center',
@@ -1267,7 +1267,7 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
+            const worksheet = workbook.addWorksheet('หุ้นของลูกค้าที่ขายหมดแล้วทั้งหมด');
 
             const headers = this.filteredHeaders
                 .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'select')
@@ -1316,6 +1316,10 @@ export default {
                         rowData[header.value] = this.getPortText(item.total_percent).text;
                     } else if (header.value === 'employee_no') {
                         rowData[header.value] = this.getEmployeeByNo(item.employee_no).fname + ' ' + this.getEmployeeByNo(item.employee_no).lname;
+                    } else if (header.value === 'base_no') {
+                        rowData[header.value] = this.getBaseByNo(this.getCustomerByNo(item.customer_no).base_no).base;
+                    } else if (header.value === 'type_no') {
+                        rowData[header.value] = this.getTypeByNo(this.getCustomerByNo(item.customer_no).type_no).type;
                     } else if (header.value !== 'detail' && header.value !== 'action' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }
@@ -1344,7 +1348,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ข้อมูลหุ้นของลูกค้าที่ขายหมดแล้ว-${currentDate}.xlsx`);
+                link.setAttribute('download', `หุ้นของลูกค้าที่ขายหมดแล้ว-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -1531,5 +1535,9 @@ export default {
 
 .custom-list {
     padding: 0.4px 2px;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

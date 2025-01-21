@@ -13,8 +13,8 @@
                     :dialogOpen.sync="dialogOpen" :date="date" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-cash-register</v-icon>
-                <span class="headline">สรุปผลการซื้อขายหุ้นของลูกค้า</span>
+                <v-icon justify="center" size="30" color="#ffc800">mdi-cash-register</v-icon>&nbsp;
+                <span class="custom-title">สรุปผลการซื้อขายหุ้นของลูกค้า</span>
             </v-card-title>
 
             <v-card-text>
@@ -1467,5 +1467,9 @@ export default {
 
 .custom-list {
     padding: 0.4px 2px;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

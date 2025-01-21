@@ -10,7 +10,10 @@
         <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
             content-class="rounded-xl">
             <v-card class="rounded-xl">
-                <v-card-title class="card-title-center mb-3">แก้ไข</v-card-title>
+                <v-card-title class="d-flex align-center justify-center mb-3">
+                    <v-icon color="#ffc800" size="30">mdi-archive-edit</v-icon>&nbsp;
+                    <span class="custom-title">แก้ไข</span>
+                </v-card-title>
                 <v-card-text>
                     <v-form ref="form" v-model="valid" lazy-validation>
                         <v-row>
@@ -276,5 +279,9 @@ export default {
 
 .v-btn {
     margin-top: 0px !important;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

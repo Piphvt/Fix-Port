@@ -6,9 +6,9 @@
         <ModalConfirm :open="modal.confirm.open" :confirm.sync="modal.confirm.open" :method="submitForm" />
 
         <v-card class="custom-card" flat>
-            <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon color="#24b224">mdi-bank-plus</v-icon>&nbsp;
-                <h3 class="custom-title">เพิ่มราคาปิด</h3>
+            <v-card-title class="d-flex justify-center mb-3">
+                <v-icon justify="center" size="30" color="#24b224">mdi-cloud-plus</v-icon>&nbsp;
+                <span class="custom-title">เพิ่มราคาปิด</span>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" v-model="isFormValid" lazy-validation>
@@ -194,8 +194,8 @@ export default {
 </script>
 
 <style scoped>
-.custom-title {
-    font-size: 1rem;
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 
 .card-title-center {

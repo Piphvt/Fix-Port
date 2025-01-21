@@ -989,10 +989,10 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
+            const worksheet = workbook.addWorksheet('การซื้อขายหุ้นของลูกค้าทั้งหมด');
 
             const headers = this.filteredHeaders
-                .filter(header => header.value !== 'detail' && header.value !== 'action')
+                .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'select')
                 .map(header => ({
                     header: header.text,
                     key: header.value,
@@ -1026,7 +1026,7 @@ export default {
                         rowData[header.value] = this.getCustomerByNo(item.customer_no).nickname;
                     } else if (header.value === 'employee_no') {
                         rowData[header.value] = this.getEmployeeByNo(item.employee_no).fname + ' ' + this.getEmployeeByNo(item.employee_no).lname;
-                    } else if (header.value !== 'detail' && header.value !== 'action') {
+                    } else if (header.value !== 'detail' && header.value !== 'action' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }
                 });
@@ -1054,7 +1054,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ข้อมูลการซื้อขายหุ้นของลูกค้า-${currentDate}.xlsx`);
+                link.setAttribute('download', `การซื้อขายหุ้นของลูกค้า-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -1216,7 +1216,7 @@ export default {
 }
 
 .header-item {
-    flex: 1 0 12%;
+    flex: 1 0 20%;
     box-sizing: border-box;
 }
 

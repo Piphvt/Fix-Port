@@ -10,7 +10,10 @@
     <v-dialog persistent :retain-focus="false" v-model="open" v-if="data" max-width="400" max-height="300"
       content-class="rounded-xl">
       <v-card class="rounded-xl">
-        <v-card-title class="card-title-center mb-3">แก้ไข</v-card-title>
+        <v-card-title class="d-flex align-center justify-center mb-3">
+          <v-icon color="#ffc800" size="30">mdi-account-edit</v-icon>&nbsp;
+          <span class="custom-title">แก้ไขข้อมูลสมาชิก</span>
+        </v-card-title>
         <v-card-text>
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
@@ -27,8 +30,8 @@
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-text-field v-model="formData.email" label="อีเมล" type="text" dense
-                  outlined :rules="validateUserRules(formData)" />
+                <v-text-field v-model="formData.email" label="อีเมล" type="text" dense outlined
+                  :rules="validateUserRules(formData)" />
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
@@ -66,7 +69,7 @@
           </v-form>
           <v-card-actions class="card-title-center pa-0">
             <v-btn @click="confirm"
-              :disabled="!valid || !hasChanges || !formData.fname || !formData.lname || !formData.phone || !formData.email || !formData.rank_no || !formData.status"
+              :disabled="!valid || !hasChanges"
               depressed color="#24b224" class="font-weight-medium mr-2">
               บันทึก
             </v-btn>
@@ -160,7 +163,7 @@ export default {
   methods: {
     validateUserRules(formData) {
       return [
-        (v) => !!v || 'โปรดกรอกอีเมล', 
+        (v) => !!v || 'โปรดกรอกอีเมล',
         (v) => /.+@.+\..+/.test(v) || 'โปรดกรอกอีเมลที่ถูกต้อง',
         (v) => {
           if (formData.email.toLowerCase() === this.originalData.email.toLowerCase()) {
@@ -377,25 +380,25 @@ export default {
       const Employee_Picture = this.$auth.user.picture;
       const changes = [];
       if (this.formData.fname !== this.originalData.fname) {
-        changes.push('ชื่อเล่น จาก : ' + this.originalData.fname + ' เป็น : '+ this.formData.fname + '\n');
+        changes.push('ชื่อเล่น จาก : ' + this.originalData.fname + ' เป็น : ' + this.formData.fname + '\n');
       }
       if (this.formData.lname !== this.originalData.lname) {
-        changes.push('ชื่อ จาก : ' + this.originalData.lname + ' เป็น : '+ this.formData.lname + '\n');
+        changes.push('ชื่อ จาก : ' + this.originalData.lname + ' เป็น : ' + this.formData.lname + '\n');
       }
       if (this.formData.phone !== this.originalData.phone) {
-        changes.push('เบอร์โทรศัพท์ จาก : ' + this.originalData.phone + ' เป็น : '+ this.formData.phone + '\n');
+        changes.push('เบอร์โทรศัพท์ จาก : ' + this.originalData.phone + ' เป็น : ' + this.formData.phone + '\n');
       }
       if (this.formData.gender !== this.originalData.gender) {
-        changes.push('เพศ จาก : ' + this.originalData.gender + ' เป็น : '+ this.formData.gender + '\n');
+        changes.push('เพศ จาก : ' + this.originalData.gender + ' เป็น : ' + this.formData.gender + '\n');
       }
       if (this.formData.email !== this.originalData.email) {
-        changes.push('อีเมล จาก : ' + this.originalData.email + ' เป็น : '+ this.formData.email + '\n');
+        changes.push('อีเมล จาก : ' + this.originalData.email + ' เป็น : ' + this.formData.email + '\n');
       }
 
       const rankText = this.getRankName(this.formData.rank_no);
       const originalRankText = this.getRankName(this.originalData.rank_no);
       if (rankText !== originalRankText) {
-        changes.push('ตำแหน่ง จาก : ' + rankText + ' เป็น : '+ originalRankText + '\n');
+        changes.push('ตำแหน่ง จาก : ' + rankText + ' เป็น : ' + originalRankText + '\n');
       }
 
       const log = {
@@ -433,5 +436,9 @@ export default {
 
 .v-btn {
   margin-top: 0px !important;
+}
+
+.v-card-title .custom-title {
+  font-size: 1.5rem !important;
 }
 </style>

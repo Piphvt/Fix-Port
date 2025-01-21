@@ -619,7 +619,7 @@ export default {
                 },
 
                 {
-                    text: 'ชื่อหุ้นที่ติด',
+                    text: 'ชื่อหุ้น',
                     value: 'stock_no',
                     sortable: false,
                     align: 'center',
@@ -643,7 +643,7 @@ export default {
                 },
 
                 {
-                    text: 'ราคาที่ติด',
+                    text: 'ราคา',
                     value: 'price',
                     sortable: false,
                     align: 'center',
@@ -651,7 +651,7 @@ export default {
                 },
 
                 {
-                    text: 'จำนวนที่ติด',
+                    text: 'จำนวน',
                     value: 'amount',
                     sortable: false,
                     align: 'center',
@@ -1403,7 +1403,7 @@ export default {
 
         exportExcel() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sheet1');
+            const worksheet = workbook.addWorksheet('หุ้นของลูกค้าทั้งหมด');
 
             const headers = this.filteredHeaders
                 .filter(header => header.value !== 'detail' && header.value !== 'action' && header.value !== 'select')
@@ -1452,6 +1452,10 @@ export default {
                         rowData[header.value] = this.getPortText(item.total_percent).text;
                     } else if (header.value === 'employee_no') {
                         rowData[header.value] = this.getEmployeeByNo(item.employee_no).fname + ' ' + this.getEmployeeByNo(item.employee_no).lname;
+                    } else if (header.value === 'base_no') {
+                        rowData[header.value] = this.getBaseByNo(this.getCustomerByNo(item.customer_no).base_no).base;
+                    } else if (header.value === 'type_no') {
+                        rowData[header.value] = this.getTypeByNo(this.getCustomerByNo(item.customer_no).type_no).type;
                     } else if (header.value !== 'detail' && header.value !== 'action' && header.value !== 'select') {
                         rowData[header.value] = item[header.value];
                     }
@@ -1480,7 +1484,7 @@ export default {
                 const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', `ข้อมูลหุ้นของลูกค้า-${currentDate}.xlsx`);
+                link.setAttribute('download', `หุ้นของลูกค้า-${currentDate}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

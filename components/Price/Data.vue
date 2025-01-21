@@ -11,13 +11,13 @@
                 <PriceEdit :open="editDividend" :data="editAllData" @update:edit="editDividend = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="30" color="#ffffff">mdi-bank</v-icon>
+                <v-icon justify="center" class="mr-3" size="30" color="#ffffff">mdi-cloud</v-icon>
                 <span class="custom-title">ราคาปิด</span></v-card-title>
             <v-card-text>
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                     <v-icon left color="#24b224" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
                         @click="createDividendOpen = true"
-                        style="font-size: 1.5rem; margin-left: auto;">mdi-bank-plus</v-icon>
+                        style="font-size: 1.5rem; margin-left: auto;">mdi-cloud-plus</v-icon>
                 </div>
                 <v-data-table :headers="headers" :items="filteredPrices" item-value="no" item-key="no"
                     :items-per-page="5">

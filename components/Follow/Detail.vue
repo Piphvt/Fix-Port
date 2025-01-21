@@ -12,7 +12,7 @@
                 <DetailEdit :open="editAllDialog" :data="editAllData" @update:edit="editAllDialog = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-bank</v-icon>
+                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-wallet</v-icon>
                 <span class="headline">หุ้นของลูกค้า</span>
             </v-card-title>
 
