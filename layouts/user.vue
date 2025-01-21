@@ -31,7 +31,7 @@
             <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="goToEmpManagement"
               class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
-                <v-icon class="icon-tab">mdi-home-account</v-icon>
+                <v-icon class="icon-tab">mdi-home</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
                 <v-list-item-title style="font-size: 0.8rem;">สมาชิก</v-list-item-title>

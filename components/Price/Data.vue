@@ -11,14 +11,13 @@
                 <PriceEdit :open="editDividend" :data="editAllData" @update:edit="editDividend = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-wallet</v-icon>
-                <span class="headline">ราคาปิด</span></v-card-title>
+                <v-icon justify="center" class="mr-3" size="30" color="#ffffff">mdi-star</v-icon>
+                <span class="custom-title">ราคาปิด</span></v-card-title>
             <v-card-text>
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="createDividendOpen = true" style="font-size: 1.5 rem; margin-left: auto;"
-                        color="#24b224">
-                        <v-icon left>mdi-wallet-plus</v-icon> เพิ่ม
-                    </v-btn>
+                    <v-icon left color="#24b224" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                        @click="createDividendOpen = true"
+                        style="font-size: 1.5rem; margin-left: auto;">mdi-star-plus</v-icon>
                 </div>
                 <v-data-table :headers="headers" :items="filteredPrices" item-value="no" item-key="no"
                     :items-per-page="5">
@@ -161,7 +160,7 @@ export default {
             this.filterPrices();
         }
     },
-    
+
 
     async mounted() {
         await this.fetchPriceData();
@@ -254,7 +253,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .custom-list-item {
     padding: 0.1px 8px;
 }
@@ -265,5 +264,9 @@ export default {
 
 .icon-tab {
     font-size: 120% !important;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

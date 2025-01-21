@@ -11,14 +11,13 @@
                 <SetEdit :open="editSet" :data="editAllData" @update:edit="editSet = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-archive-settings</v-icon>
-                <span class="headline">ประเภทหุ้น</span>
+                <v-icon justify="center" class="mr-3" size="30" color="#85d7df">mdi-archive-settings</v-icon>
+                <span class="custom-title">ประเภทหุ้น</span>
             </v-card-title>
             <v-card-text>
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                    <v-btn @click="createSetOpen = true" style="font-size: 1.5 rem; margin-left: auto;" color="#24b224">
-                        <v-icon left>mdi-archive-plus</v-icon> เพิ่ม
-                    </v-btn>
+                    <v-icon left color="#24b224" @click="createSetOpen = true"
+                        style="font-size: 1.5rem; margin-left: auto;">mdi-archive-plus</v-icon>
                 </div>
                 <v-data-table :headers="headers" :items="sets" item-value="no" item-key="no" :items-per-page="5">
                     <template v-slot:item.set="{ item }">
@@ -199,7 +198,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .custom-list-item {
     padding: 0.1px 8px;
 }
@@ -210,5 +209,9 @@ export default {
 
 .icon-tab {
     font-size: 120% !important;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

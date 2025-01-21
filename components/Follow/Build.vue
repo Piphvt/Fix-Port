@@ -3,16 +3,17 @@
         <ModalComplete :open="modal.complete.open" :message="modal.complete.message"
             :complete.sync="modal.complete.open" :method="goBack" />
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
-        <FollowResult :open="showModalResult" :stocks="withdrawalItems" :stock_no="data.stock_no" @confirm="confirmAndAddCustomers"
-            @cancel="showModalResult = false" @update:open="showModalResult = $event" />
+        <FollowResult :open="showModalResult" :stocks="withdrawalItems" :stock_no="data.stock_no"
+            @confirm="confirmAndAddCustomers" @cancel="showModalResult = false"
+            @update:open="showModalResult = $event" />
 
         <v-card flat>
             <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon color="#24b224">mdi-archive-star</v-icon>&nbsp;
-                <h2 class="custom-title">
+                <v-icon justify="center" class="mr-3" size="30" color="#24b224">mdi-archive-star</v-icon>&nbsp;
+                <span class="custom-title">
                     {{ data && data.stock_no ? `เพิ่มการเฝ้าหุ้น ${getStockName(data.stock_no)}` :
-                    'เพิ่มการเฝ้าหุ้นใหม่' }}
-                </h2>
+                        'เพิ่มการเฝ้าหุ้นใหม่' }}
+                </span>
 
             </v-card-title>
             <v-card-text>
@@ -226,7 +227,7 @@ export default {
     text-align: center;
 }
 
-.custom-title {
-    font-size: 1rem;
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

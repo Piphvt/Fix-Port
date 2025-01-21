@@ -11,8 +11,8 @@
                 <FollowDetail :open="DetailDataOpen" :data="DetailData" @update:edit="DetailDataOpen = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-archive-alert</v-icon>
-                <span class="headline">หุ้นที่ถึงเป้าแล้ว</span>
+                <v-icon justify="center" class="mr-3" size="30" color="#85d7df">mdi-archive-alert</v-icon>
+                <span class="custom-title">หุ้นที่ถึงเป้าแล้ว</span>
             </v-card-title>
             <v-container>
                 <v-row justify="center" align="center">
@@ -724,5 +724,9 @@ export default {
 
 .custom-list {
     padding: 0.4px 2px;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

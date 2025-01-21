@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="dialog" max-width="1200px">
+    <v-dialog v-model="dialog" max-width="1000px">
         <v-card>
             <div>
                 <ModalConfirm :method="handleConfirm" :open="modalConfirmOpen"
@@ -141,7 +141,7 @@
                                 </v-btn>
 
                                 <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
-                                @click="exportExcel" icon><v-icon>mdi-file-excel</v-icon></v-btn>
+                                    @click="exportExcel" icon><v-icon>mdi-file-excel</v-icon></v-btn>
                             </div>
                         </v-col>
                     </v-row>
@@ -150,8 +150,8 @@
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                     <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
                         <template v-slot:activator="{ on }">
-                            <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
-                                color="#85d7df">mdi-playlist-check</v-icon>
+                            <v-icon v-on="on" class="tab-icon" style="font-size: 1.8rem;"
+                                color="#38b6ff">mdi-checkbox-multiple-marked</v-icon>
                         </template>
                         <v-list class="header-list">
                             <v-list-item
@@ -250,8 +250,7 @@
                                             <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                         </v-list-item>
 
-                                        <v-list-item
-                                            v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                        <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
                                             @click="toggleSelectItems" class="custom-list-item">
                                             <v-list-item-icon style="margin-right: 4px;">
                                                 <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>

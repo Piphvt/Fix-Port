@@ -115,7 +115,8 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -126,11 +127,11 @@
             <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                 <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
                     <template v-slot:activator="{ on }">
-                        <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
-                            color="#85d7df">mdi-playlist-check</v-icon>
+                        <v-icon v-on="on" class="tab-icon" style="font-size: 1.8rem;"
+                            color="#38b6ff">mdi-checkbox-multiple-marked</v-icon>
                     </template>
                     <v-list class="header-list">
-                        <v-list-item v-for="header in headers.filter(header => header.value !== 'detail')"
+                        <v-list-item v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select' && header.value !== 'action')"
                             :key="header.value" class="header-item">
                             <v-list-item-content>
                                 <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
@@ -139,10 +140,8 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn @click="CustomerCreateOpen = true" class="tab-icon-two"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-account-plus</v-icon> เพิ่ม
-                    </v-btn>
+                    <v-icon @click="CustomerCreateOpen = true" class="tab-icon-two"
+                        style="font-size: 1.8rem; margin-left: auto;" left color="#24b224">mdi-account-plus</v-icon>
                 </div>
             </div>
 
@@ -191,8 +190,7 @@
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item
-                                    v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
                                     @click="toggleSelectItems" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
@@ -803,7 +801,7 @@ export default {
 }
 
 .little-icon {
-    font-size: 3rem;
+    font-size: 2.5rem;
     margin-right: 8px;
     margin-left: 8px;
 }

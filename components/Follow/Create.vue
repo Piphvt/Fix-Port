@@ -8,8 +8,8 @@
 
         <v-card flat>
             <v-card-title class="d-flex align-center justify-center mb-3">
-                <v-icon color="#24b224">mdi-archive-star</v-icon>&nbsp;
-                <h2 class="custom-title">การเฝ้าหุ้นใหม่</h2>
+                <v-icon justify="center" class="mr-3" size="30" color="#24b224">mdi-archive-star</v-icon>
+                <span class="custom-title">เพิ่มการเฝ้าหุ้น</span>
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" lazy-validation>
@@ -223,7 +223,7 @@ export default {
     text-align: center;
 }
 
-.custom-title {
-    font-size: 1rem;
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

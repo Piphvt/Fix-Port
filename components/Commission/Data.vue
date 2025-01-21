@@ -11,14 +11,13 @@
                 <CommissionEdit :open="editCommission" :data="editAllData" @update:edit="editCommission = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#85d7df">mdi-credit-card</v-icon>
-                <span class="headline">ค่าธรรมเนียม</span>
+                <v-icon justify="center" class="mr-3" size="30" color="#85d7df">mdi-credit-card</v-icon>
+                <span class="custom-title">ค่าธรรมเนียม</span>
             </v-card-title>
             <v-card-text>
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                    <v-btn @click="createCommissionOpen = true" style="font-size: 1.5 rem; margin-left: auto;" color="#24b224">
-                        <v-icon left>mdi-credit-card-plus</v-icon> เพิ่ม
-                    </v-btn>
+                    <v-icon left color="#24b224" @click="createCommissionOpen = true"
+                        style="font-size: 1.5rem; margin-left: auto;">mdi-credit-card-plus</v-icon>
                 </div>
                 <v-data-table :headers="headers" :items="commissions" item-value="no" item-key="no" :items-per-page="5">
                     <template v-slot:item.employee_no="{ item }">
@@ -43,7 +42,8 @@
                                         </v-list-item-icon>
                                         <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                     </v-list-item>
-                                    <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="showConfirmDialog('delete', item)" class="custom-list-item">
+                                    <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                        @click="showConfirmDialog('delete', item)" class="custom-list-item">
                                         <v-list-item-icon style="margin-right: 4px;">
                                             <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
                                         </v-list-item-icon>
@@ -177,7 +177,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .custom-list-item {
     padding: 0.1px 8px;
 }
@@ -188,5 +188,9 @@ export default {
 
 .icon-tab {
     font-size: 120% !important;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>

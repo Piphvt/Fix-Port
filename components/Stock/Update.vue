@@ -16,16 +16,37 @@
             </v-card-title>
             <v-card-text>
                 <v-form ref="form" lazy-validation>
-                    <v-row justify="center" align="center">
+                    <v-row justify="end" align="center">
                         <v-col cols="auto">
-                            <v-btn color="#ffc800" @click="fetchClosePriceData"
-                                :disabled="isLoadingClosePrice || csvData.length > 0" class="mr-2">
-                                <v-icon>mdi-upload</v-icon>ราคาปิด
-                            </v-btn>
-                            <v-btn color="#38b6ff" @click="fetchDividendYieldData"
-                                :disabled="isLoadingDividendYield || csvData.length > 0" class="mr-2">
-                                <v-icon>mdi-upload</v-icon>เงินปันผล
-                            </v-btn>
+                            <v-menu bottom right :offset-y="true" :nudge-top="8" :nudge-right="8" class="user-menu">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-icon text v-bind="attrs" v-on="on" rounded class="icon-host"
+                                        color="#38b6ff">mdi-upload</v-icon>
+                                </template>
+
+                                <v-list class="custom-list">
+                                    <v-list-item @click="fetchClosePriceData"
+                                        :disabled="isLoadingClosePrice || csvData.length > 0" class="custom-list-item">
+                                        <v-list-item-icon style="margin-right: 5px;">
+                                            <v-icon class="icon-tab" color="#ffc800">mdi-wallet</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content>
+                                            <v-list-item-title style="font-size: 0.8rem;">ราคาปิด</v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+
+                                    <v-list-item @click="fetchDividendYieldData"
+                                        :disabled="isLoadingDividendYield || csvData.length > 0"
+                                        class="custom-list-item">
+                                        <v-list-item-icon style="margin-right: 5px;">
+                                            <v-icon class="icon-tab" color="#85d7df">mdi-basket</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content>
+                                            <v-list-item-title style="font-size: 0.8rem;">เงินปันผล</v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
                         </v-col>
                     </v-row>
                     <v-row>

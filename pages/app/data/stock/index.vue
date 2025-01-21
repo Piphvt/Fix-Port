@@ -124,7 +124,8 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -135,12 +136,12 @@
             <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                 <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
                     <template v-slot:activator="{ on }">
-                        <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
-                            color="#85d7df">mdi-playlist-check</v-icon>
+                        <v-icon v-on="on" class="tab-icon" style="font-size: 1.8rem;"
+                            color="#38b6ff">mdi-checkbox-multiple-marked</v-icon>
                     </template>
                     <v-list class="header-list">
                         <v-list-item
-                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select')"
+                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select' && header.value !== 'action')"
                             :key="header.value" class="header-item">
                             <v-list-item-content>
                                 <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
@@ -149,18 +150,43 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="StockUpdateOpen = true" class="tab-icon-three"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-archive-arrow-up</v-icon> อัพเดท
-                    </v-btn>
-                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="SetDataOpen = true" class="tab-icon-three"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-archive-settings</v-icon> ประเภท
-                    </v-btn>
-                    <v-btn @click="StockCreateOpen = true" class="tab-icon-two"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-archive-plus</v-icon> เพิ่ม
-                    </v-btn>
+                    <v-menu bottom right :offset-y="true" :nudge-top="8" :nudge-right="8" class="user-menu">
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon text v-bind="attrs" v-on="on" rounded class="tab-icon-two" color="#ded30b"
+                                style="font-size: 1.8rem;">mdi-list-box</v-icon>
+                        </template>
+
+                        <v-list class="custom-list">
+                            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                @click="StockUpdateOpen = true" class="custom-list-item">
+                                <v-list-item-icon style="margin-right: 5px;">
+                                    <v-icon class="icon-tab" color="#ffc800">mdi-archive-arrow-up</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title style="font-size: 0.8rem;">อัพเดท</v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+
+                            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                @click="SetDataOpen = true" class="custom-list-item">
+                                <v-list-item-icon style="margin-right: 5px;">
+                                    <v-icon class="icon-tab" color="#85d7df">mdi-archive-settings</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title style="font-size: 0.8rem;">ประเภท</v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+
+                            <v-list-item @click="StockCreateOpen = true" class="custom-list-item">
+                                <v-list-item-icon style="margin-right: 5px;">
+                                    <v-icon class="icon-tab" color="#24b224">mdi-archive-plus</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title style="font-size: 0.8rem;">เพิ่ม</v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
                 </div>
             </div>
 
@@ -192,14 +218,12 @@
                 </template>
                 <template v-slot:item.dividend_amount="{ item }">
                     <div class="text-center">
-                        {{ item.dividend + ' ' }}
-                        <v-icon color="#85d7df" @click="OpenDividendData(item.no)">mdi-eye</v-icon>
+                        {{ item.dividend }}
                     </div>
                 </template>
                 <template v-slot:item.closing_price="{ item }">
                     <div class="text-center">
-                        {{ item.price + ' ' }}
-                        <v-icon color="#85d7df" @click="OpenPriceData(item.no)">mdi-eye</v-icon>
+                        {{ item.price }}
                     </div>
                 </template>
                 <template v-slot:item.detail="{ item }">
@@ -216,7 +240,24 @@
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="toggleSelectItems" class="custom-list-item">
+                                <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                    @click="OpenPriceData(item.no)" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#ffffff">mdi-star-circle</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content style="font-size: 0.8rem;">ราคาปิด</v-list-item-content>
+                                </v-list-item>
+
+                                <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                    @click="OpenDividendData(item.no)" class="custom-list-item">
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#38b6ff">mdi-cloud-circle</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content style="font-size: 0.8rem;">เงินปันผล</v-list-item-content>
+                                </v-list-item>
+
+                                <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                    @click="toggleSelectItems" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#e50211">mdi-delete-circle</v-icon>
                                     </v-list-item-icon>
@@ -857,7 +898,7 @@ export default {
                 action: 'หุ้น',
                 name: this.currentItem.stock,
                 detail: `ประเภท : ${this.getSetName(this.currentItem.set_no) || 'ยังไม่ระบุ'}\n` +
-                    `หมายเหตุ : ${this.currentItem.comment}'}\n`+
+                    `หมายเหตุ : ${this.currentItem.comment}'}\n` +
                     `ผู้ติดตามหุ้น : ${this.getEmployeeName(this.currentItem.staff_no)}\n`,
                 type: 1,
                 employee_name: Employee_Name,
@@ -914,7 +955,7 @@ export default {
 }
 
 .little-icon {
-    font-size: 3rem;
+    font-size: 2.5rem;
     margin-right: 8px;
     margin-left: 8px;
 }

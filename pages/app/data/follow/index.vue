@@ -113,7 +113,8 @@
                                 <v-icon class="small-icon ">mdi-plus</v-icon>
                             </v-btn>
 
-                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3" @click="exportExcel" icon>
+                            <v-btn color="success" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3"
+                                @click="exportExcel" icon>
                                 <v-icon>mdi-file-excel</v-icon>
                             </v-btn>
                         </div>
@@ -124,12 +125,12 @@
             <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                 <v-menu v-model="showColumnSelector" offset-y offset-x :close-on-content-click="false">
                     <template v-slot:activator="{ on }">
-                        <v-icon v-on="on" class="tab-icon" style="font-size: 2rem;"
-                            color="#85d7df">mdi-playlist-check</v-icon>
+                        <v-icon v-on="on" class="tab-icon" style="font-size: 1.8rem;"
+                            color="#38b6ff">mdi-checkbox-multiple-marked</v-icon>
                     </template>
                     <v-list class="header-list">
                         <v-list-item
-                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select')"
+                            v-for="header in headers.filter(header => header.value !== 'detail' && header.value !== 'select' && header.value !== 'action')"
                             :key="header.value" class="header-item">
                             <v-list-item-content>
                                 <v-checkbox v-model="visibleColumns" :value="header.value" :label="header.text" />
@@ -138,22 +139,53 @@
                     </v-list>
                 </v-menu>
                 <div>
-                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 4" @click="FollowStockDataOpen = true" class="tab-icon-three"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#ffc800">mdi-account-cowboy-hat</v-icon> สรุปหุ้น
-                    </v-btn>
-                    <v-btn @click="FollowBotDataOpen = true" class="tab-icon-three"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-archive-edit</v-icon> รอการตรวจสอบ
-                    </v-btn>
-                    <v-btn @click="FollowReachDataOpen = true" class="tab-icon-three"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#85d7df">mdi-archive-alert</v-icon> ถึงเป้าแล้ว
-                    </v-btn>
-                    <v-btn v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4" @click="FollowCreateOpen = true" class="tab-icon-two"
-                        style="font-size: 1.5 rem; margin-left: auto;">
-                        <v-icon left color="#24b224">mdi-archive-star</v-icon> เพิ่ม
-                    </v-btn>
+                    <v-menu bottom right :offset-y="true" :nudge-top="8" :nudge-right="8" class="user-menu">
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-icon text v-bind="attrs" v-on="on" rounded class="tab-icon-two" color="#ded30b"
+                                style="font-size: 1.8rem;">mdi-list-box</v-icon>
+                        </template>
+
+                        <v-list class="custom-list">
+                            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 4"
+                                @click="FollowStockDataOpen = true" class="custom-list-item">
+                                <v-list-item-icon style="margin-right: 5px;">
+                                    <v-icon class="icon-tab" color="#e81e51">mdi-account-cowboy-hat</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title style="font-size: 0.8rem;">สรุปหุ้น</v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+
+                            <v-list-item @click="FollowBotDataOpen = true" class="custom-list-item">
+                                <v-list-item-icon style="margin-right: 5px;">
+                                    <v-icon class="icon-tab" color="#ffc800">mdi-archive-edit</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title style="font-size: 0.8rem;">รอการตรวจสอบ</v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+
+                            <v-list-item @click="FollowReachDataOpen = true" class="custom-list-item">
+                                <v-list-item-icon style="margin-right: 5px;">
+                                    <v-icon class="icon-tab" color="#85d7df">mdi-archive-alert</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title style="font-size: 0.8rem;">ถึงเป้าแล้ว</v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+
+                            <v-list-item
+                                v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4"
+                                @click="FollowCreateOpen = true" class="custom-list-item">
+                                <v-list-item-icon style="margin-right: 5px;">
+                                    <v-icon class="icon-tab" color="#24b224">mdi-archive-star</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title style="font-size: 0.8rem;">เพิ่ม</v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
                 </div>
             </div>
 
@@ -195,11 +227,11 @@
                                 </v-list-item>
 
                                 <v-list-item @click="showConfirmDialog('waiting', item)" class="custom-list-item">
-                                        <v-list-item-icon style="margin-right: 4px;">
-                                            <v-icon class="icon-tab" color="#38b6ff">mdi-reply-circle</v-icon>
-                                        </v-list-item-icon>
-                                        <v-list-item-content style="font-size: 0.8rem;">รอการตรวจสอบ</v-list-item-content>
-                                    </v-list-item>
+                                    <v-list-item-icon style="margin-right: 4px;">
+                                        <v-icon class="icon-tab" color="#38b6ff">mdi-reply-circle</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content style="font-size: 0.8rem;">รอการตรวจสอบ</v-list-item-content>
+                                </v-list-item>
 
                                 <v-list-item @click="toggleSelectItems" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
@@ -814,7 +846,7 @@ export default {
 }
 
 .little-icon {
-    font-size: 3rem;
+    font-size: 2.5rem;
     margin-right: 8px;
     margin-left: 8px;
 }

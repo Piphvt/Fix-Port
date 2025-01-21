@@ -5,8 +5,8 @@
                 <FollowBuild :open="DetailDataOpen" :data="DetailData" @update:edit="DetailDataOpen = false" />
             </div>
             <v-card-title class="d-flex justify-center">
-                <v-icon justify="center" class="mr-3" size="40" color="#ffc800">mdi-account-cowboy-hat</v-icon>
-                <span class="headline">สรุปหุ้น</span>
+                <v-icon justify="center" class="mr-3" size="30" color="#e81e51">mdi-account-cowboy-hat</v-icon>
+                <span class="custom-title">สรุปหุ้น</span>
             </v-card-title>
 
             <v-card-text>
@@ -486,5 +486,9 @@ export default {
 
 .custom-list {
     padding: 0.4px 2px;
+}
+
+.v-card-title .custom-title {
+    font-size: 1.5rem !important;
 }
 </style>
