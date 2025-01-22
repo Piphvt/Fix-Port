@@ -7,7 +7,7 @@
       <PriceWidget :stockNo="selectedStockNo" v-model="PriceDataOpen" />
     </div>
     <v-container class="fill-height" fluid justify="center" align="center">
-      <v-row justify="space-evenly">
+      <v-row justify="center">
         <v-col cols="12" sm="6" md="4" lg="6">
           <v-card>
             <v-card-title class="d-flex justify-center">

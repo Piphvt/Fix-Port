@@ -11,7 +11,7 @@
                 <StockDividendYield :open.sync="isLoadingDividendYield" @cancel-fetch="cancelFetchDividendYieldData" />
             </div>
             <v-card-title class="d-flex align-center justify-center">
-                <v-icon color="#ffc800" size="30">mdi-archive-arrow-up</v-icon>&nbsp;
+                <v-icon color="#24b224" size="30">mdi-archive-arrow-up</v-icon>&nbsp;
                 <span class="custom-title">อัพเดทหุ้น</span>
             </v-card-title>
             <v-card-text>
@@ -43,17 +43,6 @@
                                         </v-list-item-icon>
                                         <v-list-item-content>
                                             <v-list-item-title style="font-size: 0.8rem;">อัพเดทเงินปันผล</v-list-item-title>
-                                        </v-list-item-content>
-                                    </v-list-item>
-
-                                    <v-list-item @click="fetchDividendYieldData"
-                                        :disabled="isLoadingDividendYield || csvData.length > 0"
-                                        class="custom-list-item">
-                                        <v-list-item-icon style="margin-right: 5px;">
-                                            <v-icon class="icon-tab" color="#24b224">mdi-file-download</v-icon>
-                                        </v-list-item-icon>
-                                        <v-list-item-content>
-                                            <v-list-item-title style="font-size: 0.8rem;">นำเข้าไฟล์</v-list-item-title>
                                         </v-list-item-content>
                                     </v-list-item>
                                 </v-list>
@@ -367,7 +356,6 @@ export default {
                             stock_no: stockId,
                             price: closePrice,
                         });
-                        this.recordLog();
                     }
 
                     if (stockData.dividend !== undefined) {
@@ -398,7 +386,6 @@ export default {
                             stock_no: stockId,
                             dividend: dividend,
                         });
-                        this.recordLog();
                     }
                 }
 
@@ -416,24 +403,7 @@ export default {
                 return moment(date).format('DD/MM/YYYY HH:mm');
             }
             return 'Invalid Date';
-        },
-
-        recordLog() {
-            const Employee_Name = this.$auth.user.fname + ' ' + this.$auth.user.lname;
-            const Employee_Email = this.$auth.user.email;
-            const Employee_Picture = this.$auth.user.picture;
-            const log = {
-                action: 'อัพเดทราคาปิด',
-                name: this.currentItem.fname + ' ' + this.currentItem.lname,
-                detail: '',
-                type: 5,
-                employee_name: Employee_Name,
-                employee_email: Employee_Email,
-                employee_picture: Employee_Picture,
-                created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-            };
-            this.$store.dispatch('api/log/addLog', log);
-        },
+        }
     },
 };
 </script>

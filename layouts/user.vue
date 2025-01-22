@@ -43,8 +43,7 @@
           </v-list>
         </v-menu>
 
-        <v-menu v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4" bottom right :offset-y="true" :nudge-top="8"
-          :nudge-right="8" class="user-menu">
+        <v-menu bottom right :offset-y="true" :nudge-top="8" :nudge-right="8" class="user-menu">
           <template v-slot:activator="{ on, attrs }">
             <v-btn text v-bind="attrs" v-on="on" rounded>
               <v-icon class="icon-host">mdi-archive-outline</v-icon>
@@ -52,7 +51,8 @@
           </template>
 
           <v-list class="custom-list">
-            <v-list-item @click="goToStocksManagement" class="custom-list-item">
+            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4"
+              @click="goToStocksManagement" class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-archive</v-icon>
               </v-list-item-icon>
@@ -61,8 +61,8 @@
               </v-list-item-content>
             </v-list-item>
 
-            <v-list-item @click="goToStocksFollow"
-              class="custom-list-item">
+            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4"
+              @click="goToStocksFollow" class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-archive-search</v-icon>
               </v-list-item-icon>
@@ -71,6 +71,16 @@
               </v-list-item-content>
               <v-icon v-if="pendingStocksCount > 0" class="small-bell-icon" style="margin-left: 6px;">mdi-bell</v-icon>
             </v-list-item>
+
+            <v-list-item @click="goToImport" class="custom-list-item">
+              <v-list-item-icon style="margin-right: 5px;">
+                <v-icon class="icon-tab">mdi-file-import</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title style="font-size: 0.8rem;">นำเข้าไฟล์</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+
           </v-list>
         </v-menu>
 
@@ -353,6 +363,10 @@ export default {
 
     goToStocksFollow() {
       this.$router.push('/app/data/follow');
+    },
+
+    goToImport() {
+      this.$router.push('/app/import');
     },
 
 

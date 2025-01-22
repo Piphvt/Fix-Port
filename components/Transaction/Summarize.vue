@@ -4,7 +4,7 @@
             <v-card-title class="d-flex justify-center">
                 <v-icon justify="center" size="30" color="#85d7df">mdi-cash-register</v-icon>&nbsp;
                 <span class="custom-title">หุ้นที่ซื้อขายหุ้นของลูกค้า</span></v-card-title>
-            <v-card-text class="custom-title">
+            <v-card-text class="text-center">
                 <span v-if="stockData.length > 0 && stockData[0] && stockData[0][0]">
                     รหัสสมาชิก : {{ getCustomerByNo(stockData[0][0].customer_no)?.id }}
                 </span>
