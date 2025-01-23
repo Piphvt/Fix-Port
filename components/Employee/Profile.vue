@@ -13,7 +13,7 @@
                         <v-col cols="5" class="d-flex flex-column align-center pa-4 mt-3">
                             <v-img :src="employee.picture
                                 ? `${$config.API_URL}/file/profile/${employee.picture}`
-                                : `${this.$config.API_URL}/file/default/${employee.picture}`" height="150" width="150" class="mb-3">
+                                : `${$config.API_URL}/file/default/${employee.picture}`" height="150" width="150" class="mb-3">
                             </v-img>
                             <v-menu offset-y>
                             <template v-slot:activator="{ on, attrs }">
