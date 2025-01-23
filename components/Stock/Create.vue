@@ -15,7 +15,7 @@
             <v-card-text>
                 <v-form ref="form" lazy-validation>
                     <v-row v-for="(item, index) in withdrawalItems" :key="index" align="center">
-                        <v-col v-if="stocks.length > 0" cols="3" class="ml-2">
+                        <v-col cols="3" class="ml-2">
                             <v-text-field v-model="item.stock" @input="setFullText(item)" label="ชื่อหุ้น" type="text"
                                 dense outlined :rules="validateStockRules(item)" />
                         </v-col>

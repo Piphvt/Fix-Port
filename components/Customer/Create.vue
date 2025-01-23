@@ -15,7 +15,7 @@
             <v-card-text>
                 <v-form ref="form" lazy-validation>
                     <v-row v-for="(item, index) in withdrawalItems" :key="index" align="center">
-                        <v-col v-if="customers.length > 0" cols="3" class="ml-2">
+                        <v-col cols="3" class="ml-2">
                             <v-text-field v-model="item.numericId" @input="setFullId(item)" label="ไอดีลูกค้า"
                                 type="text" dense outlined prepend="AQT" maxlength="12"
                                 :rules="validateStockRules(item)" />

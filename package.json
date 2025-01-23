@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nuxt",
-    "backend": "nodemon server.js",
+    "backend": "node server.js",
     "server": "npm run build && concurrently \"npm run backend\" \"npm run start\"",
     "build": "nuxt build",
     "start": "nuxt start",
