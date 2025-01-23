@@ -144,7 +144,7 @@ export default {
             ],
             customer_no: null,
             customer_name: null,
-            commission_no: 2,
+            commission_no: 1,
 
             datePickerMenus: [],
 

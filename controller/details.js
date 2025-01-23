@@ -1,7 +1,7 @@
 const { connection } = require('../database');
 
 exports.getDetail = (req, res) => {
-    connection.query('SELECT * FROM `stocks_detail`', function (err, results, fields) {
+    connection.query('SELECT * FROM `details`', function (err, results, fields) {
         res.json(results);
     });
 };
@@ -22,7 +22,7 @@ exports.addDetail = async (req, res) => {
             updated_date,
         };
 
-        connection.query('INSERT INTO `stocks_detail` SET ?', [detailData], function (err, results) {
+        connection.query('INSERT INTO `details` SET ?', [detailData], function (err, results) {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มรายละเอียด" });
@@ -50,7 +50,7 @@ exports.updateDetail = async (req, res) => {
             created_date,
         };
 
-        connection.query("UPDATE `stocks_detail` SET ? WHERE `no` = ?", [updatedData, detailNo], (err, results) => {
+        connection.query("UPDATE `details` SET ? WHERE `no` = ?", [updatedData, detailNo], (err, results) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ message: "เกิดข้อผิดพลาดในการอัปเดตรายละเอียด" });
@@ -67,7 +67,7 @@ exports.updateDetail = async (req, res) => {
 exports.deleteDetail = (req, res) => {
     try {
         const detailNo = req.params.no;
-        connection.query('DELETE FROM `stocks_detail` WHERE no = ?', [detailNo], function (err, results) {
+        connection.query('DELETE FROM `details` WHERE no = ?', [detailNo], function (err, results) {
             res.json({ message: "ลบรายละเอียดสำเร็จ", results });
         });
     } catch (error) {

@@ -1,7 +1,7 @@
 const { connection } = require('../database');
 
 exports.getFollow = (req, res) => {
-    connection.query('SELECT * FROM `stocks_follow`',
+    connection.query('SELECT * FROM `follows`',
         function (err, results, fields) {
             res.json(results);
         }
@@ -10,7 +10,7 @@ exports.getFollow = (req, res) => {
 
 exports.getFollowByResult = (req, res) => {
     const result = req.params.no;
-    connection.query('SELECT * FROM `stocks_follow` WHERE `result` = ?',
+    connection.query('SELECT * FROM `follows` WHERE `result` = ?',
         [result], function (err, results) {
             res.json(results);
         }
@@ -33,7 +33,7 @@ exports.addFollow = async (req, res) => {
             updated_date,
         };
 
-        connection.query('INSERT INTO `stocks_follow` SET ?', [followData], function (err, results) {
+        connection.query('INSERT INTO `follows` SET ?', [followData], function (err, results) {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ message: "เกิดข้อผิดพลาดในการเพิ่มข้อมูลการติดตามหุ้น" });
@@ -63,7 +63,7 @@ exports.updateFollow = async (req, res) => {
             updated_date,
         };
 
-        connection.query("UPDATE `stocks_follow` SET ? WHERE `no` = ?", [updatedData, stockId], (err, results) => {
+        connection.query("UPDATE `follows` SET ? WHERE `no` = ?", [updatedData, stockId], (err, results) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ message: "เกิดข้อผิดพลาดในการอัปเดตหุ้น" });
@@ -95,7 +95,7 @@ exports.updateFollowResult = async (req, res) => {
 exports.deleteFollow = (req, res) => {
     try {
         const FollowId = req.params.no;
-        connection.query('DELETE FROM `stocks_follow` WHERE no = ?', [FollowId], function (err, results) {
+        connection.query('DELETE FROM `follows` WHERE no = ?', [FollowId], function (err, results) {
             res.json(results);
         }
         );
