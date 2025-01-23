@@ -11,46 +11,50 @@
                 <v-card-text>
                     <v-row cols="12" class="d-flex justify-center">
                         <v-col cols="5" class="d-flex flex-column align-center pa-4 mt-3">
+                            <v-img :src="profileImage" @error="onImageError" height="150" width="150" class="mb-3">
+                            </v-img>
                             <v-img :src="employee.picture
                                 ? `${$config.API_URL}/file/profile/${employee.picture}`
-                                : `${$config.API_URL}/file/default/${employee.picture}`" height="150" width="150" class="mb-3">
+                                : `${$config.API_URL}/file/default/${employee.picture}`">
                             </v-img>
                             <v-menu offset-y>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-bind="attrs" v-on="on" color="#ded30b">
-                                    <v-icon style="font-size: 1.5rem;" >mdi-pencil</v-icon>แก้ไข
-                                </v-btn>
-                            </template>
-                            <v-list class="custom-list">
-                                <v-list-item @click="() => { editDialog = true; editData = employee }"
-                                    class="custom-list-item">
-                                    <v-list-item-icon style="margin-right: 5px;">
-                                        <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content>
-                                        <v-list-item-title style="font-size: 0.8rem;">ข้อมูลส่วนตัว</v-list-item-title>
-                                    </v-list-item-content>
-                                </v-list-item>
-                                <v-list-item @click="() => { editPasswordDialog = true; editPasswordData = employee }"
-                                    class="custom-list-item">
-                                    <v-list-item-icon style="margin-right: 5px;">
-                                        <v-icon class="icon-tab" color="#24b224">mdi-sync-circle</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content>
-                                        <v-list-item-title style="font-size: 0.8rem;">รหัสผ่าน</v-list-item-title>
-                                    </v-list-item-content>
-                                </v-list-item>
-                                <v-list-item @click="() => { editUploadDialog = true; editUploadData = employee }"
-                                    class="custom-list-item">
-                                    <v-list-item-icon style="margin-right: 5px;">
-                                        <v-icon class="icon-tab" color="#38b6ff">mdi-upload-circle</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content>
-                                        <v-list-item-title style="font-size: 0.8rem;">รูปภาพ</v-list-item-title>
-                                    </v-list-item-content>
-                                </v-list-item>
-                            </v-list>
-                        </v-menu>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn v-bind="attrs" v-on="on" color="#ded30b">
+                                        <v-icon style="font-size: 1.5rem;">mdi-pencil</v-icon>แก้ไข
+                                    </v-btn>
+                                </template>
+                                <v-list class="custom-list">
+                                    <v-list-item @click="() => { editDialog = true; editData = employee }"
+                                        class="custom-list-item">
+                                        <v-list-item-icon style="margin-right: 5px;">
+                                            <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content>
+                                            <v-list-item-title
+                                                style="font-size: 0.8rem;">ข้อมูลส่วนตัว</v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                    <v-list-item
+                                        @click="() => { editPasswordDialog = true; editPasswordData = employee }"
+                                        class="custom-list-item">
+                                        <v-list-item-icon style="margin-right: 5px;">
+                                            <v-icon class="icon-tab" color="#24b224">mdi-sync-circle</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content>
+                                            <v-list-item-title style="font-size: 0.8rem;">รหัสผ่าน</v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                    <v-list-item @click="() => { editUploadDialog = true; editUploadData = employee }"
+                                        class="custom-list-item">
+                                        <v-list-item-icon style="margin-right: 5px;">
+                                            <v-icon class="icon-tab" color="#38b6ff">mdi-upload-circle</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content>
+                                            <v-list-item-title style="font-size: 0.8rem;">รูปภาพ</v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
                         </v-col>
                         <v-col cols="7" class="mt-6">
                             <v-card-text>
@@ -104,6 +108,8 @@ export default {
                 },
             },
 
+            profileImage: `${this.$config.API_URL}/file/profile/${this.$auth.user.picture}`,
+
             editDialog: false,
             editPasswordDialog: false,
             editUploadDialog: false,
@@ -134,6 +140,10 @@ export default {
     },
 
     methods: {
+        onImageError() {
+            this.profileImage = `${this.$config.API_URL}/file/default/${this.$auth.user.picture}`;
+        },
+
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
