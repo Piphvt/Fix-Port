@@ -208,8 +208,9 @@
                                 <v-icon v-bind="attrs" v-on="on" color="#85d7df">mdi-dots-vertical</v-icon>
                             </template>
                             <v-list class="custom-list">
-                                <v-list-item
-                                    v-if="$auth.user.rank_no !== 1 || item.rank_no !== 1"
+                                <v-list-item v-if="($auth.user.rank_no === 1 && item.rank_no !== 1) ||
+                                    ($auth.user.rank_no === 3 && item.rank_no !== 1 && item.rank_no !== 3) ||
+                                    ($auth.user.rank_no !== 1 && $auth.user.rank_no !== 3)"
                                     @click="openEditAllDialog(item)" class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#ffc800">mdi-pencil-circle</v-icon>

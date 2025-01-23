@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import moment from 'moment';
+
 export default {
     props: {
         open: Boolean,
@@ -29,7 +31,8 @@ export default {
         stocks: Array,
         customers: Array,
         customer_no: Number,
-        customer_name: Number
+        customer_name: Number,
+        commission_no: Number
     },
     data() {
         return {
@@ -41,10 +44,11 @@ export default {
                 { text: 'รหัสลูกค้า', value: 'customer_no', sortable: false, align: 'center', cellClass: 'text-center' },
                 { text: 'ชื่อเล่น', value: 'customer_name', sortable: false, align: 'center', cellClass: 'text-center' },
                 { text: 'ชื่อหุ้น', value: 'stock_name', sortable: false, align: 'center', cellClass: 'text-center' },
-                { text: 'จำนวนที่ติด', value: 'price', sortable: false, align: 'center', cellClass: 'text-center' },
-                { text: 'ราคาที่ติด', value: 'amount', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'จำนวน', value: 'price', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'ราคา', value: 'amount', sortable: false, align: 'center', cellClass: 'text-center' },
                 { text: 'ค่าธรรมเนียม', value: 'commission', sortable: false, align: 'center', cellClass: 'text-center' },
                 { text: 'การกระทำ', value: 'action', sortable: false, align: 'center', cellClass: 'text-center' },
+                { text: 'วันที่ซื้อ/ขาย', value: 'created_date', sortable: false, align: 'center', cellClass: 'text-center' },
             ],
         };
     },
@@ -55,7 +59,7 @@ export default {
             return this.detail_amount.map(detail => {
                 const detailName = this.getStockByDetail(detail.stock_no);
                 const stockName = this.getStockName(detailName)
-                const commissionAmount = this.getCommissionAmount(detail.commission_no)
+                const commissionAmount = this.getCommissionAmount(this.commission_no)
 
                 const customer = customers.find(c => c.no === this.customer_no) ||
                     customers.find(c => c.no === this.customer_name) ||
@@ -67,7 +71,8 @@ export default {
                     customer_no: customer.id,
                     customer_name: customer.name,
                     action: this.getTypeText(detail.type),
-                    commission: commissionAmount
+                    commission: commissionAmount,
+                    created_date: detail.created_date || moment().format('YYYY-MM-DD'),
                 };
             });
         },

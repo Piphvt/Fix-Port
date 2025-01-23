@@ -311,6 +311,9 @@
                 <template v-slot:item.updated_date="{ item }">
                     <div class="text-center">{{ formatDateTime(item.updated_date) }}</div>
                 </template>
+                <template v-slot:item.created_date="{ item }">
+                    <div class="text-center" style="color:#ffcc64">{{ formatDateTime(item.created_date) }}</div>
+                </template>
                 <template v-slot:item.detail="{ item }">
                     <div class="text-center">
                         <v-menu offset-y>
@@ -450,7 +453,7 @@ export default {
                 { text: 'ข้อมูลวันที่', value: 'updated_date' }
             ],
 
-            visibleColumns: ['select', 'updated_date', 'customer_no', 'customer_name', 'stock_no', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_no', 'employee_no', 'detail'],
+            visibleColumns: ['select', 'updated_date', 'customer_no', 'customer_name', 'stock_no', 'created_date', 'detail_amount', 'type', 'amount', 'price', 'result', 'comfee', 'vat', 'total', 'commission', 'from_no', 'employee_no', 'detail'],
 
             headers: [
                 {
@@ -487,6 +490,14 @@ export default {
                 {
                     text: 'ชื่อหุ้น',
                     value: 'stock_no',
+                    sortable: false,
+                    align: 'center',
+                    cellClass: 'text-center',
+                },
+
+                {
+                    text: 'วันที่ซื้อ/ขาย',
+                    value: 'created_date',
                     sortable: false,
                     align: 'center',
                     cellClass: 'text-center',
@@ -1007,7 +1018,7 @@ export default {
                     if (header.value === 'updated_date') {
                         rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
                     } else if (header.value === 'created_date') {
-                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD');
+                        rowData[header.value] = moment(item[header.value]).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm');
                     } else if (header.value === 'price') {
                         rowData[header.value] = item.price.toLocaleString(2);
                     } else if (header.value === 'amount') {

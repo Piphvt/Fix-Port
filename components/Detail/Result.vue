@@ -67,7 +67,7 @@ export default {
                     stock_name: stock ? stock.name : '',
                     customer_no: customer.id,
                     customer_name: customer.name,
-                    created_date: detail.created_date || moment().format('YYYY-MM-DD HH:mm:ss'),
+                    created_date: detail.created_date || moment().format('YYYY-MM-DD'),
                 };
             });
         },

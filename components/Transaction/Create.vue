@@ -5,8 +5,8 @@
         <ModalError :open="modal.error.open" :message="modal.error.message" :error.sync="modal.error.open" />
         <TransactionResult :open="showModalResult" :detail_amount="withdrawalItems"
             :stocks="withdrawalItems.map(item => ({ stock_no: item.stock_no }))" :customers="customers"
-            :customer_no="customer_no" :customer_name="customer_name" :type="type" @confirm="confirmAndAddDetails"
-            @cancel="showModalResult = false" @update:open="showModalResult = $event" />
+            :customer_no="customer_no" :customer_name="customer_name" :type="type" :commission_no="commission_no"
+            @confirm="confirmAndAddDetails" @cancel="showModalResult = false" @update:open="showModalResult = $event" />
 
         <v-card flat>
             <v-card-title class="d-flex justify-center mb-3">
@@ -28,6 +28,12 @@
                             <v-autocomplete v-else-if="searchBy === 'customer_no'" v-model="customer_no"
                                 :items="customers" item-text="id" item-value="no" label="รหัสลูกค้า" dense outlined
                                 clearable :rules="[(v) => !!v || 'กรุณากรอกรหัสลูกค้า']">
+                            </v-autocomplete>
+                        </v-col>
+                        <v-col cols="2">
+                            <v-autocomplete v-model="commission_no" :items="commissions" item-text="name"
+                                item-value="no" label="ค่าธรรมเนียม" dense outlined clearable
+                                :rules="[(v) => !!v || 'กรุณากรอกค่าธรรมเนียม']">
                             </v-autocomplete>
                         </v-col>
                     </v-row>
@@ -61,10 +67,20 @@
                         </v-col>
 
                         <v-col cols="2">
-                            <v-autocomplete v-model="item.commission_no" :items="commissions" item-text="name"
-                                item-value="no" label="ค่าธรรมเนียม" dense outlined clearable
-                                :disabled="!canEditItem(item)" :rules="[(v) => !!v || 'กรุณากรอกค่าธรรมเนียม']" />
+                            <v-menu v-model="datePickerMenus[index]" :close-on-content-click="false"
+                                transition="scale-transition" offset-y min-width="auto">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-text-field v-model="item.created_date" label="วันที่ซื้อ/ขายหุ้น" readonly
+                                        v-bind="attrs" v-on="on" outlined dense clearable :disabled="!canEditItem(item)"
+                                        :error="!!item.dateError" :error-messages="item.dateError">
+                                    </v-text-field>
+                                </template>
+                                <v-date-picker v-model="item.created_date" @input="datePickerMenus[index] = false"
+                                    locale="th">
+                                </v-date-picker>
+                            </v-menu>
                         </v-col>
+
 
                         <v-col cols="1" class="d-flex align-center">
                             <v-btn icon color="#e50211" @click="removeProduct(index)" class="mb-6"
@@ -79,7 +95,7 @@
                 </v-form>
                 <v-card-actions class="card-title-center pa-0">
                     <v-btn color="#24b224" @click="showModalResult = true"
-                        :disabled="!isFormValid || !isSearchValid || !isOverAmount" class="mr-2">
+                        :disabled="!isFormValid || !isSearchValid || !isOverAmount || !isDateValid" class="mr-2">
                         ยืนยัน
                     </v-btn>
                     <v-btn @click="cancel" color="#e50211">
@@ -128,10 +144,13 @@ export default {
             ],
             customer_no: null,
             customer_name: null,
+            commission_no: 2,
+
+            datePickerMenus: [],
 
             showModalResult: false,
             withdrawalItems: [{
-                stock_no: null, price: null, amount: null, type: 2, commission_no: 2,
+                stock_no: null, price: null, amount: null, type: 2, created_date: null,
             }],
 
             customers: [],
@@ -139,7 +158,8 @@ export default {
             stocks: [],
             detail_amount: [],
             transactions: [],
-            details: []
+            details: [],
+            isOverAmountError: ''
         };
     },
 
@@ -161,15 +181,18 @@ export default {
         isFormValid() {
             const isCustomerNameValid = this.searchBy === 'customer_name' ? this.customer_name : true;
             const isCustomerIdValid = this.searchBy === 'customer_no' ? this.customer_no : true;
+            const isCommissionNoValid = this.commission_no !== null;
 
             return (
                 isCustomerNameValid &&
                 isCustomerIdValid &&
+                isCommissionNoValid &&
                 this.withdrawalItems.every(item =>
-                    this.isStockValid(item.stock_no) &&
-                    this.isPriceValid(item.price) &&
-                    this.isAmountValid(item.amount) &&
-                    this.isTypeValid(item.type)
+                    this.isItemValid(item.stock_no) &&
+                    this.isItemValid(item.price) &&
+                    this.isItemValid(item.amount) &&
+                    this.isItemValid(item.type) &&
+                    this.isItemValid(item.created_date)
                 )
             );
         },
@@ -177,7 +200,8 @@ export default {
         isSearchValid() {
             return (
                 this.searchBy &&
-                (this.searchBy === 'customer_name' ? this.customer_name : this.customer_no)
+                (this.searchBy === 'customer_name' ? this.customer_name : this.customer_no) &&
+                this.commission_no
             );
         },
 
@@ -208,6 +232,35 @@ export default {
                 return totalAmount <= parseFloat(stockDetail.remainingAmount);
             });
         },
+
+        isDateValid() {
+            let isValid = true;
+
+            this.withdrawalItems.forEach(item => {
+                const stockDetail = this.detail_amount.find(detail => detail.no === item.stock_no);
+                if (!stockDetail) {
+                    isValid = false;
+                    return;
+                }
+
+                const selectedDate = item.created_date ? moment(item.created_date).format('YYYY-MM-DD') : null;
+                const stockDate = stockDetail.created_date ? moment(stockDetail.created_date).format('YYYY-MM-DD') : null;
+
+                if (!selectedDate || !stockDate) {
+                    isValid = false;
+                    item.dateError = 'กรุณาเลือกวันที่ซื้อ/ขาย';
+                } else if (selectedDate < stockDate) {
+                    isValid = false;
+                    item.dateError = 'กรุณาเลือกวันที่ให้ถูกต้อง';
+                } else {
+                    item.dateError = '';
+                }
+            });
+
+            return isValid;
+        },
+
+
 
     },
 
@@ -272,19 +325,33 @@ export default {
                         return total;
                     }, parseFloat(detail.amount || 0));
 
+                    let latestCreatedDate = detail.created_date;
+                    if (relatedTransactions.length > 0) {
+                        latestCreatedDate = relatedTransactions.reduce((latest, transaction) => {
+                            const transactionDate = new Date(transaction.created_date);
+                            return transactionDate > new Date(latest) ? transaction.created_date : latest;
+                        }, latestCreatedDate);
+                    }
+
                     if (remainingAmount === 0) {
                         return null;
                     }
 
-                    return {
+                    const result = {
                         ...detail,
                         name: stock ? `${stock.stock} (${remainingAmount.toLocaleString(2)})` : 'ไม่พบหุ้น',
                         remainingAmount,
+                        created_date: latestCreatedDate
                     };
+
+                    return result;
                 }).filter(detail => detail !== null);
+
+                console.log('Latest Created Date:', this.detail_amount.map(detail => detail.created_date));
 
             } catch (error) {
                 this.detail_amount = [];
+                console.error('Error fetching details:', error);
             }
         },
 
@@ -317,20 +384,8 @@ export default {
             }
         },
 
-        isStockValid(stock_no) {
-            return stock_no !== null && stock_no !== '';
-        },
-
-        isPriceValid(price) {
-            return price !== null && price !== '';
-        },
-
-        isTypeValid(type) {
-            return type !== null && type !== '';
-        },
-
-        isAmountValid(amount) {
-            return amount !== null && amount !== '';
+        isItemValid(item) {
+            return item !== null && item !== '';
         },
 
         openModal() {
@@ -355,6 +410,7 @@ export default {
         async confirmAndAddDetails() {
             await this.fetchDetailData();
             await this.fetchTransactionData();
+            await this.fetchDetailAmountData();
 
             let isTransactionAdded = false;
 
@@ -384,6 +440,21 @@ export default {
                 let { total: remainingTotal, detailAmount, transactionAmount } = remainingAmounts[stockDetailId];
                 let amountToProcess = parseFloat(transaction.amount);
 
+                const matchingDetailAmount = this.detail_amount.find(detail => detail.no === transaction.stock_no);
+                const detailCreatedDate = matchingDetailAmount?.created_date;
+
+                let updatedCreatedDate = moment(detailCreatedDate).add(5, 'minutes').format('YYYY-MM-DD HH:mm');
+
+                console.log('Original created_date:', moment(detailCreatedDate).format('YYYY-MM-DD'));
+                console.log('Target created_date:', moment(transaction.created_date).format('YYYY-MM-DD'));
+                console.log('Updated created_date (after adding 5 minutes):', updatedCreatedDate);
+
+                if (moment(transaction.created_date).format('YYYY-MM-DD') === moment(detailCreatedDate).format('YYYY-MM-DD')) {
+                    transaction.created_date = updatedCreatedDate;
+                } else {
+                    transaction.created_date = moment(transaction.created_date).format('YYYY-MM-DD HH:mm');
+                }
+
                 if (transaction.type === 1) {
                     try {
                         await this.$store.dispatch('api/transaction/addTransaction', {
@@ -391,11 +462,11 @@ export default {
                             type: transaction.type,
                             price: parseFloat(transaction.price),
                             amount: amountToProcess,
-                            commission_no: transaction.commission_no,
+                            commission_no: this.commission_no,
                             from_no: 3,
                             employee_no: this.$auth.user.no,
-                            created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-                            updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                            created_date: transaction.created_date,
+                            updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm'),
                         });
                         isTransactionAdded = true;
 
@@ -424,11 +495,11 @@ export default {
                                     type: transaction.type,
                                     price: parseFloat(transaction.price),
                                     amount: deduction,
-                                    commission_no: transaction.commission_no,
+                                    commission_no: this.commission_no,
                                     from_no: 3,
                                     employee_no: this.$auth.user.no,
-                                    created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-                                    updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                                    created_date: transaction.created_date,
+                                    updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm'),
                                 });
                                 isTransactionAdded = true;
                             } catch (error) {
@@ -449,11 +520,11 @@ export default {
                                     type: transaction.type,
                                     price: parseFloat(transaction.price),
                                     amount: deduction,
-                                    commission_no: transaction.commission_no,
+                                    commission_no: this.commission_no,
                                     from_no: fromNo,
                                     employee_no: this.$auth.user.no,
-                                    created_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-                                    updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+                                    created_date: transaction.created_date,  // Use the modified or original created_date
+                                    updated_date: moment(new Date()).format('YYYY-MM-DD HH:mm'),  // Keep using current time for updated_date
                                 });
                                 isTransactionAdded = true;
                             } catch (error) {
@@ -481,7 +552,9 @@ export default {
             }
 
             this.showModalResult = false;
-        },
+        }
+
+        ,
 
 
         findDuplicateIds(stocks) {
@@ -494,13 +567,15 @@ export default {
                 stock_no: null,
                 amount: null,
                 price: null,
-                commission_no: 2,
                 type: 2,
+                created_date: null
             });
+            this.datePickerMenus.push(false);
         },
 
         removeProduct(index) {
             this.withdrawalItems.splice(index, 1);
+            this.datePickerMenus.splice(index, 1);
         },
 
         cancel() {

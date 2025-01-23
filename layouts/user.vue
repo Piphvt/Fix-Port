@@ -44,7 +44,7 @@
         </v-menu>
 
         <v-menu bottom right :offset-y="true" :nudge-top="8" :nudge-right="8" class="user-menu">
-          <template v-slot:activator="{ on, attrs }">
+          <template v-slot:activator="{ on, attrs }" v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4">
             <v-btn text v-bind="attrs" v-on="on" rounded>
               <v-icon class="icon-host">mdi-archive-outline</v-icon>
             </v-btn>
@@ -72,7 +72,8 @@
               <v-icon v-if="pendingStocksCount > 0" class="small-bell-icon" style="margin-left: 6px;">mdi-bell</v-icon>
             </v-list-item>
 
-            <v-list-item @click="goToImport" class="custom-list-item">
+            <v-list-item v-if="$auth.user.rank_no === 1 || $auth.user.rank_no === 3 || $auth.user.rank_no === 4"
+              @click="goToImport" class="custom-list-item">
               <v-list-item-icon style="margin-right: 5px;">
                 <v-icon class="icon-tab">mdi-file-import</v-icon>
               </v-list-item-icon>
@@ -107,6 +108,15 @@
               </v-list-item-icon>
               <v-list-item-content>
                 <v-list-item-title style="font-size: 0.8rem;">การซื้อขายหุ้นของลูกค้า</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+
+            <v-list-item v-if="$auth.user.rank_no === 2" @click="goToImport" class="custom-list-item">
+              <v-list-item-icon style="margin-right: 5px;">
+                <v-icon class="icon-tab">mdi-file-import</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title style="font-size: 0.8rem;">นำเข้าไฟล์</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list>

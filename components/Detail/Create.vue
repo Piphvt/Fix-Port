@@ -34,22 +34,23 @@
                     <v-row class="mb-0 mt-0 pa-0" v-for="(item, index) in withdrawalItems" :key="index" align="center">
                         <v-col cols="2" class="ml-3">
                             <v-autocomplete v-model="item.stock_no" :items="stocks" item-text="name" item-value="no"
-                                label="ชื่อหุ้น" dense outlined :disabled="!isSearchValid" :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable>
+                                label="ชื่อหุ้น" dense outlined :disabled="!isSearchValid"
+                                :rules="[(v) => !!v || 'กรุณากรอกชื่อหุ้น']" clearable>
                             </v-autocomplete>
                         </v-col>
 
                         <v-col cols="2">
                             <v-text-field v-model="item.price" label="ราคา" type="text" dense outlined
                                 :disabled="!canEditItem(item)"
-                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
-                            </v-text-field>
+                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v.replace(/,/g, '')) || 'กรุณากรอกตัวเลข']"
+                                @input="item.price = removeCommas(item.price)" />
                         </v-col>
 
                         <v-col cols="2">
                             <v-text-field v-model="item.amount" label="จำนวน" type="text" dense outlined
-                                :disabled="!canEditItem(item)"
-                                :rules="[(v) => !v || /^[0-9]*\.?[0-9]+$/.test(v) || 'กรุณากรอกตัวเลข']">
-                            </v-text-field>
+                                :disabled="!canEditItem(item)" :rules="[
+                                    (v) => !v || /^[0-9]*\.?[0-9]+$/.test(v.replace(/,/g, '')) || 'กรุณากรอกตัวเลข',
+                                ]" @input="item.amount = removeCommas(item.amount)" />
                         </v-col>
 
                         <v-col cols="2">
@@ -57,7 +58,7 @@
                                 transition="scale-transition" offset-y min-width="auto">
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-text-field v-model="item.created_date" label="วันที่ซื้อหุ้น" readonly
-                                        v-bind="attrs" v-on="on" outlined dense
+                                        v-bind="attrs" v-on="on" outlined dense clearable
                                         :disabled="!canEditItem(item)"></v-text-field>
                                 </template>
                                 <v-date-picker v-model="item.created_date" @input="datePickerMenus[index] = false"
@@ -193,11 +194,17 @@ export default {
     },
 
     methods: {
+        removeCommas(value) {
+            return value.replace(/,/g, '');
+        },
+
         async fetchFromData() {
             try {
                 const response = await this.$store.dispatch('api/from/getFrom');
                 if (response) {
-                    this.froms = response.map(item => ({ no: item.no, name: item.from }));
+                    this.froms = response
+                        .filter(item => item.from !== 'หุ้นแก้เกม')
+                        .map(item => ({ no: item.no, name: item.from }));
                 }
             } catch (error) {
             }

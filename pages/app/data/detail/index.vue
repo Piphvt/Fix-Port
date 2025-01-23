@@ -975,7 +975,6 @@ export default {
                             let transactionDividendTotalSum = 0;
                             let transactionAmountSum = 0;
                             let transactionnumberOfDividends = 0;
-                            const detailamount = detail.amount;
 
                             if (detail.created_date) {
                                 const dividendData = await this.$store.dispatch('api/dividend/getDividend', {
@@ -1079,7 +1078,8 @@ export default {
                                     }
                                 }
                             }
-
+                            
+                            const detailamount = detail.amount;
                             const detailprice = detail.price;
                             const detailmoney = detailamount * detailprice;
                             const detailpresent_price = detailamount * closingPriceData;
