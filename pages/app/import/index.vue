@@ -201,11 +201,10 @@ export default {
                     let TableHeaders = [];
                     let TableData = [];
 
-                    // Check the headers in the first row to decide the TableHeaders and data format
                     const headers = jsonData[0];
 
                     if (headers.includes('Symbol') && headers.includes('Type')) {
-                        // Handle data with Symbol, Type
+                       
                         TableHeaders = [
                             { text: 'ชื่อหุ้น', value: 'Symbol', align: 'center', sortable: false },
                             { text: 'ประเภท', value: 'Type', align: 'center', sortable: false },
@@ -221,7 +220,7 @@ export default {
                         }).filter(row => !existingStockSymbols.includes(row.Symbol));
 
                     } else if (headers.includes('date') && headers.includes('id') && headers.includes('stock') && headers.includes('price') && headers.includes('amount') && headers.includes('type')) {
-                        // Handle data with date, id, stock, price, amount, and type
+
                         TableHeaders = [
                             { text: 'วันที่ซื้อหุ้น', value: 'date', align: 'center', sortable: false },
                             { text: 'รหัสสมาชิก', value: 'id', align: 'center', sortable: false },
@@ -232,36 +231,35 @@ export default {
                         ];
 
                         TableData = jsonData.slice(1).map((row) => {
-                            const rawDate = row[0]; // Get the raw date value
-                            console.log('Raw Date:', rawDate); // Check the raw value
+                            const rawDate = row[0];
+                            console.log('Raw Date:', rawDate);
 
                             let formattedDate = 'Invalid Date';
 
-                            // หาก rawDate เป็นค่าว่าง (null, undefined หรือ '') ให้ใช้วันที่ปัจจุบัน
                             if (!rawDate) {
-                                formattedDate = moment().format("YYYY-MM-DD"); // ใช้วันที่ปัจจุบัน
+                                formattedDate = moment().format("YYYY-MM-DD");
                             } else if (typeof rawDate === 'number') {
-                                // แปลง Excel serial date เป็นวันที่
-                                const excelStartDate = new Date(1900, 0, 1); // เริ่มนับจาก 1 มกราคม 1900
-                                const date = new Date(excelStartDate.getTime() + (rawDate - 1) * 86400000); // 86400000 มิลลิวินาทีในหนึ่งวัน
-                                formattedDate = date.toISOString().split('T')[0]; // แปลงเป็นรูปแบบ YYYY-MM-DD
+                  
+                                const excelStartDate = new Date(1900, 0, 1);
+                                const date = new Date(excelStartDate.getTime() + (rawDate - 1) * 86400000); 
+                                formattedDate = date.toISOString().split('T')[0];
                             } else if (moment(rawDate, "DD/MM/YYYY", true).isValid()) {
-                                // ใช้ moment แปลงวันที่หากเป็นสตริงในรูปแบบ DD/MM/YYYY
+
                                 formattedDate = moment(rawDate, "DD/MM/YYYY").format("YYYY-MM-DD");
                             }
 
                             return {
-                                'date': formattedDate,  // แปลงวันที่
-                                'id': row[1],           // รหัสสมาชิก
-                                'stock': row[2],        // ชื่อหุ้น
-                                'price': row[3],        // ราคา
-                                'amount': row[4],       // จำนวน
-                                'type': row[5],         // ที่มาที่ไป
+                                'date': formattedDate,  
+                                'id': row[1],           
+                                'stock': row[2],      
+                                'price': row[3],        
+                                'amount': row[4],      
+                                'type': row[5],         
                             };
                         });
                     }
 
-                    // Set the TableHeaders and TableData
+               
                     this.TableHeaders = TableHeaders;
                     this.TableData = TableData;
                 };
@@ -505,13 +503,6 @@ export default {
             this.currentAction = action;
             this.currentItem = item;
             this.modalConfirmOpen = true;
-        },
-
-        formatDateTime(date) {
-            if (moment(date).isValid()) {
-                return moment(date).format('DD/MM/YYYY');
-            }
-            return 'Invalid Date';
         },
     },
 };
