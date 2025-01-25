@@ -1014,7 +1014,7 @@ export default {
 
 
                 } else {
-                    console.error("ข้อมูล details ไม่มีข้อมูลหรือไม่ใช่อาร์เรย์");
+                    console.error();
                 }
             } catch (warning) {
                 console.error("Error fetching data:", warning);
