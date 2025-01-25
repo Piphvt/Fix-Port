@@ -13,10 +13,6 @@
                         <v-col cols="5" class="d-flex flex-column align-center pa-4 mt-3">
                             <v-img :src="profileImage" @error="onImageError" height="150" width="150" class="mb-3">
                             </v-img>
-                            <v-img :src="employee.picture
-                                ? `${$config.API_URL}/file/profile/${employee.picture}`
-                                : `${$config.API_URL}/file/default/${employee.picture}`">
-                            </v-img>
                             <v-menu offset-y>
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-btn v-bind="attrs" v-on="on" color="#ded30b">

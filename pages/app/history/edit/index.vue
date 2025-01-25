@@ -141,9 +141,7 @@
                 item-key="no" :items-per-page="5">
                 <template v-slot:item.employee_picture="{ item }">
                     <v-avatar size="40">
-                        <img :src="item.employee_picture
-                            ? `${$config.API_URL}/file/profile/${item.employee_picture}`
-                            : `${$config.API_URL}/file/default/${item.employee_picture}`" alt="picture" />
+                        <img :src="onImage(item)" @error="onImageError(item, $event)" alt="Employee Picture" />
                     </v-avatar>
                 </template>
                 <template v-if="$auth.user.rank_no === 1" v-slot:item.select="{ item }">
@@ -284,6 +282,8 @@ export default {
             isSelectingItems: false,
             modalConfirmOpen: false,
 
+            image: null,
+
             startDateTime: '',
             endDateTime: '',
             selectedItemDetail: '',
@@ -410,6 +410,16 @@ export default {
     },
 
     methods: {
+        onImage(item) {
+            return `${this.$config.API_URL}/file/profile/${item.employee_picture}`;
+        },
+
+        onImageError(item, event) {
+            if (event && event.target) {
+                event.target.src = `${this.$config.API_URL}/file/default/${item.employee_picture}`;
+            }
+        },
+
         highlightKeywords(text) {
             return text
                 .replace(/จาก/g, '<span style="color: yellow;">จาก</span>')

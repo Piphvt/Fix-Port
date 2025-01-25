@@ -141,9 +141,7 @@
                 item-key="no" :items-per-page="5">
                 <template v-slot:item.employee_picture="{ item }">
                     <v-avatar size="40">
-                        <img :src="item.employee_picture
-                            ? `${$config.API_URL}/file/profile/${item.employee_picture}`
-                            : `${$config.API_URL}/file/default/${item.employee_picture}`" alt="picture" />
+                        <img :src="onImage(item)" @error="onImageError(item, $event)" alt="Employee Picture" />
                     </v-avatar>
                 </template>
                 <template v-slot:item.select="{ item }">
@@ -410,6 +408,16 @@ export default {
     },
 
     methods: {
+        onImage(item) {
+            return `${this.$config.API_URL}/file/profile/${item.employee_picture}`;
+        },
+
+        onImageError(item, event) {
+            if (event && event.target) {
+                event.target.src = `${this.$config.API_URL}/file/default/${item.employee_picture}`;
+            }
+        },
+        
         goBack() {
             window.location.reload();
         },

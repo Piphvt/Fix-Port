@@ -218,16 +218,25 @@
                                     <v-list-item-content style="font-size: 0.8rem;">แก้ไข</v-list-item-content>
                                 </v-list-item>
 
-                                <v-list-item @click="() => { editPasswordDialog = true; editPasswordData = item }"
-                                    class="custom-list-item">
-                                    <v-list-item-icon style="margin-right: 4px;">
-                                        <v-icon class="icon-tab" color="#24b224">mdi-sync-circle</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content
-                                        style="font-size: 0.8rem;">เปลี่ยนรหัสผ่าน</v-list-item-content>
-                                </v-list-item>
+                                <v-list-item 
+  @click="() => { editPasswordDialog = true; editPasswordData = item }"
+  v-if="(
+    ($auth.user.rank_no === 1 && (item.rank_no === 1 || item.rank_no === 3) && $auth.user.no !== item.no) || 
+    ($auth.user.rank_no === 3 && item.rank_no === 3 && $auth.user.no !== item.no)
+  )"
+  class="custom-list-item"
+>
+  <v-list-item-icon style="margin-right: 4px;">
+    <v-icon class="icon-tab" color="#24b224">mdi-sync-circle</v-icon>
+  </v-list-item-icon>
+  <v-list-item-content style="font-size: 0.8rem;">เปลี่ยนรหัสผ่าน</v-list-item-content>
+</v-list-item>
+
 
                                 <v-list-item @click="() => { editUploadDialog = true; editUploadData = item }"
+                                    v-if="($auth.user.rank_no === 1 && item.rank_no !== 1) ||
+                                    ($auth.user.rank_no === 3 && item.rank_no !== 1 && item.rank_no !== 3) ||
+                                    ($auth.user.rank_no !== 1 && $auth.user.rank_no !== 3)"
                                     class="custom-list-item">
                                     <v-list-item-icon style="margin-right: 4px;">
                                         <v-icon class="icon-tab" color="#38b6ff">mdi-upload-circle</v-icon>
