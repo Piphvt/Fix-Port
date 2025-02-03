@@ -9,17 +9,6 @@ $ npm install
 # เปิด frontend (nuxt) พร้อม backend (node server.js)
 $ npm run server
 
-# เรียกใช้โปรเจกต์พร้อม hot reload ที่ localhost:3000
-$ npm run dev
-
-# สร้างโปรเจกต์สำหรับ production และเริ่มเซิร์ฟเวอร์
-$ npm run build
-$ npm run start
-
-# สร้างโปรเจกต์แบบ static
-$ npm run generate
-
-
 # การตั้งค่า Python Virtual Environment (.venv)
     # 1.สร้าง Virtual Environment ใช้คำสั่งนี้ในการสร้าง Virtual Environment
     $ python -m venv .venv
