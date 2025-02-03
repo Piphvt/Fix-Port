@@ -17,21 +17,25 @@
           <v-form ref="form" v-model="valid" lazy-validation>
             <v-row>
               <v-col cols="6" sm="5" class="pa-0 mr-8 ml-4">
-                <v-text-field :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-off'" :type="show2 ? 'text' : 'password'"
-                  v-model="data.new_password" :rules="[
-                    (v) => !!v || 'โปรดกรอกรหัสผ่านใหม่',
-                    (v) => (v && v.length >= 8) || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
-                  ]" @click:append="show2 = !show2" label="รหัสผ่านใหม่" dense outlined required>
+                <v-text-field :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-closed'" :type="show2 ? 'text' : 'password'"
+                  v-model="data.new_password" :rules="validatePasswordRules()" @click:append="show2 = !show2"
+                  label="รหัสผ่านใหม่" dense outlined required>
+                  <template v-slot:append>
+                    <v-icon tabindex="-1" @click="show2 = !show2">{{ show2 ? 'mdi-eye' : 'mdi-eye-closed' }}</v-icon>
+                  </template>
                 </v-text-field>
               </v-col>
 
               <v-col cols="6" sm="5" class="pa-0">
-                <v-text-field :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'" :type="show1 ? 'text' : 'password'"
+                <v-text-field :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-closed'" :type="show1 ? 'text' : 'password'"
                   v-model="data.confirm_password" :rules="[
                     (v) => !!v || 'โปรดยืนยันรหัสผ่านใหม่',
-                    (v) => (v && v.length >= 8) || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
-                    (v) => v === data.new_password || 'รหัสผ่านไม่ตรงกัน',
-                  ]" @click:append="show1 = !show1" label="ยืนยันรหัสผ่านใหม่" dense outlined required>
+                    (v) => v === data.new_password || 'รหัสผ่านไม่ตรงกัน'
+                  ]" @click:append="show1 = !show1" label="ยืนยันรหัสผ่านใหม่" dense outlined required
+                  append-icon-props="{ tabindex: '-1' }">
+                  <template v-slot:append>
+                    <v-icon tabindex="-1" @click="show1 = !show1">{{ show1 ? 'mdi-eye' : 'mdi-eye-closed' }}</v-icon>
+                  </template>
                 </v-text-field>
               </v-col>
             </v-row>
@@ -109,6 +113,13 @@ export default {
   },
 
   methods: {
+    validatePasswordRules() {
+      return [
+        (v) => !!v || 'โปรดกรอกรหัสผ่านใหม่',
+        (v) => (v && v.length >= 8) || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
+      ];
+    },
+
     async confirm() {
       try {
         this.$emit('update:edit', false);

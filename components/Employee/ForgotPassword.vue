@@ -30,7 +30,6 @@
                 <v-text-field :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-closed'" :type="show1 ? 'text' : 'password'"
                   v-model="data.confirm_password" :rules="[
                     (v) => !!v || 'โปรดยืนยันรหัสผ่านใหม่',
-                    (v) => (v && v.length >= 8) || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
                     (v) => v === data.new_password || 'รหัสผ่านไม่ตรงกัน'
                   ]" @click:append="show1 = !show1" label="ยืนยันรหัสผ่านใหม่" dense outlined required
                   append-icon-props="{ tabindex: '-1' }">
@@ -93,7 +92,6 @@ export default {
         },
       },
 
-      errorMessage: '',
       confirm_password: '',
       password: '',
       new_password: '',
