@@ -20,38 +20,57 @@
 
                                 <v-row class="pa-0">
                                     <v-col cols="12" class="pa-1">
-                                        <v-text-field v-model="form.email" label="อีเมล" prepend-icon="mdi-email"
-                                            type="email" outlined dense class="small-text-field"
-                                            :rules="[rules.required, rules.email]"></v-text-field>
+                                        <v-text-field ref="emailField" autocomplete="off" v-model="form.email"
+                                            label="อีเมล" prepend-icon="mdi-email" type="email" outlined dense clearable
+                                            class="small-text-field"
+                                            :rules="[rules.required, rules.email, rules.emailExists]"
+                                            :readonly="isReadonly" @focus="removeReadonly"
+                                            @blur="setReadonly"></v-text-field>
                                     </v-col>
                                 </v-row>
 
                                 <v-row class="pa-0">
                                     <v-col cols="12" sm="6" class="pa-1">
-                                        <v-text-field v-model="form.password" prepend-icon="mdi-lock" label="รหัสผ่าน"
-                                            :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-                                            :type="show1 ? 'text' : 'password'" @click:append="show1 = !show1" outlined
-                                            dense class="small-text-field"
-                                            :rules="[rules.required, rules.minPassword]"></v-text-field>
+                                        <v-text-field ref="passwordField" autocomplete="new-password"
+                                            :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-closed'"
+                                            :type="show1 ? 'text' : 'password'" v-model="form.password"
+                                            prepend-icon="mdi-lock" :rules="validatePasswordRules()"
+                                            :readonly="isReadonly" @focus="removeReadonly" @blur="setReadonly"
+                                            @click:append="show1 = !show1" label="รหัสผ่าน" dense outlined required>
+                                            <template v-slot:append>
+                                                <v-icon tabindex="-1" @click="show1 = !show1">{{ show1 ? 'mdi-eye' :
+                                                    'mdi-eye-closed' }}</v-icon>
+                                            </template>
+                                        </v-text-field>
                                     </v-col>
                                     <v-col cols="12" sm="6" class="pa-1">
-                                        <v-text-field v-model="form.confirmPassword" prepend-icon="mdi-lock-check"
-                                            label="ยืนยันรหัสผ่าน" :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-off'"
-                                            :type="show2 ? 'text' : 'password'" @click:append="show2 = !show2" outlined
-                                            dense class="small-text-field"
-                                            :rules="[rules.required, rules.passwordMatch]"></v-text-field>
+                                        <v-text-field ref="confirmPasswordField" autocomplete="new-password"
+                                            :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-closed'"
+                                            :type="show2 ? 'text' : 'password'" v-model="form.confirmPassword"
+                                            prepend-icon="mdi-lock-check" :rules="[
+                                                (v) => !!v || 'โปรดยืนยันรหัสผ่าน',
+                                                (v) => v === form.password || 'รหัสผ่านไม่ตรงกัน'
+                                            ]" :readonly="isReadonly" @focus="removeReadonly" @blur="setReadonly"
+                                            @click:append="show2 = !show2" label="ยืนยันรหัสผ่าน" dense outlined
+                                            required append-icon-props="{ tabindex: '-1' }">
+                                            <template v-slot:append>
+                                                <v-icon tabindex="-1" @click="show2 = !show2">{{ show2 ? 'mdi-eye' :
+                                                    'mdi-eye-closed' }}</v-icon>
+                                            </template>
+                                        </v-text-field>
                                     </v-col>
                                 </v-row>
 
                                 <v-row class="pa-0">
                                     <v-col cols="12" sm="6" class="pa-1">
-                                        <v-text-field v-model="form.fname" label="ชื่อเล่น" prepend-icon="mdi-pen" outlined
-                                            dense class="small-text-field"
+                                        <v-text-field v-model="form.fname" label="ชื่อเล่น" prepend-icon="mdi-pen"
+                                            outlined dense clearable class="small-text-field"
                                             :rules="[rules.required, rules.thaiOnly]"></v-text-field>
                                     </v-col>
                                     <v-col cols="12" sm="6" class="pa-1">
-                                        <v-text-field v-model="form.lname" label="ชื่อจริง" prepend-icon="mdi-home-group"
-                                            outlined dense class="small-text-field"
+                                        <v-text-field v-model="form.lname" label="ชื่อจริง"
+                                            prepend-icon="mdi-home-group" outlined dense clearable
+                                            class="small-text-field"
                                             :rules="[rules.required, rules.thaiOnly]"></v-text-field>
                                     </v-col>
                                 </v-row>
@@ -59,13 +78,13 @@
                                 <v-row class="pa-0">
                                     <v-col cols="12" sm="6" class="pa-1">
                                         <v-text-field v-model="form.phone" label="เบอร์โทรศัพท์"
-                                            prepend-icon="mdi-phone" outlined dense class="small-text-field"
+                                            prepend-icon="mdi-phone" outlined dense clearable class="small-text-field"
                                             :rules="[rules.required, rules.phoneNumber]"></v-text-field>
                                     </v-col>
                                     <v-col cols="12" sm="6" class="pa-1">
                                         <v-select v-model="form.gender" :items="genderOptions" label="เพศ"
-                                            prepend-icon="mdi-gender-male-female" outlined dense class="last-text-field"
-                                            :rules="[rules.required]" ref="genderSelect">
+                                            prepend-icon="mdi-gender-male-female" outlined dense clearable
+                                            class="last-text-field" :rules="[rules.required]" ref="genderSelect">
                                             <template v-slot:item="data">
                                                 <v-list-item :value="data.item.value"
                                                     @click="selectGender(data.item.value)">
@@ -83,7 +102,7 @@
 
                                 <v-row align="center" justify="center" class="pa-0">
                                     <v-col cols="6" class="pa-1 last-text-field">
-                                        <v-btn :disabled="!valid" @click="confirm" color="#24b224" block>
+                                        <v-btn :disabled="!isFormValid" @click="confirm" color="#24b224" block>
                                             ลงทะเบียน
                                         </v-btn>
                                     </v-col>
@@ -115,6 +134,24 @@ export default {
 
     async mounted() {
         await this.checkRank();
+        await this.fetchEmployeeData();
+        this.$nextTick(() => {
+            const emailField = this.$refs.emailField.$el;
+            const passwordField = this.$refs.passwordField.$el;
+            const confirmPasswordField = this.$refs.confirmPasswordField.$el;
+
+            if (passwordField && passwordField.$el) {
+                passwordField.$el.setAttribute('autocomplete', 'off');
+            }
+
+            if (confirmPasswordField && confirmPasswordField.$el) {
+                confirmPasswordField.$el.setAttribute('autocomplete', 'off');
+            }
+
+            if (emailField) {
+                emailField.setAttribute('autocomplete', 'off');
+            }
+        });
     },
 
     data() {
@@ -122,6 +159,9 @@ export default {
             show1: false,
             show2: false,
             valid: false,
+            isReadonly: true,
+
+            employees: [],
 
             form: {
                 email: null,
@@ -147,8 +187,7 @@ export default {
             rules: {
                 required: value => !!value || 'กรุณากรอกข้อมูล',
                 email: value => /.+@.+\..+/.test(value) || 'กรุณากรอกอีเมลให้ถูกต้อง',
-                minPassword: value => (value && value.length >= 8) || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร!',
-                passwordMatch: value => value === this.form.password || 'รหัสผ่านต้องเหมือนกัน',
+                emailExists: value => !this.employees.some(emp => emp.email === value) || 'มีอีเมลนี้อยู่แล้ว',
                 phoneNumber: value => /^0[0-9]{9}$/.test(value) || 'กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง',
                 thaiOnly: value => /^[ก-๙]+$/.test(value) || 'กรุณาใช้ชื่อเป็นภาษาไทย'
             },
@@ -160,7 +199,48 @@ export default {
             ]
         };
     },
+
+    computed: {
+        isFormValid() {
+            return (
+                this.form.email &&
+                this.rules.email(this.form.email) === true &&
+                this.form.password &&
+                this.rules.required(this.form.password) === true &&
+                this.form.confirmPassword &&
+                this.form.confirmPassword === this.form.password &&
+                this.form.fname &&
+                this.rules.thaiOnly(this.form.fname) === true &&
+                this.form.lname &&
+                this.rules.thaiOnly(this.form.lname) === true &&
+                this.form.phone &&
+                this.rules.phoneNumber(this.form.phone) === true &&
+                this.form.gender &&
+                !this.employees.some(emp => emp.email === this.form.email)
+            );
+        }
+    },
+
     methods: {
+        removeReadonly() {
+            this.isReadonly = false;
+        },
+
+        setReadonly() {
+            this.isReadonly = true;
+        },
+
+        async fetchEmployeeData() {
+            this.employees = await this.$store.dispatch('api/employee/getEmployee');
+        },
+
+        validatePasswordRules() {
+            return [
+                (v) => !!v || 'โปรดกรอกรหัสผ่านใหม่',
+                (v) => (v && v.length >= 8) || 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
+            ];
+        },
+
         async checkRank() {
             if (this.$auth.loggedIn) {
                 const Status = this.$auth.user.status.toString();
@@ -242,7 +322,6 @@ export default {
 </script>
 
 <style scoped>
-
 .register-container {
     display: flex;
     align-items: center;
@@ -259,5 +338,4 @@ export default {
 .last-text-field {
     margin-bottom: 2px;
 }
-
 </style>

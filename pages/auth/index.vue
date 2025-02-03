@@ -16,7 +16,8 @@
               style="justify-content: center; display: flex;">เข้าสู่ระบบด้วยผู้ใช้งานของคุณ</v-card-subtitle>
             <v-card-text>
               <v-text-field v-model="form.email" label="อีเมล" prepend-icon="mdi-email" type="email" outlined dense
-                class="small-text-field"></v-text-field>
+                class="small-text-field" :readonly="isReadonly" @focus="removeReadonly"
+                @blur="setReadonly"></v-text-field>
               <v-text-field v-model="form.password" prepend-icon="mdi-lock" label="รหัสผ่าน"
                 :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'" :type="show1 ? 'text' : 'password'"
                 @click:append="show1 = !show1" outlined dense class="small-text-field"></v-text-field>
@@ -74,6 +75,7 @@ export default {
         },
       },
 
+      isReadonly: true,
       valid: false,
       show1: false,
       show2: false,
@@ -87,6 +89,13 @@ export default {
   },
 
   methods: {
+    removeReadonly() {
+      this.isReadonly = false;
+    },
+
+    setReadonly() {
+      this.isReadonly = true;
+    },
 
     async fetchEmployeeData() {
       this.employees = await this.$store.dispatch('api/employee/getEmployee');
