@@ -98,102 +98,97 @@
                 <v-data-table :headers="filteredHeaders" :items="filteredDetails" :item-value="customer_no"
                     item-key="customer_no">
                     <template v-slot:body="{ items }">
-                        <template v-for="(group, index) in items" :key="group.customer_no + '-' + index">
-                            <tr>
-                                <td class="text-center" v-if="visibleColumns.includes('action')">
-                                    <v-icon style="color:#85d7df" @click="group.isOpen = !group.isOpen">
-                                        {{ group.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                        <tr v-for="(group, index) in items" :key="group.customer_no + '-' + index">
+                            <td class="text-center" v-if="visibleColumns.includes('action')">
+                                <v-icon style="color:#85d7df" @click="group.isOpen = !group.isOpen">
+                                    {{ group.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                                </v-icon>
+                            </td>
+                            <td class="text-center" v-if="visibleColumns.includes('updated_date')">
+                                {{ formatDateTime(group.updated_date) }}</td>
+                            <td class="text-center" v-if="visibleColumns.includes('customer_no')">
+                                {{ getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ' }}</td>
+                            <td class="text-center" v-if="visibleColumns.includes('customer_name')">
+                                {{ getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ' }}
+                            </td>
+                            <td class="text-center" v-if="visibleColumns.includes('base_stock')">
+                                {{ (group.from1TotalDifference || 0).toLocaleString() }}</td>
+                            <td class="text-center" v-if="visibleColumns.includes('new_stock')">
+                                {{ (group.from2TotalDifference || 0).toLocaleString() }}</td>
+                            <td class="text-center" v-if="visibleColumns.includes('tactic_stock')">
+                                {{ (group.from3TotalDifference || 0).toLocaleString() }}</td>
+                            <td class="text-center" v-if="visibleColumns.includes('total')" :style="{
+                                color: getColorForNumber((group.from1TotalDifference + group.from2TotalDifference +
+                                    group.from3TotalDifference) || 0)
+                            }">
+                                {{ ((group.from1TotalDifference + group.from2TotalDifference +
+                                    group.from3TotalDifference) || 0).toLocaleString() }}</td>
+                            <td class="text-center" v-if="visibleColumns.includes('detail')"><v-btn color="#5271ff"
+                                    @click="openStockPopup(group, 'group')" icon>
+                                    <v-icon>mdi-eye</v-icon></v-btn></td>
+                            <td class="text-center" v-if="visibleColumns.includes('export')"><v-btn color="#00bf63"
+                                    @click="exportForPerson(group.customer_no, 'group', group)" icon>
+                                    <v-icon>mdi-file-excel</v-icon></v-btn></td>
+                        </tr>
+
+                        <template v-if="group.isOpen">
+                            <tr v-for="(yearlyData, year) in group.yearlyDifferences" :key="year">
+                                <td class="text-center" v-if="visibleColumns.includes('action')"></td>
+                                <td class="text-center">
+                                    <v-icon style="color:#85d7df" @click="yearlyData.isOpen = !yearlyData.isOpen">
+                                        {{ yearlyData.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
                                     </v-icon>
                                 </td>
-                                <td class="text-center" v-if="visibleColumns.includes('updated_date')">
-                                    {{ formatDateTime(group.updated_date) }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('customer_no')">
-                                    {{ getCustomerByNo(group.customer_no)?.id || 'ยังไม่ระบุ' }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('customer_name')">
-                                    {{ getCustomerByNo(group.customer_no)?.nickname || 'ยังไม่ระบุ' }}
-                                </td>
-                                <td class="text-center" v-if="visibleColumns.includes('base_stock')">
-                                    {{ (group.from1TotalDifference || 0).toLocaleString() }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('new_stock')">
-                                    {{ (group.from2TotalDifference || 0).toLocaleString() }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('tactic_stock')">
-                                    {{ (group.from3TotalDifference || 0).toLocaleString() }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('total')" :style="{
-                                    color: getColorForNumber((group.from1TotalDifference + group.from2TotalDifference +
-                                        group.from3TotalDifference) || 0)
+                                <td class="text-center">-</td>
+                                <td class="text-center">{{ year }}</td>
+                                <td class="text-center">
+                                    {{ yearlyData.from1TotalDifference.toLocaleString() }}</td>
+                                <td class="text-center">
+                                    {{ yearlyData.from2TotalDifference.toLocaleString() }}</td>
+                                <td class="text-center">
+                                    {{ yearlyData.from3TotalDifference.toLocaleString() }}</td>
+                                <td class="text-center" :style="{
+                                    color: getColorForNumber((yearlyData.from1TotalDifference + yearlyData.from2TotalDifference +
+                                        yearlyData.from3TotalDifference) || 0)
                                 }">
-                                    {{ ((group.from1TotalDifference + group.from2TotalDifference +
-                                        group.from3TotalDifference) || 0).toLocaleString() }}</td>
-                                <td class="text-center" v-if="visibleColumns.includes('detail')"><v-btn color="#5271ff"
-                                        @click="openStockPopup(group, 'group')" icon>
-                                        <v-icon>mdi-eye</v-icon></v-btn></td>
-                                <td class="text-center" v-if="visibleColumns.includes('export')"><v-btn color="#00bf63"
-                                        @click="exportForPerson(group.customer_no, 'group', group)" icon>
+                                    {{ (yearlyData.from1TotalDifference + yearlyData.from2TotalDifference +
+                                        yearlyData.from3TotalDifference).toLocaleString() }}</td>
+                                <td class="text-center"><v-btn color="#5271ff"
+                                        @click="openStockPopup(group, 'year', year)" icon>
+                                        <v-icon>mdi-eye</v-icon>
+                                    </v-btn></td>
+                                <td class="text-center"><v-btn color="#00bf63"
+                                        @click="exportForPerson(group.customer_no, 'year', year)" icon>
                                         <v-icon>mdi-file-excel</v-icon></v-btn></td>
                             </tr>
 
-                            <template v-if="group.isOpen">
-                                <template v-for="(yearlyData, year) in group.yearlyDifferences" :key="year">
-                                    <tr>
-                                        <td class="text-center" v-if="visibleColumns.includes('action')"></td>
-                                        <td class="text-center">
-                                            <v-icon style="color:#85d7df"
-                                                @click="yearlyData.isOpen = !yearlyData.isOpen">
-                                                {{ yearlyData.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
-                                            </v-icon>
-                                        </td>
-                                        <td class="text-center">-</td>
-                                        <td class="text-center">{{ year }}</td>
-                                        <td class="text-center">
-                                            {{ yearlyData.from1TotalDifference.toLocaleString() }}</td>
-                                        <td class="text-center">
-                                            {{ yearlyData.from2TotalDifference.toLocaleString() }}</td>
-                                        <td class="text-center">
-                                            {{ yearlyData.from3TotalDifference.toLocaleString() }}</td>
-                                        <td class="text-center" :style="{
-                                            color: getColorForNumber((yearlyData.from1TotalDifference + yearlyData.from2TotalDifference +
-                                                yearlyData.from3TotalDifference) || 0)
-                                        }">
-                                            {{ (yearlyData.from1TotalDifference + yearlyData.from2TotalDifference +
-                                                yearlyData.from3TotalDifference).toLocaleString() }}</td>
-                                        <td class="text-center"><v-btn color="#5271ff"
-                                                @click="openStockPopup(group, 'year', year)" icon>
-                                                <v-icon>mdi-eye</v-icon>
-                                            </v-btn></td>
-                                        <td class="text-center"><v-btn color="#00bf63"
-                                                @click="exportForPerson(group.customer_no, 'year', year)" icon>
-                                                <v-icon>mdi-file-excel</v-icon></v-btn></td>
-                                    </tr>
-
-                                    <tr v-if="yearlyData.isOpen"
-                                        v-for="(monthlyData, month) in yearlyData.monthlyDifferences" :key="month">
-                                        <td class="text-center" v-if="visibleColumns.includes('action')"></td>
-                                        <td class="text-center"></td>
-                                        <td class="text-center">-</td>
-                                        <td class="text-center" :style="{ color: formatMonthName(month).color }">
-                                            {{ formatMonthName(month).name }}
-                                        </td>
-                                        <td class="text-center">{{
-                                            monthlyData.from1TotalDifference.toLocaleString() }}</td>
-                                        <td class="text-center">{{
-                                            monthlyData.from2TotalDifference.toLocaleString() }}</td>
-                                        <td class="text-center">
-                                            {{ monthlyData.from3TotalDifference.toLocaleString() }}</td>
-                                        <td class="text-center" :style="{
-                                            color: getColorForNumber((monthlyData.from1TotalDifference + monthlyData.from2TotalDifference +
-                                                monthlyData.from3TotalDifference) || 0)
-                                        }">
-                                            {{ (monthlyData.from1TotalDifference + monthlyData.from2TotalDifference +
-                                                monthlyData.from3TotalDifference).toLocaleString() }}</td>
-                                        <td class="text-center"><v-btn color="#5271ff"
-                                                @click="openStockPopup(group, 'month', month)" icon>
-                                                <v-icon>mdi-eye</v-icon></v-btn></td>
-                                        <td class="text-center"><v-btn color="#00bf63"
-                                                @click="exportForPerson(group.customer_no, 'month', month)" icon>
-                                                <v-icon>mdi-file-excel</v-icon></v-btn></td>
-                                    </tr>
-                                </template>
-                            </template>
+                            <tr v-if="yearlyData.isOpen" v-for="(monthlyData, month) in yearlyData.monthlyDifferences"
+                                :key="month">
+                                <td class="text-center" v-if="visibleColumns.includes('action')"></td>
+                                <td class="text-center"></td>
+                                <td class="text-center">-</td>
+                                <td class="text-center" :style="{ color: formatMonthName(month).color }">
+                                    {{ formatMonthName(month).name }}
+                                </td>
+                                <td class="text-center">{{
+                                    monthlyData.from1TotalDifference.toLocaleString() }}</td>
+                                <td class="text-center">{{
+                                    monthlyData.from2TotalDifference.toLocaleString() }}</td>
+                                <td class="text-center">
+                                    {{ monthlyData.from3TotalDifference.toLocaleString() }}</td>
+                                <td class="text-center" :style="{
+                                    color: getColorForNumber((monthlyData.from1TotalDifference + monthlyData.from2TotalDifference +
+                                        monthlyData.from3TotalDifference) || 0)
+                                }">
+                                    {{ (monthlyData.from1TotalDifference + monthlyData.from2TotalDifference +
+                                        monthlyData.from3TotalDifference).toLocaleString() }}</td>
+                                <td class="text-center"><v-btn color="#5271ff"
+                                        @click="openStockPopup(group, 'month', month)" icon>
+                                        <v-icon>mdi-eye</v-icon></v-btn></td>
+                                <td class="text-center"><v-btn color="#00bf63"
+                                        @click="exportForPerson(group.customer_no, 'month', month)" icon>
+                                        <v-icon>mdi-file-excel</v-icon></v-btn></td>
+                            </tr>
                         </template>
                     </template>
                 </v-data-table>

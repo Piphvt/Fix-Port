@@ -26,19 +26,30 @@
                 <v-data-table :headers="stockHeaders" :items="transformData(stockData)" item-value="stock_no"
                     item-key="stock_no" :items-per-page="5" style="border-spacing: 0 10px;">
                     <template v-slot:body="{ items }">
-                        <template v-for="(stock, index) in items" :key="stock.stock_no + '-' + index">
-                            <tr v-if="index > 0 && items[index - 1].stock_no !== stock.stock_no">
+                        <template v-for="(stock, index) in items">
+                            <!-- Divider row -->
+                            <tr v-if="index > 0 && items[index - 1].stock_no !== stock.stock_no"
+                                :key="'divider-' + stock.stock_no + '-' + index">
                                 <td colspan="6" style="border-top: 1px solid #ccc;"></td>
                             </tr>
 
-                            <tr>
-                                <td class="text-center" :style="{ padding: '10px' }">{{
-                                    formatDateTime(stock.updated_date) }}</td>
-                                <td class="text-center">{{ getStockByNo(stock.stock_no)?.stock || 'ยังไม่ระบุ' }}</td>
-                                <td class="text-center" style="color:#00bf63">{{ stock.buy.toLocaleString() }}</td>
-                                <td class="text-center" style="color:#ff66c4">{{ stock.sale.toLocaleString() }}</td>
-                                <td class="text-center" :style="{ color: getColor(stock.total) }">{{
-                                    stock.total.toLocaleString() }}</td>
+                            <!-- Stock row -->
+                            <tr :key="'stock-' + stock.stock_no + '-' + index">
+                                <td class="text-center" :style="{ padding: '10px' }">
+                                    {{ formatDateTime(stock.updated_date) }}
+                                </td>
+                                <td class="text-center">
+                                    {{ getStockByNo(stock.stock_no)?.stock || 'ยังไม่ระบุ' }}
+                                </td>
+                                <td class="text-center" style="color:#00bf63">
+                                    {{ stock.buy.toLocaleString() }}
+                                </td>
+                                <td class="text-center" style="color:#ff66c4">
+                                    {{ stock.sale.toLocaleString() }}
+                                </td>
+                                <td class="text-center" :style="{ color: getColor(stock.total) }">
+                                    {{ stock.total.toLocaleString() }}
+                                </td>
                                 <td class="text-center">
                                     <v-icon style="color:#85d7df" @click="stock.isOpen = !stock.isOpen">
                                         {{ stock.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
@@ -46,31 +57,39 @@
                                 </td>
                             </tr>
 
+                            <!-- Grouped transactions -->
                             <tr v-if="stock.isOpen" v-for="(grouped, subIndex) in stock.groupedTransactions"
-                                :key="(grouped.from_no || 'unknown') + '-' + stock.stock_no + '-' + subIndex">
+                                :key="'grouped-' + (grouped.from_no || 'unknown') + '-' + stock.stock_no + '-' + subIndex">
                                 <td colspan="1"></td>
                                 <td class="text-center"
                                     :style="{ color: getFromText(getFromByNo(grouped.from_no)?.from).color }">
                                     {{ getFromByNo(grouped.from_no)?.from || 'ยังไม่ระบุ' }}
                                 </td>
                                 <td class="text-center" :style="{ padding: '10px', color: '#00bf63' }">
-                                    {{ grouped.transactions.reduce((sum, tx) => sum + (tx.buy || 0), 0).toLocaleString()
+                                    {{grouped.transactions.reduce((sum, tx) => sum + (tx.buy || 0), 0).toLocaleString()
                                     }}
                                 </td>
                                 <td class="text-center" style="color:#ff66c4">
-                                    {{ grouped.transactions.reduce((sum, tx) => sum + (tx.sale || 0),
-                                        0).toLocaleString() }}
+                                    {{grouped.transactions.reduce((sum, tx) => sum + (tx.sale || 0),
+                                    0).toLocaleString() }}
                                 </td>
-                                <td class="text-center"
-                                    :style="{ color: getColor(grouped.transactions.reduce((sum, tx) => sum + (tx.sale || 0), 0) - grouped.transactions.reduce((sum, tx) => sum + (tx.buy || 0), 0)) }">
-                                    {{ (grouped.transactions.reduce((sum, tx) => sum + (tx.sale || 0), 0) -
-                                        grouped.transactions.reduce((sum, tx) => sum + (tx.buy || 0), 0)).toLocaleString()
+                                <td class="text-center" :style="{
+                                    color: getColor(
+                                        grouped.transactions.reduce((sum, tx) => sum + (tx.sale || 0), 0) -
+                                        grouped.transactions.reduce((sum, tx) => sum + (tx.buy || 0), 0)
+                                    )
+                                }">
+                                    {{
+                                        (
+                                            grouped.transactions.reduce((sum, tx) => sum + (tx.sale || 0), 0) -
+                                            grouped.transactions.reduce((sum, tx) => sum + (tx.buy || 0), 0)
+                                    ).toLocaleString()
                                     }}
                                 </td>
                             </tr>
                         </template>
-
                     </template>
+
                 </v-data-table>
             </v-card-text>
             <div class="text-center">
